@@ -19,6 +19,7 @@ interface AuthState {
     signInWithProvider: (provider: 'google' | 'github') => Promise<void>;
     signOut: () => Promise<void>;
     checkSession: () => Promise<void>;
+    resetPassword: (email: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -112,6 +113,21 @@ export const useAuthStore = create<AuthState>((set) => ({
         } catch (error) {
             console.error('Sign out failed', error);
             set({ loading: false });
+        }
+    },
+
+    resetPassword: async (email) => {
+        set({ loading: true });
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin,
+            });
+            if (error) throw error;
+            set({ loading: false });
+        } catch (error: any) {
+            console.error('Password reset failed', error);
+            set({ loading: false });
+            throw error;
         }
     },
 

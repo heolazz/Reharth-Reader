@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Mail, Lock, User, Github, Sprout, Eye, EyeOff, CheckSquare, Square, ChevronLeft } from 'lucide-react';
 import { useAuthStore } from '../stores/useAuthStore';
@@ -8,7 +8,7 @@ interface AuthPageProps {
 }
 
 export const AuthPage: React.FC<AuthPageProps> = () => {
-    const { signIn, signUp, signInWithProvider, loading } = useAuthStore();
+    const { signIn, signUp, signInWithProvider, resetPassword, loading } = useAuthStore();
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,9 +17,24 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
     const [rememberMe, setRememberMe] = useState(false);
     const [showIntro, setShowIntro] = useState(true); // New state for 'Get Started' view
 
+    // Load saved email if 'Remember me' was previously checked
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('reharth_remembered_email');
+        if (savedEmail) {
+            setEmail(savedEmail);
+            setRememberMe(true);
+        }
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            if (rememberMe) {
+                localStorage.setItem('reharth_remembered_email', email);
+            } else {
+                localStorage.removeItem('reharth_remembered_email');
+            }
+
             if (isLogin) {
                 await signIn(email, password);
             } else {
@@ -27,6 +42,19 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
             }
         } catch (error: any) {
             alert(error.message || 'An error occurred');
+        }
+    };
+
+    const handleForgotPassword = async () => {
+        if (!email) {
+            alert('Please enter your email address first.');
+            return;
+        }
+        try {
+            await resetPassword(email);
+            alert('Password reset link sent! Check your email.');
+        } catch (error: any) {
+            alert(error.message || 'Failed to send password reset email.');
         }
     };
 
@@ -190,7 +218,7 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
                                     }
                                     Remember me
                                 </button>
-                                <button type="button" className="text-xs font-medium text-[#3E2723] hover:underline">
+                                <button type="button" onClick={handleForgotPassword} className="text-xs font-medium text-[#3E2723] hover:underline">
                                     Forgot Password?
                                 </button>
                             </div>
@@ -365,7 +393,7 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
                                     }
                                     Remember me
                                 </button>
-                                <button type="button" className="text-xs font-medium text-[#3E2723] hover:underline">
+                                <button type="button" onClick={handleForgotPassword} className="text-xs font-medium text-[#3E2723] hover:underline">
                                     Forgot Password?
                                 </button>
                             </div>
