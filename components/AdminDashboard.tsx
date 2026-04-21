@@ -577,6 +577,33 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
                                     placeholder="Enter book synopsis..."
                                 />
                             </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Year</label>
+                                    <input
+                                        type="number"
+                                        value={formData.published_year || ''}
+                                        onChange={e => setFormData({ ...formData, published_year: parseInt(e.target.value) || undefined })}
+                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
+                                        placeholder="e.g. 2024"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Tags</label>
+                                    <input
+                                        type="text"
+                                        value={formData.tags?.join(', ') || ''}
+                                        onChange={e => {
+                                            // Split by comma, trim whitespace, and clean empty strings
+                                            const tagsArray = e.target.value.split(',').map(t => t.trim()).filter(t => t);
+                                            setFormData({ ...formData, tags: tagsArray });
+                                        }}
+                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
+                                        placeholder="fantasy, magic, epic..."
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         {/* URLs & Settings */}
