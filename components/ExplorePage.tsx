@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, TrendingUp, Sparkles, BookOpen, Compass, ArrowRight, Star, Loader2 } from 'lucide-react';
-import { fetchPublicBooks, fetchTrendingBooks, fetchAvailableGenres, PublicBook } from '../lib/publicBooksApi';
+import { fetchPublicBooks, fetchTrendingBooks, fetchAvailableTags, PublicBook } from '../lib/publicBooksApi';
 
 interface ExplorePageProps {
     onOpenBook?: (book: PublicBook) => void;
@@ -25,8 +25,8 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
         const loadInitialData = async () => {
             setIsLoading(true);
             try {
-                // Fetch genres
-                const { data: genresData } = await fetchAvailableGenres();
+                // Fetch genres (now using tags)
+                const { data: genresData } = await fetchAvailableTags();
                 if (genresData) setGenres(['All', ...genresData]);
 
                 // Fetch trending books initially
@@ -213,37 +213,12 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                     )}
                 </div>
 
-                {/* 4. Curated Collections Banner - Only show on Home/All */}
+                {/* 4. Curated Collections Banner - Hidden for now per user request */}
+                {/* 
                 {activeCategory === 'All' && !searchQuery && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8">
-                        <div className="bg-[#1a1c1a] rounded-2xl p-8 relative overflow-hidden text-[#F8F5F1] group cursor-pointer h-64 flex flex-col justify-center">
-                            <div className="absolute inset-0">
-                                <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700" />
-                                <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
-                            </div>
-                            <div className="relative z-10 px-4">
-                                <span className="inline-block px-2 py-1 bg-white/20 backdrop-blur-md rounded text-[10px] font-bold uppercase tracking-widest mb-3">Collection</span>
-                                <h3 className="font-serif text-3xl md:text-4xl mb-2">Dark Academia</h3>
-                                <p className="text-white/60 text-sm max-w-xs mb-6">Moody, atmospheric reads for rainy days and late nights.</p>
-                                <span className="text-xs font-bold uppercase tracking-widest border-b border-white/30 pb-0.5 inline-block">Explore Collection</span>
-                            </div>
-                        </div>
-
-                        <div className="bg-[#EAE5DF] rounded-2xl p-8 relative overflow-hidden text-[#3D3028] group cursor-pointer h-64 flex flex-col justify-center">
-                            <div className="absolute inset-0">
-                                <img src="https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover opacity-20 hover:opacity-10 transition-opacity duration-700" />
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#EAE5DF]/90 to-transparent" />
-                            </div>
-                            <div className="relative z-10 px-4">
-                                <span className="inline-block px-2 py-1 bg-[#3D3028]/10 backdrop-blur-md rounded text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/60 mb-3">New Arrivals</span>
-                                <h3 className="font-serif text-3xl md:text-4xl mb-2">Modern Classics</h3>
-                                <p className="text-[#3D3028]/60 text-sm max-w-xs mb-6">Contemporary masterpieces that define our generation.</p>
-                                <span className="text-xs font-bold uppercase tracking-widest border-b border-[#3D3028]/30 pb-0.5 inline-block">Explore Collection</span>
-                            </div>
-                        </div>
-                    </div>
+                    ... collections code ...
                 )}
-
+                */}
                 {/* 5. Minimal Footer Quote */}
                 <div className="text-center pt-16 pb-8 border-t border-[#3D3028]/5">
                     <p className="font-serif text-xl md:text-2xl text-[#3D3028]/40 italic">
