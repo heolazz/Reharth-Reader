@@ -139,7 +139,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
 
                                     {/* Stats / Metadata */}
                                     <div className="flex flex-wrap gap-4 md:gap-8 py-6 border-t border-b border-[#3D3028]/5 mb-8">
-                                        {book.rating_average && (
+                                        {book.rating_average !== undefined && book.rating_average > 0 ? (
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 mb-1">Rating</span>
                                                 <div className="flex items-center gap-1.5 text-lg font-serif text-[#3D3028]">
@@ -147,33 +147,44 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                                     {book.rating_average.toFixed(1)}
                                                 </div>
                                             </div>
-                                        )}
-                                        {book.published_year && (
+                                        ) : null}
+                                        {book.published_year !== undefined && book.published_year > 0 ? (
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 mb-1">Year</span>
                                                 <span className="text-lg font-serif text-[#3D3028]">{book.published_year}</span>
                                             </div>
-                                        )}
-                                        {book.page_count && (
+                                        ) : null}
+                                        {book.page_count !== undefined && book.page_count > 0 ? (
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 mb-1">Pages</span>
                                                 <span className="text-lg font-serif text-[#3D3028]">{book.page_count}</span>
                                             </div>
-                                        )}
-                                        {book.genre && book.genre.length > 0 && (
+                                        ) : null}
+                                        {book.genre && book.genre.length > 0 ? (
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 mb-1">Genre</span>
                                                 <span className="text-lg font-serif text-[#3D3028]">{book.genre[0]}</span>
                                             </div>
-                                        )}
+                                        ) : null}
                                     </div>
 
                                     {/* Description */}
-                                    <div className="prose prose-stone max-w-none mb-10">
+                                    <div className="prose prose-stone max-w-none mb-6">
                                         <p className="text-[#3D3028]/80 text-lg leading-relaxed font-serif">
                                             {book.description || "No description available for this book."}
                                         </p>
                                     </div>
+
+                                    {/* Tags */}
+                                    {book.tags && book.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mb-10">
+                                            {book.tags.map(tag => (
+                                                <span key={tag} className="px-3 py-1 bg-[#3D3028]/5 text-[#3D3028]/60 text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#3D3028]/10">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </motion.div>
                             </div>
 
