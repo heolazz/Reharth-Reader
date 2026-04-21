@@ -15,6 +15,7 @@ import { ProfilePage } from './components/ProfilePage';
 import { ExplorePage } from './components/ExplorePage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { PublicBookDetailModal } from './components/PublicBookDetailModal';
+import { LoadingScreen } from './components/LoadingScreen';
 import { Toast, useToast } from './components/Toast';
 import { Book, AppState, Page, ReadingGoal } from './types';
 import { PublicBook } from './lib/publicBooksApi';
@@ -43,9 +44,31 @@ const App: React.FC = () => {
   const { isAuthenticated, user, signIn, signOut, checkSession, loading } = useAuthStore();
   const { toast, showToast, hideToast } = useToast();
 
+  // Splash screen state
+  const [showSplash, setShowSplash] = useState(true);
+  const wasAuthenticated = React.useRef(false);
+
+  // Show splash on initial page load (minimum 2.5s)
   useEffect(() => {
     checkSession();
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500);
+    return () => clearTimeout(timer);
   }, []);
+
+  // Show splash again after login/register transition
+  useEffect(() => {
+    if (!loading && isAuthenticated && !wasAuthenticated.current) {
+      // User just logged in — show splash
+      setShowSplash(true);
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+    wasAuthenticated.current = isAuthenticated;
+  }, [isAuthenticated, loading]);
 
   const handleLogin = (email: string, password?: string) => {
     signIn(email, password);
@@ -390,16 +413,8 @@ const App: React.FC = () => {
     setReadingGoal(prev => ({ ...prev, dailyTargetMinutes: minutes }));
   };
 
-  if (loading) {
-    // Loading Screen
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#F8F5F1]">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 bg-[#3D3028] rounded-full opacity-20 mb-4"></div>
-          <div className="h-2 w-32 bg-[#3D3028] rounded-full opacity-10"></div>
-        </div>
-      </div>
-    )
+  if (loading || showSplash) {
+    return <LoadingScreen />;
   }
 
   if (!isAuthenticated) {
