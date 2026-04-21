@@ -70,11 +70,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
             if (error) throw error;
 
-            if (data.user && !data.session) {
-                alert('Please check your email to verify your account.');
-                set({ loading: false });
-                return;
-            }
+            // If Supabase is configured to not required email confirmation, 
+            // data.session will be present and onAuthStateChange will handle it.
+            // If it is required, we still set loading to false.
+            set({ loading: false });
             // data.user will be picked up by onAuthStateChange listener
 
         } catch (error: any) {

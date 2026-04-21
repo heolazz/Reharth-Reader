@@ -45,24 +45,10 @@ export const AdminDashboard: React.FC = () => {
                     </div>
 
                     {/* Main Content */}
-                    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-[#3D3028]/5 p-6 md:p-8 min-h-[600px]">
+                    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-[#3D3028]/5 p-6 md:p-8 min-h-[600px] overflow-hidden">
                         {activeTab === 'books' && <BooksManager />}
-                        {activeTab === 'overview' && (
-                            <div className="flex items-center justify-center h-full text-[#3D3028]/40">
-                                <div className="text-center">
-                                    <LayoutDashboard size={48} className="mx-auto mb-4 opacity-50" />
-                                    <p>Dashboard Overview coming soon</p>
-                                </div>
-                            </div>
-                        )}
-                        {activeTab === 'users' && (
-                            <div className="flex items-center justify-center h-full text-[#3D3028]/40">
-                                <div className="text-center">
-                                    <Users size={48} className="mx-auto mb-4 opacity-50" />
-                                    <p>User Management coming soon</p>
-                                </div>
-                            </div>
-                        )}
+                        {activeTab === 'overview' && <OverviewManager />}
+                        {activeTab === 'users' && <UsersManager />}
                     </div>
                 </div>
             </div>
@@ -687,6 +673,278 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
                     </div>
                 </form>
             </motion.div>
+        </div>
+    );
+};
+// ------------------------------------------------------------------
+// OVERVIEW MANAGER COMPONENT
+// ------------------------------------------------------------------
+
+const OverviewManager = () => {
+    const [stats, setStats] = useState({
+        totalBooks: 0,
+        totalUsers: 0,
+        totalLibraryBooks: 0,
+        totalViews: 0,
+        recentBooks: [] as PublicBook[]
+    });
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            setIsLoading(true);
+            try {
+                // 1. Total Public Books
+                const { count: booksCount } = await supabase
+                    .from('public_books')
+                    .select('*', { count: 'exact', head: true });
+
+                // 2. Total Users (from profiles)
+                const { count: usersCount } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true });
+
+                // 3. Total User-saved Books
+                const { count: libCount } = await supabase
+                    .from('books')
+                    .select('*', { count: 'exact', head: true });
+
+                // 4. Sum of Views
+                const { data: viewsData } = await supabase
+                    .from('public_books')
+                    .select('view_count');
+
+                const totalViews = viewsData?.reduce((acc, curr) => acc + (curr.view_count || 0), 0) || 0;
+
+                // 5. Recent Activity
+                const { data: recent } = await supabase
+                    .from('public_books')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                setStats({
+                    totalBooks: booksCount || 0,
+                    totalUsers: usersCount || 0,
+                    totalLibraryBooks: libCount || 0,
+                    totalViews,
+                    recentBooks: (recent || []) as PublicBook[]
+                });
+            } catch (err) {
+                console.error("Failed to load overview stats:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-[400px]">
+                <Loader2 size={32} className="animate-spin text-[#3D3028]/20" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard icon={Library} label="Global Library" value={stats.totalBooks} color="#3D3028" />
+                <StatCard icon={Users} label="Total Users" value={stats.totalUsers} color="#6B8E6D" />
+                <StatCard icon={FileText} label="Active Collections" value={stats.totalLibraryBooks} color="#8B7355" />
+                <StatCard icon={ImageIcon} label="Total Reach" value={`${stats.totalViews.toLocaleString()}`} color="#E86C46" />
+            </div>
+
+            {/* Recent Books */}
+            <div>
+                <h3 className="font-serif text-lg mb-4 flex items-center gap-2">
+                    <Plus size={18} className="text-[#3D3028]/40" />
+                    Recently Added
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    {stats.recentBooks.map((book) => (
+                        <div key={book.id} className="bg-[#FAFAFA] border border-[#3D3028]/5 rounded-xl p-3 flex flex-col gap-3">
+                            <div className="aspect-[2/3] bg-white rounded-lg overflow-hidden shadow-sm border border-[#3D3028]/5">
+                                {book.cover_url ? (
+                                    <img src={book.cover_url} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-[#3D3028]/10"><ImageIcon size={24} /></div>
+                                )}
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold truncate">{book.title}</p>
+                                <p className="text-[10px] opacity-40 truncate">{book.author}</p>
+                            </div>
+                        </div>
+                    ))}
+                    {stats.recentBooks.length === 0 && (
+                        <div className="col-span-full py-12 text-center text-sm opacity-30 border-2 border-dashed border-[#3D3028]/5 rounded-2xl">
+                            No recent activity found
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const StatCard = ({ icon: Icon, label, value, color }: any) => (
+    <div className="bg-[#FAFAFA] border border-[#3D3028]/5 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-start justify-between">
+            <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#3D3028]/30 mb-2">{label}</p>
+                <p className="text-2xl font-serif text-[#3D3028]">{value}</p>
+            </div>
+            <div className="p-2 rounded-xl" style={{ backgroundColor: `${color}15` }}>
+                <Icon size={20} style={{ color }} />
+            </div>
+        </div>
+    </div>
+);
+
+// ------------------------------------------------------------------
+// USERS MANAGER COMPONENT
+// ------------------------------------------------------------------
+
+const UsersManager = () => {
+    const { showToast } = useToast();
+    const [users, setUsers] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const fetchUsers = async () => {
+        setIsLoading(true);
+        try {
+            // Fetch from profiles table
+            let query = supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (searchQuery) {
+                query = query.or(`full_name.ilike.%${searchQuery}%,username.ilike.%${searchQuery}%`);
+            }
+
+            const { data, error } = await query;
+            if (error) throw error;
+            setUsers(data || []);
+        } catch (error) {
+            console.error('Error loading users:', error);
+            showToast('Failed to load users', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchUsers();
+        }, 300);
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
+
+    const handleToggleRole = async (userId: string, currentRole: string) => {
+        const newRole = currentRole === 'admin' ? 'user' : 'admin';
+        if (!window.confirm(`Set user as ${newRole}?`)) return;
+
+        try {
+            // 1. Update profiles table
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .update({ role: newRole })
+                .eq('id', userId);
+
+            if (profileError) throw profileError;
+
+            // Update local state
+            setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+            showToast(`User role updated to ${newRole}`, 'success');
+
+            showToast("Note: Admin role will fully take effect on user's next login session.", "info");
+        } catch (error: any) {
+            console.error('Error updating user role:', error);
+            showToast('Failed to update role. Ensure profiles table has a role column.', 'error');
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="relative w-full md:w-96 group">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#3D3028]/40 group-focus-within:text-[#3D3028]">
+                    <Search size={18} />
+                </div>
+                <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search users by name..."
+                    className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-all"
+                />
+            </div>
+
+            {isLoading ? (
+                <div className="flex justify-center py-20 text-[#3D3028]/10">
+                    <Loader2 size={32} className="animate-spin" />
+                </div>
+            ) : users.length > 0 ? (
+                <div className="border border-[#3D3028]/10 rounded-xl overflow-hidden overflow-x-auto">
+                    <table className="w-full text-left text-sm min-w-[600px]">
+                        <thead className="bg-[#FAFAFA] text-[#3D3028]/60 border-b border-[#3D3028]/10">
+                            <tr>
+                                <th className="px-6 py-4 font-medium">User</th>
+                                <th className="px-6 py-4 font-medium">Joined</th>
+                                <th className="px-6 py-4 font-medium text-center">Role</th>
+                                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#3D3028]/5">
+                            {users.map((profile) => (
+                                <tr key={profile.id} className="hover:bg-[#FAFAFA]/50 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-[#3D3028]/5 border border-[#3D3028]/10 flex items-center justify-center overflow-hidden">
+                                                {profile.avatar_url ? (
+                                                    <img src={profile.avatar_url} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="text-[10px] font-bold text-[#3D3028]/20">{profile.full_name?.charAt(0) || '?'}</span>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-[#3D3028]">{profile.full_name || 'Anonymous'}</p>
+                                                <p className="text-[10px] text-[#3D3028]/40 truncate max-w-[150px]">{profile.id}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-[#3D3028]/60 text-xs">
+                                        {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${profile.role === 'admin'
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : 'bg-gray-100 text-gray-600'
+                                            }`}>
+                                            {profile.role || 'user'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button
+                                            onClick={() => handleToggleRole(profile.id, profile.role || 'user')}
+                                            className="px-3 py-1.5 rounded-lg border border-[#3D3028]/10 text-xs font-medium hover:bg-black/5 transition-colors"
+                                        >
+                                            {profile.role === 'admin' ? 'Revoke Admin' : 'Make Admin'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <div className="text-center py-20 border-2 border-dashed border-[#3D3028]/10 rounded-xl">
+                    <p className="text-[#3D3028]/40">No users found</p>
+                </div>
+            )}
         </div>
     );
 };
