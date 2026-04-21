@@ -561,28 +561,12 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
           return;
         }
 
-        // 2. Handle Tap Zones (if no selection)
-        // 2. Handle Tap Zones (if no selection)
+        // 2. Handle Tap Zones
         const sel = e.view.document.getSelection();
         if (!sel || sel.isCollapsed) {
-          const width = e.view.innerWidth;
-          const x = e.clientX;
-
-          // Only enable tap zones on mobile devices
-          const isMobile = window.innerWidth < 768;
-
-          if (isMobile) {
-            if (x < width * 0.2) {
-              rendition.prev();
-            } else if (x > width * 0.8) {
-              rendition.next();
-            } else {
-              setShowControls(prev => !prev);
-            }
-          } else {
-            // On desktop, click anywhere toggles controls
-            setShowControls(prev => !prev);
-          }
+          // On mobile: tap anywhere just toggles controls (buttons handle nav)
+          // On desktop: same - click toggles controls (side arrows handle nav)
+          setShowControls(prev => !prev);
         }
       });
 
@@ -1385,16 +1369,33 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
 
                 <div
                   ref={epubContainerRef}
-                  className={`flex-1 w-full max-w-6xl mx-auto px-2 md:px-6 ${readingMode === 'paged' ? 'my-auto' : ''}`}
+                  className={`flex-1 w-full mx-auto px-2 md:px-6 lg:px-12 ${readingMode === 'paged' ? 'my-auto max-w-[100vw] md:max-w-6xl' : 'max-w-4xl'}`}
                   style={{
                     // EPUBJS injects iframes, we want them to respect the container
                   }}
                 />
 
-                {/* EPUB Progress Bar/Footer */}
-                <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center pointer-events-none">
-                  <div className={`px-4 py-2 rounded-full text-xs font-mono font-medium backdrop-blur-md shadow-sm pointer-events-auto ${theme === 'dark' ? 'bg-white/10 text-white/80' : 'bg-black/5 text-black/60'
-                    }`}>
+                {/* EPUB Footer — Mobile Nav + Progress (both paged and scroll) */}
+                <div className="fixed bottom-6 left-0 right-0 flex justify-center items-center gap-4 z-50 md:hidden pointer-events-none">
+                  <button
+                    onClick={prevPage}
+                    className={`p-3 rounded-full pointer-events-auto transition-all ${theme === 'dark' ? 'bg-white/10 text-white/60 active:bg-white/20' : 'bg-black/5 text-black/40 active:bg-black/10'}`}
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <div className={`px-4 py-2 rounded-full text-xs font-mono font-medium backdrop-blur-md shadow-sm pointer-events-auto ${theme === 'dark' ? 'bg-white/10 text-white/80' : 'bg-black/5 text-black/60'}`}>
+                    {readingMode === 'scroll' ? (progressLabel || 'Scroll') : (progressLabel || 'Loading...')}
+                  </div>
+                  <button
+                    onClick={nextPage}
+                    className={`p-3 rounded-full pointer-events-auto transition-all ${theme === 'dark' ? 'bg-white/10 text-white/60 active:bg-white/20' : 'bg-black/5 text-black/40 active:bg-black/10'}`}
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+                {/* EPUB Progress (desktop only) */}
+                <div className={`fixed bottom-6 left-0 right-0 hidden md:flex justify-center items-center pointer-events-none`}>
+                  <div className={`px-4 py-2 rounded-full text-xs font-mono font-medium backdrop-blur-md shadow-sm pointer-events-auto ${theme === 'dark' ? 'bg-white/10 text-white/80' : 'bg-black/5 text-black/60'}`}>
                     {progressLabel || "Loading..."}
                   </div>
                 </div>
@@ -1410,14 +1411,21 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 onClick={(e) => {
-                  const width = window.innerWidth;
-                  const x = e.clientX;
+                  const isMobile = window.innerWidth < 768; // Only apply tap-to-turn zones on mobile
 
-                  if (x < width * 0.2) {
-                    prevPage();
-                  } else if (x > width * 0.8) {
-                    nextPage();
+                  if (isMobile) {
+                    const width = window.innerWidth;
+                    const x = e.clientX;
+
+                    if (x < width * 0.3) {
+                      prevPage();
+                    } else if (x > width * 0.7) {
+                      nextPage();
+                    } else {
+                      setShowControls(prev => !prev);
+                    }
                   } else {
+                    // Desktop clicking just toggles UI
                     setShowControls(prev => !prev);
                   }
                 }}
