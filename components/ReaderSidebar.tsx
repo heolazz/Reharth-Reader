@@ -85,11 +85,11 @@ export const ReaderSidebar: React.FC<ReaderSidebarProps> = ({
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => { setShowSearch(!showSearch); if (!showSearch) setActiveTab('chapters'); }}
-                                        className={`p-2 rounded-full transition-colors ${showSearch ? 'bg-black/10 dark:bg-white/10' : 'opacity-50 hover:opacity-100'}`}
+                                        className={`p-2 rounded-full transition-all active:scale-90 ${showSearch ? 'bg-black/10 dark:bg-white/10' : 'opacity-50 hover:opacity-100'}`}
                                     >
                                         <Search size={18} />
                                     </button>
-                                    <button onClick={onClose} className="opacity-50 hover:opacity-100"><ArrowLeft size={20} /></button>
+                                    <button onClick={onClose} className="opacity-50 hover:opacity-100 transition-all active:scale-90"><ArrowLeft size={20} /></button>
                                 </div>
                             </div>
 

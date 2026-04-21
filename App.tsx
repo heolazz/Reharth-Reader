@@ -23,6 +23,17 @@ import { INITIAL_BOOKS } from './constants';
 import { saveBook, getAllBooks, deleteBook } from './utils/db';
 import { useAuthStore } from './stores/useAuthStore';
 
+// URL Helper
+const slugify = (text: string) => {
+  if (!text) return '';
+  return text.toString().toLowerCase()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+};
+
 const INITIAL_GOAL: ReadingGoal = {
   dailyTargetMinutes: 30, // Default target
   dailyProgressSeconds: 0,
@@ -135,18 +146,51 @@ const App: React.FC = () => {
     if (path.startsWith('/explore')) return 'explore';
     if (path.startsWith('/profile')) return 'profile';
     if (path.startsWith('/admin')) return 'admin';
+    if (path.startsWith('/login')) return 'login';
+    if (path.startsWith('/register')) return 'register';
+    if (path.startsWith('/reading')) return 'reading';
     return 'home';
   };
 
   const currentPage = getCurrentPage();
-  const setCurrentPage = (page: Page) => {
+  const setCurrentPage = (page: Page, param?: string) => {
     if (page === 'home') navigate('/');
+    else if (param) navigate(`/${page}/${param}`);
     else navigate(`/${page}`);
   };
 
   const [mode, setMode] = useState<'library' | 'reading'>('library');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+
+  // Sync mode and book with URL for direct links / refresh
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/reading/')) {
+      const parts = path.split('/');
+      // Ensure we have the param and books are somewhat loaded
+      if (parts.length >= 3 && parts[2] && books.length > 0) {
+        const param = parts[2];
+        // Try finding by slugified title first, or fallback to ID
+        const foundBook = books.find(b => slugify(b.title) === param || b.id === param);
+
+        if (foundBook) {
+          if (selectedBookId !== foundBook.id) {
+            setSelectedBookId(foundBook.id);
+          }
+          if (mode !== 'reading') {
+            setMode('reading');
+          }
+        } else {
+          // If books are loaded but book not found, redirect to library
+          if (mode !== 'library') setMode('library');
+          if (path !== '/library') navigate('/library', { replace: true });
+        }
+      }
+    } else if (mode === 'reading') {
+      setMode('library'); // User navigated away (e.g. back button)
+    }
+  }, [location.pathname, books.length]); // Depend on books.length so it resolves after DB loads
 
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
 
@@ -306,6 +350,9 @@ const App: React.FC = () => {
     // Wait for modal to close slightly before transitioning theme
     setTimeout(() => {
       setMode('reading');
+      if (currentBook) {
+        setCurrentPage('reading', slugify(currentBook.title));
+      }
     }, 200);
   };
 
@@ -314,6 +361,7 @@ const App: React.FC = () => {
     setMode('library');
     setSelectedBookId(null);
     setTargetLocation(undefined); // Reset target
+    setCurrentPage('library');
   };
 
   // Handle Continue Reading (Direct from Stats)
@@ -321,6 +369,12 @@ const App: React.FC = () => {
     setSelectedBookId(bookId);
     setTargetLocation(location); // Set specific target if provided (e.g. from highlight)
     setMode('reading');
+
+    // Find book to get title for URL
+    const book = books.find(b => b.id === bookId);
+    if (book) {
+      setCurrentPage('reading', slugify(book.title));
+    }
   };
 
   // Handle Book Delete

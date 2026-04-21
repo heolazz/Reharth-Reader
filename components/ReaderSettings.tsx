@@ -72,7 +72,7 @@ export const ReaderSettings: React.FC<ReaderSettingsProps> = ({
                                     <button
                                         key={opt.t}
                                         onClick={() => setTheme(opt.t as ReaderTheme)}
-                                        className={`group flex-1 h-10 rounded-full border flex items-center justify-center transition-all duration-300 relative overflow-hidden ${theme === opt.t ? 'ring-1 ring-offset-1 ring-current' : 'opacity-100 hover:scale-105'}`}
+                                        className={`group flex-1 h-10 rounded-full border flex items-center justify-center transition-all duration-300 relative overflow-hidden active:scale-95 ${theme === opt.t ? 'ring-1 ring-offset-1 ring-current' : 'opacity-100 hover:scale-105'}`}
                                         style={{ backgroundColor: opt.bg, borderColor: 'transparent' }}
                                         title={opt.label}
                                     >
@@ -100,7 +100,7 @@ export const ReaderSettings: React.FC<ReaderSettingsProps> = ({
                                     <button
                                         key={font.id}
                                         onClick={() => setFontFamily(font.id as FontFamily)}
-                                        className={`flex-1 py-1.5 rounded-md text-xs transition-all ${font.font} ${fontFamily === font.id ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-50 hover:opacity-100'}`}
+                                        className={`flex-1 py-1.5 rounded-md text-xs transition-all active:scale-95 ${font.font} ${fontFamily === font.id ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-50 hover:opacity-100'}`}
                                     >
                                         {font.label}
                                     </button>
@@ -109,7 +109,7 @@ export const ReaderSettings: React.FC<ReaderSettingsProps> = ({
 
                             {/* Font Size */}
                             <div className="flex items-center gap-4 pt-1">
-                                <button onClick={() => setFontSize(Math.max(12, fontSize - 1))} className="opacity-30 hover:opacity-100 transition-opacity"><span className="text-xs font-serif">A</span></button>
+                                <button onClick={() => setFontSize(Math.max(12, fontSize - 1))} className="opacity-30 hover:opacity-100 transition-all active:scale-75"><span className="text-xs font-serif">A</span></button>
                                 <div className="flex-1 h-px bg-current opacity-10 relative">
                                     <div className="absolute top-1/2 -translate-y-1/2 w-full h-6 flex items-center cursor-pointer"> {/* Hit area */}
                                         <input
@@ -129,7 +129,7 @@ export const ReaderSettings: React.FC<ReaderSettingsProps> = ({
                                         />
                                     </div>
                                 </div>
-                                <button onClick={() => setFontSize(Math.min(32, fontSize + 1))} className="opacity-30 hover:opacity-100 transition-opacity"><span className="text-lg font-serif">A</span></button>
+                                <button onClick={() => setFontSize(Math.min(32, fontSize + 1))} className="opacity-30 hover:opacity-100 transition-all active:scale-125"><span className="text-lg font-serif">A</span></button>
                             </div>
 
                             {/* Line Height */}
@@ -181,14 +181,14 @@ export const ReaderSettings: React.FC<ReaderSettingsProps> = ({
                                 <div className="flex bg-black/5 dark:bg-white/5 rounded-lg p-1 gap-1">
                                     <button
                                         onClick={() => setReadingMode('paged')}
-                                        className={`p-1.5 px-3 rounded-md transition-all flex items-center gap-2 ${readingMode === 'paged' ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-40 hover:opacity-80'}`}
+                                        className={`p-1.5 px-3 rounded-md transition-all flex items-center gap-2 active:scale-95 ${readingMode === 'paged' ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-40 hover:opacity-80'}`}
                                         title="Paged Mode"
                                     >
                                         <BookOpen size={14} /> <span className="text-[10px] font-medium tracking-wide uppercase">Pages</span>
                                     </button>
                                     <button
                                         onClick={() => setReadingMode('scroll')}
-                                        className={`p-1.5 px-3 rounded-md transition-all flex items-center gap-2 ${readingMode === 'scroll' ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-40 hover:opacity-80'}`}
+                                        className={`p-1.5 px-3 rounded-md transition-all flex items-center gap-2 active:scale-95 ${readingMode === 'scroll' ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-40 hover:opacity-80'}`}
                                         title="Scroll Mode"
                                     >
                                         <ScrollText size={14} /> <span className="text-[10px] font-medium tracking-wide uppercase">Scroll</span>
@@ -203,14 +203,14 @@ export const ReaderSettings: React.FC<ReaderSettingsProps> = ({
                                     <div className="flex bg-black/5 dark:bg-white/5 rounded-lg p-1 gap-1">
                                         <button
                                             onClick={() => setPageLayout('single')}
-                                            className={`p-1.5 px-3 rounded-md transition-all ${pageLayout === 'single' ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-40 hover:opacity-80'}`}
+                                            className={`p-1.5 px-3 rounded-md transition-all active:scale-95 ${pageLayout === 'single' ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-40 hover:opacity-80'}`}
                                             title="Single Page"
                                         >
                                             <FileText size={14} />
                                         </button>
                                         <button
                                             onClick={() => setPageLayout('double')}
-                                            className={`p-1.5 px-3 rounded-md transition-all ${pageLayout === 'double' ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-40 hover:opacity-80'}`}
+                                            className={`p-1.5 px-3 rounded-md transition-all active:scale-95 ${pageLayout === 'double' ? 'bg-white dark:bg-white/10 text-current shadow-sm' : 'opacity-40 hover:opacity-80'}`}
                                             title="Double Page Spread"
                                         >
                                             <LayoutTemplate size={14} />

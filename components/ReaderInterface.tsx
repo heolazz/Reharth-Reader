@@ -1031,29 +1031,26 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
 
   // Helper for Top-Right Settings Button Contrast
   const getSettingsBtnStyle = (isOpen: boolean) => {
+    // Shared active/tap effect
+    const tapEffect = 'active:scale-95 transition-all duration-200';
+
     if (isOpen) {
-      // Soft Active State
-      if (theme === 'paper') return 'bg-[#3D3028]/10 text-[#3D3028]';
-      if (theme === 'clean') return 'bg-black/5 text-black';
-      if (theme === 'dark') return 'bg-white/10 text-white';
+      if (theme === 'dark') return `bg-white/20 text-white ${tapEffect}`;
+      return `bg-black/10 text-current ${tapEffect}`;
     }
 
-    // Explicit Inactive & Hover States to prevent inheritance issues
-    if (theme === 'paper') return 'text-[#3D3028]/70 hover:text-[#3D3028] hover:bg-[#3D3028]/5';
-    if (theme === 'clean') return 'text-black/70 hover:text-black hover:bg-black/5';
-    if (theme === 'dark') return 'text-white/70 hover:text-white hover:bg-white/10';
-
-    return 'opacity-70 hover:opacity-100';
+    if (theme === 'dark') return `text-white/70 hover:bg-white/10 hover:text-white ${tapEffect}`;
+    return `text-current/70 hover:bg-black/5 hover:text-current ${tapEffect}`;
   };
 
   // Helper for Sidebar Tabs styling
   const getTabStyle = (active: boolean) => {
+    const base = 'px-4 py-2 rounded-full text-xs font-medium transition-all active:scale-95 ';
     if (active) {
-      if (theme === 'dark') return 'bg-white text-black shadow-sm';
-      return 'bg-[#3D3028] text-[#F8F5F1] shadow-sm'; // Earthy Active State
+      if (theme === 'dark') return base + 'bg-white/20 text-white shadow-sm';
+      return base + 'bg-black/10 text-current shadow-sm';
     }
-    // Inactive
-    return 'opacity-50 hover:opacity-100 hover:bg-[#3D3028]/5';
+    return base + 'opacity-50 hover:opacity-100 hover:bg-black/5';
   };
 
   // Font Config
@@ -1088,13 +1085,15 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
   };
 
   // Hover Styles for Menu Items
-  const menuItemClass = theme === 'dark'
-    ? 'text-white/70 hover:bg-white/10 hover:text-white transition-colors'
-    : 'text-[#3D3028]/80 hover:bg-[#3D3028] hover:text-[#F8F5F1] transition-colors'; // Brown Bg + Cream Text on Hover
+  const menuItemClass = `w-full text-left px-4 py-3 rounded-xl transition-all active:scale-[0.98] ${theme === 'dark'
+    ? 'text-white/70 hover:bg-white/10 hover:text-white'
+    : 'text-current/80 hover:bg-black/5 hover:text-current'
+    }`;
 
-  const bookmarkItemClass = theme === 'dark'
+  const bookmarkItemClass = `p-4 rounded-2xl transition-all active:scale-[0.98] ${theme === 'dark'
     ? 'bg-white/5 hover:bg-white/10 text-white/90'
-    : 'bg-[#3D3028]/5 hover:bg-[#3D3028] hover:text-[#F8F5F1] text-[#3D3028]';
+    : 'bg-black/5 hover:bg-black/10 text-current'
+    }`;
 
   return (
     <AnimatePresence>
@@ -1354,13 +1353,13 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
                   <>
                     <button
                       onClick={prevPage}
-                      className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full text-current opacity-40 hover:opacity-100 hover:bg-current hover:bg-opacity-5 transition-all"
+                      className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full text-current opacity-40 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 active:scale-90 transition-all"
                     >
                       <ChevronLeft size={32} />
                     </button>
                     <button
                       onClick={nextPage}
-                      className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full text-current opacity-40 hover:opacity-100 hover:bg-current hover:bg-opacity-5 transition-all"
+                      className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-50 p-4 rounded-full text-current opacity-40 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5 active:scale-90 transition-all"
                     >
                       <ChevronRight size={32} />
                     </button>
@@ -1379,7 +1378,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
                 <div className="fixed bottom-6 left-0 right-0 flex justify-center items-center gap-4 z-50 md:hidden pointer-events-none">
                   <button
                     onClick={prevPage}
-                    className={`p-3 rounded-full pointer-events-auto transition-all ${theme === 'dark' ? 'bg-white/10 text-white/60 active:bg-white/20' : 'bg-black/5 text-black/40 active:bg-black/10'}`}
+                    className={`p-3 rounded-full pointer-events-auto transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-white/60 active:bg-white/20' : 'bg-black/5 text-black/40 active:bg-black/10'}`}
                   >
                     <ChevronLeft size={20} />
                   </button>
@@ -1388,7 +1387,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
                   </div>
                   <button
                     onClick={nextPage}
-                    className={`p-3 rounded-full pointer-events-auto transition-all ${theme === 'dark' ? 'bg-white/10 text-white/60 active:bg-white/20' : 'bg-black/5 text-black/40 active:bg-black/10'}`}
+                    className={`p-3 rounded-full pointer-events-auto transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-white/60 active:bg-white/20' : 'bg-black/5 text-black/40 active:bg-black/10'}`}
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -1483,9 +1482,9 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
                 {/* Page Indicator (Bottom) */}
                 <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4 text-xs font-mono opacity-50">
                   {/* Mobile Nav Controls */}
-                  <button onClick={(e) => { e.stopPropagation(); prevPage(); }} disabled={currentPage === 0} className="md:hidden p-3 bg-current bg-opacity-5 rounded-full"><ChevronLeft size={20} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); prevPage(); }} disabled={currentPage === 0} className="md:hidden p-3 bg-current bg-opacity-5 rounded-full active:scale-90 transition-transform"><ChevronLeft size={20} /></button>
                   <span>{currentPage + 1} / {totalPages}</span>
-                  <button onClick={(e) => { e.stopPropagation(); nextPage(); }} disabled={currentPage >= totalPages - 1} className="md:hidden p-3 bg-current bg-opacity-5 rounded-full"><ChevronRight size={20} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); nextPage(); }} disabled={currentPage >= totalPages - 1} className="md:hidden p-3 bg-current bg-opacity-5 rounded-full active:scale-90 transition-transform"><ChevronRight size={20} /></button>
                 </div>
 
               </div>

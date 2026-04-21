@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Mail, Lock, User, Github, Sprout, Eye, EyeOff, CheckSquare, Square, ChevronLeft } from 'lucide-react';
 import { useAuthStore } from '../stores/useAuthStore';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface AuthPageProps {
     onLogin: () => void;
@@ -9,13 +10,40 @@ interface AuthPageProps {
 
 export const AuthPage: React.FC<AuthPageProps> = () => {
     const { signIn, signUp, signInWithProvider, resetPassword, loading } = useAuthStore();
-    const [isLogin, setIsLogin] = useState(true);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Parse URL to determine initial state
+    const isRegisterRoute = location.pathname.startsWith('/register');
+
+    const [isLogin, setIsLogin] = useState(!isRegisterRoute);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
-    const [showIntro, setShowIntro] = useState(true); // New state for 'Get Started' view
+    // If routing directly to /login or /register, skip the intro splash
+    const [showIntro, setShowIntro] = useState(!(location.pathname.startsWith('/login') || location.pathname.startsWith('/register')));
+
+    // Sync state to URL and vice-versa
+    useEffect(() => {
+        if (location.pathname.startsWith('/register')) {
+            setIsLogin(false);
+            setShowIntro(false);
+        } else if (location.pathname.startsWith('/login')) {
+            setIsLogin(true);
+            setShowIntro(false);
+        }
+    }, [location.pathname]);
+
+    const handleToggleMode = (loginActive: boolean) => {
+        setIsLogin(loginActive);
+        if (loginActive) {
+            navigate('/login', { replace: true });
+        } else {
+            navigate('/register', { replace: true });
+        }
+    };
 
     // Load saved email if 'Remember me' was previously checked
     useEffect(() => {
@@ -95,7 +123,10 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
                                     <p className="text-[#F8F5F1]/70 text-base mb-8">The ultimate reading companion designed to streamline your library and supercharge your literary life.</p>
 
                                     <button
-                                        onClick={() => setShowIntro(false)}
+                                        onClick={() => {
+                                            setShowIntro(false);
+                                            navigate(isLogin ? '/login' : '/register', { replace: true });
+                                        }}
                                         className="w-full bg-[#6B8E6D] text-[#1a1614] py-4 rounded-2xl font-semibold text-lg hover:bg-[#5a7a5c] transition-colors shadow-lg active:scale-[0.98]"
                                     >
                                         Get Started
@@ -109,7 +140,10 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
                                     key="form-header"
                                 >
                                     <button
-                                        onClick={() => setShowIntro(true)}
+                                        onClick={() => {
+                                            setShowIntro(true);
+                                            navigate('/', { replace: true });
+                                        }}
                                         className="flex items-center gap-1 text-[#F8F5F1]/80 hover:text-white mb-4 -ml-1 transition-colors"
                                     >
                                         <ChevronLeft size={18} />
@@ -129,13 +163,13 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
                         {/* Toggle Switch */}
                         <div className="bg-[#EAE5DF] p-1 rounded-full flex mb-8">
                             <button
-                                onClick={() => setIsLogin(true)}
+                                onClick={() => handleToggleMode(true)}
                                 className={`flex-1 py-3 rounded-full text-sm font-medium transition-all duration-300 ${isLogin ? 'bg-white text-[#3D3028] shadow-sm' : 'text-[#3D3028]/50 hover:text-[#3D3028]'}`}
                             >
                                 Login
                             </button>
                             <button
-                                onClick={() => setIsLogin(false)}
+                                onClick={() => handleToggleMode(false)}
                                 className={`flex-1 py-3 rounded-full text-sm font-medium transition-all duration-300 ${!isLogin ? 'bg-white text-[#3D3028] shadow-sm' : 'text-[#3D3028]/50 hover:text-[#3D3028]'}`}
                             >
                                 Register
@@ -304,14 +338,14 @@ export const AuthPage: React.FC<AuthPageProps> = () => {
                         {/* Toggle Switch */}
                         <div className="bg-[#EAE5DF] p-1 rounded-full flex mb-6">
                             <button
-                                onClick={() => setIsLogin(true)}
+                                onClick={() => handleToggleMode(true)}
                                 className={`flex-1 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all duration-300 ${isLogin ? 'bg-white text-[#3D3028] shadow-sm' : 'text-[#3D3028]/50 hover:text-[#3D3028]'
                                     }`}
                             >
                                 Login
                             </button>
                             <button
-                                onClick={() => setIsLogin(false)}
+                                onClick={() => handleToggleMode(false)}
                                 className={`flex-1 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all duration-300 ${!isLogin ? 'bg-white text-[#3D3028] shadow-sm' : 'text-[#3D3028]/50 hover:text-[#3D3028]'
                                     }`}
                             >

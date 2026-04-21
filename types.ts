@@ -69,7 +69,7 @@ export interface ReadingGoal {
 }
 
 export type AppState = 'library' | 'reading';
-export type Page = 'home' | 'library' | 'collections' | 'stats' | 'explore' | 'profile' | 'admin';
+export type Page = 'home' | 'library' | 'collections' | 'stats' | 'explore' | 'profile' | 'admin' | 'reading' | 'login' | 'register';
 
 // Reader Types
 export type ReaderTheme = 'paper' | 'clean' | 'dark';
