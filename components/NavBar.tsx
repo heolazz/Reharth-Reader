@@ -142,7 +142,6 @@ export const NavBar: React.FC<NavBarProps> = ({ currentPage, onNavigate, searchQ
                 </div>
             </div>
 
-            {/* === MOBILE HEADER (Minimal iOS - Sticky Blur) === */}
             <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white/85 backdrop-blur-xl border-b border-[#3E2723]/5 px-4 h-12 flex items-center justify-between transition-all">
                 <div className="flex items-center gap-2">
                     <div className="text-black">
