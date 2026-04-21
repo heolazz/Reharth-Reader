@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icon.svg'],
+        includeAssets: ['logo.png'],
         manifest: {
           name: 'Reharth Reader',
           short_name: 'Reharth',
@@ -27,10 +27,16 @@ export default defineConfig(({ mode }) => {
           start_url: '/',
           icons: [
             {
-              src: 'icon.svg',
+              src: 'logo.png',
               sizes: '192x192 512x512',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: 'logo.png',
+              sizes: '192x192 512x512',
+              type: 'image/png',
+              purpose: 'maskable'
             }
           ]
         },

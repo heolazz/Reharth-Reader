@@ -10,35 +10,28 @@ interface NavBarProps {
     searchQuery: string;
     onSearch: (query: string) => void;
     onOpenProfile?: () => void;
+    installPrompt?: any;
+    onClearInstallPrompt?: () => void;
 }
 
-export const NavBar: React.FC<NavBarProps> = ({ currentPage, onNavigate, searchQuery, onSearch, onOpenProfile }) => {
+export const NavBar: React.FC<NavBarProps> = ({ currentPage, onNavigate, searchQuery, onSearch, onOpenProfile, installPrompt, onClearInstallPrompt }) => {
     const { user } = useAuthStore();
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
-    useEffect(() => {
-        const handleBeforeInstallPrompt = (e: Event) => {
-            // Prevent the mini-infobar from appearing on mobile
-            e.preventDefault();
-            // Stash the event so it can be triggered later.
-            setDeferredPrompt(e);
-        };
-
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    }, []);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
     const handleInstallClick = async () => {
-        if (!deferredPrompt) {
-            alert("App already installed or your browser doesn't support PWA installation right now. Please try using Chrome or Safari, or check your home screen!");
+        if (isIOS) {
+            alert("To install Reharth on your iPhone/iPad:\n\n1. Tap the Share button (rectangle with arrow)\n2. Scroll down and tap 'Add to Home Screen'\n3. Tap 'Add'");
             return;
         }
-        // Show the install prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        const { outcome } = await deferredPrompt.userChoice;
+        if (!installPrompt) {
+            alert("App already installed or your browser doesn't support PWA installation. Please try using Chrome on Android, or check your home screen!");
+            return;
+        }
+        installPrompt.prompt();
+        const { outcome } = await installPrompt.userChoice;
         if (outcome === 'accepted') {
-            setDeferredPrompt(null);
+            onClearInstallPrompt?.();
         }
     };
 

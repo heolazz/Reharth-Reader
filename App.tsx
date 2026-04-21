@@ -44,6 +44,9 @@ const App: React.FC = () => {
   const { isAuthenticated, user, signIn, signOut, checkSession, loading } = useAuthStore();
   const { toast, showToast, hideToast } = useToast();
 
+  // PWA install prompt — must listen globally before NavBar mounts
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
   // Splash screen state
   const [showSplash, setShowSplash] = useState(true);
   const wasAuthenticated = React.useRef(false);
@@ -51,10 +54,21 @@ const App: React.FC = () => {
   // Show splash on initial page load (minimum 2.5s)
   useEffect(() => {
     checkSession();
+
+    // Listen for PWA install prompt globally
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 2500);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
 
   // Show splash again after login/register transition
@@ -461,6 +475,8 @@ const App: React.FC = () => {
           searchQuery={searchQuery}
           onSearch={setSearchQuery}
           onOpenProfile={() => setCurrentPage('profile')}
+          installPrompt={installPrompt}
+          onClearInstallPrompt={() => setInstallPrompt(null)}
         />
       )}
 
