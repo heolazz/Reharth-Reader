@@ -71,9 +71,9 @@ export async function fetchPublicBooks(options: FetchBooksOptions = {}) {
             .select('*')
             .eq('status', 'published');
 
-        // Filter by genre
+        // Filter by tags (we use the genre parameter for compatibility, but check the tags column)
         if (genre && genre !== 'All') {
-            query = query.contains('genre', [genre]);
+            query = query.contains('tags', [genre]);
         }
 
         // Filter featured books
@@ -171,26 +171,26 @@ export async function fetchTrendingBooks(limit = 10) {
 }
 
 /**
- * Fetch available genres
+ * Fetch available tags (used as categories)
  */
-export async function fetchAvailableGenres() {
+export async function fetchAvailableTags() {
     try {
         const { data, error } = await supabase
             .from('public_books')
-            .select('genre')
+            .select('tags')
             .eq('status', 'published');
 
         if (error) throw error;
 
-        // Extract unique genres
-        const genresSet = new Set<string>();
+        // Extract unique tags
+        const tagsSet = new Set<string>();
         data?.forEach(book => {
-            book.genre?.forEach((g: string) => genresSet.add(g));
+            book.tags?.forEach((t: string) => tagsSet.add(t));
         });
 
-        return { data: Array.from(genresSet).sort(), error: null };
+        return { data: Array.from(tagsSet).sort(), error: null };
     } catch (error) {
-        console.error('Error fetching genres:', error);
+        console.error('Error fetching tags:', error);
         return { data: null, error };
     }
 }
