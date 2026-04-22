@@ -875,22 +875,21 @@ const UsersManager = () => {
         if (!window.confirm(`Set user as ${newRole}?`)) return;
 
         try {
-            // 1. Update profiles table
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .update({ role: newRole })
-                .eq('id', userId);
+            // Call RPC function that updates BOTH profiles AND auth.users metadata
+            const { error } = await supabase.rpc('set_user_role', {
+                target_user_id: userId,
+                new_role: newRole
+            });
 
-            if (profileError) throw profileError;
+            if (error) throw error;
 
             // Update local state
             setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
             showToast(`User role updated to ${newRole}`, 'success');
-
-            showToast("Note: Admin role will fully take effect on user's next login session.", "info");
+            showToast("Role change will take full effect on user's next login.", "info");
         } catch (error: any) {
             console.error('Error updating user role:', error);
-            showToast('Failed to update role. Ensure profiles table has a role column.', 'error');
+            showToast(`Failed to update role: ${error?.message || 'Unknown error'}`, 'error');
         }
     };
 
