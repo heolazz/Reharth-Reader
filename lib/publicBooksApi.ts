@@ -220,6 +220,42 @@ export async function fetchPublicBookById(bookId: string) {
 }
 
 /**
+ * Fetch single book by slug (slugified title).
+ * Used for deep-linking: /explore/the-great-gatsby
+ */
+export async function fetchPublicBookBySlug(slug: string) {
+    try {
+        // Fetch all published books and match by slugified title
+        const { data, error } = await supabase
+            .from('public_books')
+            .select('*')
+            .eq('status', 'published');
+
+        if (error) throw error;
+
+        const slugify = (text: string) =>
+            text.toString().toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-')
+                .replace(/^-+/, '')
+                .replace(/-+$/, '');
+
+        const match = (data as PublicBook[])?.find(b => slugify(b.title) === slug);
+
+        if (match) {
+            await incrementBookViewCount(match.id);
+            return { data: match, error: null };
+        }
+
+        return { data: null, error: new Error('Book not found') };
+    } catch (error) {
+        console.error('Error fetching book by slug:', error);
+        return { data: null, error };
+    }
+}
+
+/**
  * Increment book view count
  */
 async function incrementBookViewCount(bookId: string) {

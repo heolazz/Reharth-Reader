@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Calendar, Trash2, PenLine, AlertTriangle, Library } from 'lucide-react';
 import { Book } from '../types';
@@ -27,6 +27,19 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
       setIsExpanded(false);
     }
   }, [isOpen, book]);
+
+  // ESC to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isDeleting) setIsDeleting(false);
+        else onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isDeleting, onClose]);
 
   if (!book) return null;
 

@@ -28,6 +28,16 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
         }
     }, [isOpen, book]);
 
+    // ESC to close modal
+    React.useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
+
     if (!book) return null;
 
     const handleAddToLibrary = async () => {
@@ -61,7 +71,47 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
         }
     };
 
-    const bgColor = '#EAE5DD'; // Default paper color since PublicBook doesn't have 'color' prop yet
+    const handleShare = async () => {
+        const slugify = (text: string) =>
+            text.toString().toLowerCase()
+                .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
+
+        const shareText = `📖 "${book.title}" by ${book.author}`;
+        const shareUrl = `${window.location.origin}/explore/${slugify(book.title)}`;
+        const fullText = `${shareText}\n\nRead on Reharth Reader`;
+
+        // Try native Web Share API first (mobile & supported browsers)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: book.title,
+                    text: fullText,
+                    url: shareUrl,
+                });
+            } catch (err: any) {
+                // User cancelled share — not an error
+                if (err.name !== 'AbortError') {
+                    console.error('Share failed:', err);
+                }
+            }
+        } else {
+            // Fallback: copy to clipboard
+            try {
+                await navigator.clipboard.writeText(`${fullText}\n${shareUrl}`);
+                showToast('Link copied to clipboard!', 'success');
+            } catch {
+                // Final fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = `${fullText}\n${shareUrl}`;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('Link copied to clipboard!', 'success');
+            }
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -218,9 +268,12 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                     )}
                                 </button>
 
-                                <button className="md:w-auto w-full px-6 py-4 rounded-xl border border-[#3D3028]/10 text-[#3D3028]/60 hover:text-[#3D3028] hover:bg-[#3D3028]/5 transition-colors flex items-center justify-center gap-2 font-medium">
+                                <button
+                                    onClick={handleShare}
+                                    className="md:w-auto w-full px-6 py-4 rounded-xl border border-[#3D3028]/10 text-[#3D3028]/60 hover:text-[#3D3028] hover:bg-[#3D3028]/5 transition-colors flex items-center justify-center gap-2 font-medium"
+                                >
                                     <Share2 size={18} />
-                                    <span className="md:hidden">Share</span>
+                                    <span>Share</span>
                                 </button>
                             </motion.div>
                         </div>

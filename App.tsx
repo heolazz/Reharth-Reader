@@ -18,7 +18,7 @@ import { PublicBookDetailModal } from './components/PublicBookDetailModal';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Toast, useToast } from './components/Toast';
 import { Book, AppState, Page, ReadingGoal } from './types';
-import { PublicBook } from './lib/publicBooksApi';
+import { PublicBook, fetchPublicBookBySlug } from './lib/publicBooksApi';
 import { INITIAL_BOOKS } from './constants';
 import { saveBook, getAllBooks, deleteBook } from './utils/db';
 import { useAuthStore } from './stores/useAuthStore';
@@ -162,6 +162,7 @@ const App: React.FC = () => {
   const [mode, setMode] = useState<'library' | 'reading'>('library');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const prevPageRef = React.useRef<Page>('home'); // Track where user came from
 
   // Sync mode and book with URL for direct links / refresh
   useEffect(() => {
@@ -189,6 +190,34 @@ const App: React.FC = () => {
       }
     } else if (mode === 'reading') {
       setMode('library'); // User navigated away (e.g. back button)
+    }
+  }, [location.pathname, books.length]);
+
+  // Deep-link support for /explore/:slug
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/explore/') && path.split('/').length >= 3) {
+      const slug = path.split('/')[2];
+      if (slug && !selectedPublicBook) {
+        fetchPublicBookBySlug(slug).then(({ data }) => {
+          if (data) setSelectedPublicBook(data);
+        });
+      }
+    }
+  }, [location.pathname]);
+
+  // Deep-link support for /library/:slug (opens book detail modal)
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/library/') && path.split('/').length >= 3 && books.length > 0) {
+      const slug = path.split('/')[2];
+      if (slug && !isDetailOpen) {
+        const foundBook = books.find(b => slugify(b.title) === slug);
+        if (foundBook) {
+          setSelectedBookId(foundBook.id);
+          setIsDetailOpen(true);
+        }
+      }
     }
   }, [location.pathname, books.length]); // Depend on books.length so it resolves after DB loads
 
@@ -332,17 +361,26 @@ const App: React.FC = () => {
     if (id) {
       setSelectedBookId(id);
       setIsDetailOpen(true);
+      // Push URL for deep-linking
+      const book = books.find(b => b.id === id);
+      if (book) {
+        navigate(`/library/${slugify(book.title)}`, { replace: false });
+      }
     } else {
       setIsDetailOpen(false);
+      // Revert URL
+      if (location.pathname.startsWith('/library/')) {
+        navigate('/library', { replace: true });
+      }
       setTimeout(() => setSelectedBookId(null), 300);
     }
   };
 
   // Handle "Start Reading" from Modal
   const handleStartReading = () => {
+    prevPageRef.current = currentPage; // Remember where we came from
     setIsDetailOpen(false);
-    setTargetLocation(undefined); // Start from saved location (default)
-    // Wait for modal to close slightly before transitioning theme
+    setTargetLocation(undefined);
     setTimeout(() => {
       setMode('reading');
       if (currentBook) {
@@ -351,12 +389,12 @@ const App: React.FC = () => {
     }, 200);
   };
 
-  // Handle Close Reader
+  // Handle Close Reader — go back to where user came from, not always library
   const handleCloseReader = () => {
     setMode('library');
     setSelectedBookId(null);
-    setTargetLocation(undefined); // Reset target
-    setCurrentPage('library');
+    setTargetLocation(undefined);
+    setCurrentPage(prevPageRef.current || 'home');
   };
 
   // Handle Continue Reading (Direct from Stats)
@@ -570,7 +608,11 @@ const App: React.FC = () => {
       {/* 4. Explore Page */}
       {currentPage === 'explore' && mode === 'library' && (
         <div className="absolute inset-0 z-30 overflow-y-auto bg-[#F9F7F2]">
-          <ExplorePage onOpenBook={(book) => setSelectedPublicBook(book)} />
+          <ExplorePage onOpenBook={(book) => {
+            setSelectedPublicBook(book);
+            // Push URL for deep-linking
+            navigate(`/explore/${slugify(book.title)}`, { replace: false });
+          }} />
         </div>
       )}
 
@@ -601,7 +643,13 @@ const App: React.FC = () => {
       <BookDetailModal
         book={currentBook}
         isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
+        onClose={() => {
+          setIsDetailOpen(false);
+          // Revert URL when closing modal
+          if (location.pathname.startsWith('/library/')) {
+            navigate('/library', { replace: true });
+          }
+        }}
         onRead={handleStartReading}
         onDelete={handleDeleteBook}
         onEdit={handleEditBook}
@@ -629,7 +677,13 @@ const App: React.FC = () => {
       <PublicBookDetailModal
         book={selectedPublicBook}
         isOpen={!!selectedPublicBook}
-        onClose={() => setSelectedPublicBook(null)}
+        onClose={() => {
+          setSelectedPublicBook(null);
+          // Go back to /explore (remove the slug)
+          if (location.pathname.startsWith('/explore/')) {
+            navigate('/explore', { replace: true });
+          }
+        }}
         onBookAdded={(newBook) => {
           setBooks(prev => [...prev, newBook]);
         }}

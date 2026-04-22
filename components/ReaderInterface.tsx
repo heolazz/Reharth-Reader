@@ -514,10 +514,11 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
       rendition.on('keydown', (e: any) => {
         if (e.key === 'Escape') {
           const s = stateRef.current;
-          if (s.showSettings) setShowSettings(false);
+          // ESC only closes open panels — never navigates away
+          if (s.selectionRange) setSelectionRange(null);
+          else if (s.showSettings) setShowSettings(false);
           else if (s.showToc) setShowToc(false);
           else if (s.showSearch) setShowSearch(false);
-          else if (onCloseRef.current) onCloseRef.current();
           e.preventDefault();
           return;
         }
@@ -928,12 +929,11 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
   // Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 1. Close on Escape
+      // 1. ESC only closes open panels — never navigates away
       if (e.key === 'Escape') {
         if (showSettings) setShowSettings(false);
         else if (showToc) setShowToc(false);
         else if (showSearch) setShowSearch(false);
-        else onClose();
         return;
       }
 
