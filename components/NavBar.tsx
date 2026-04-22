@@ -18,6 +18,27 @@ export const NavBar: React.FC<NavBarProps> = ({ currentPage, onNavigate, searchQ
     const { user } = useAuthStore();
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const [isStandalone, setIsStandalone] = useState(false);
+
+    useEffect(() => {
+        // Check if running in standalone mode (installed as PWA)
+        const checkStandalone = () => {
+            const isWindowStandalone = (window.navigator as any).standalone === true;
+            const isMediaStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            setIsStandalone(isWindowStandalone || isMediaStandalone);
+        };
+
+        checkStandalone();
+
+        // Listen for changes (though rare for a mount)
+        const mediaQuery = window.matchMedia('(display-mode: standalone)');
+        mediaQuery.addEventListener('change', checkStandalone);
+        return () => mediaQuery.removeEventListener('change', checkStandalone);
+    }, []);
+
+    // Hide install button if already standalone or if not supported/available
+    // On iOS we still show it if NOT standalone to provide instructions
+    const shouldShowInstall = (!isStandalone && (installPrompt || isIOS));
 
     const handleInstallClick = async () => {
         if (isIOS) {
@@ -106,13 +127,15 @@ export const NavBar: React.FC<NavBarProps> = ({ currentPage, onNavigate, searchQ
 
                 {/* 3. Search Bar (Right - macOS Search Field) */}
                 <div className="w-1/4 flex justify-end items-center gap-2">
-                    <button
-                        onClick={handleInstallClick}
-                        className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#6B8E6D] hover:bg-[#5a7a5c] text-white rounded-full text-xs font-bold uppercase tracking-widest transition-colors shadow-sm"
-                    >
-                        <Download size={14} />
-                        Install App
-                    </button>
+                    {shouldShowInstall && (
+                        <button
+                            onClick={handleInstallClick}
+                            className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#6B8E6D] hover:bg-[#5a7a5c] text-white rounded-full text-xs font-bold uppercase tracking-widest transition-colors shadow-sm"
+                        >
+                            <Download size={14} />
+                            Install App
+                        </button>
+                    )}
                     {onOpenProfile && (
                         <button
                             onClick={onOpenProfile}
@@ -142,13 +165,15 @@ export const NavBar: React.FC<NavBarProps> = ({ currentPage, onNavigate, searchQ
                     </div>
                     <h1 className="text-lg font-medium text-black tracking-tight">Reharth</h1>
                 </div>
-                <button
-                    onClick={handleInstallClick}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-[#6B8E6D] hover:bg-[#5a7a5c] text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm"
-                >
-                    <Download size={12} />
-                    Install
-                </button>
+                {shouldShowInstall && (
+                    <button
+                        onClick={handleInstallClick}
+                        className="flex items-center gap-1.5 px-3 py-1 bg-[#6B8E6D] hover:bg-[#5a7a5c] text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm"
+                    >
+                        <Download size={12} />
+                        Install
+                    </button>
+                )}
             </div>
 
             {/* === MOBILE BOTTOM NAV (iOS Tab Bar) === */}
