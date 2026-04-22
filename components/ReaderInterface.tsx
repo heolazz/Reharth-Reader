@@ -115,6 +115,10 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
+  // EPUB Warmup: force scroll on first render so container gets proper dimensions,
+  // then auto-switch to paged. This replicates what manually switching scroll→page does.
+  const [epubWarmup, setEpubWarmup] = useState(false);
+
   // UI State
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -197,6 +201,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
 
   useEffect(() => {
     setIsReady(false);
+    setEpubWarmup(false); // Reset warmup for new book
     // Load User Data
     if (book?.id) {
       loadUserData(book.id);
@@ -348,28 +353,29 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
       console.log('📚 Creating EPUB book instance...');
       const epubBook = ePub(epubDataToUse);
 
-      // Hybrid Scroll: 'scrolled' (per chapter) vs 'paginated'
-      const flowMode = readingMode === 'scroll' ? 'scrolled' : 'paginated';
-      const manager = 'default'; // Always use default to manage one spine item at a time
+      // Warmup strategy: if user wants 'paged' and warmup hasn't happened yet,
+      // render in 'scrolled' first (content is hidden via opacity-0 since isReady=false).
+      // After this render completes, we flip epubWarmup=true which triggers re-init with 'paginated'.
+      const isWarmupPass = readingMode === 'paged' && !epubWarmup;
+      const flowMode = isWarmupPass ? 'scrolled' : (readingMode === 'scroll' ? 'scrolled' : 'paginated');
+      const manager = 'default';
 
       const rendition = epubBook.renderTo(epubContainerRef.current, {
         width: '100%',
         height: '100%',
         flow: flowMode,
         manager: manager,
-        allowScriptedContent: true, // Allow scripts to fix sandbox error
+        allowScriptedContent: true,
       });
 
       renditionRef.current = rendition;
 
-      // Use initialLocation from props if provided (e.g. from highlight click), otherwise use book's last location
       const startLocation = initialLocation || book.lastLocation || undefined;
       rendition.display(startLocation).then(() => {
         // Apply styles
         const mappedFont = fontFamily === 'sans' ? 'sans-serif' : fontFamily === 'mono' ? 'monospace' : 'serif';
         rendition.themes.fontSize(`${fontSize}px`);
         rendition.themes.font(mappedFont);
-        setIsReady(true);
 
         // Apply theme colors
         if (theme === 'dark') {
@@ -383,9 +389,16 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
           rendition.themes.override('background', '#F8F5F1');
         }
 
-        // Apply spacing overrides
         rendition.themes.override('line-height', `${lineHeight}`);
         rendition.themes.override('letter-spacing', `${letterSpacing}em`);
+
+        if (isWarmupPass) {
+          // Warmup done — trigger re-init with 'paginated' by changing dependency
+          setEpubWarmup(true);
+        } else {
+          // Real render done — show reader
+          setIsReady(true);
+        }
       });
 
       // Load TOC
@@ -579,7 +592,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
     };
 
     initEpub();
-  }, [book?.id, book?.epubData, book?.fileUrl, readingMode, isVisible]);
+  }, [book?.id, book?.epubData, book?.fileUrl, readingMode, isVisible, epubWarmup]);
 
   // Hook to re-apply highlights when they change or rendition is ready
   useEffect(() => {
