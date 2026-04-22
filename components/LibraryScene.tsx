@@ -409,15 +409,17 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                 </div>
 
                 {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-serif text-lg font-bold text-[#3E2723] truncate">{book.title}</h3>
+                <div className="flex-1 min-w-0 w-full md:w-auto">
+                  <h3 className="font-serif text-lg font-bold text-[#3E2723] truncate md:line-clamp-2 md:whitespace-normal">
+                    {book.title}
+                  </h3>
                   <p className="text-sm text-[#3E2723]/60 truncate">{book.author}</p>
 
                   {/* Tags */}
                   {book.tags && book.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {book.tags.map(tag => (
-                        <span key={tag} className="text-[10px] px-2 py-0.5 bg-[#3E2723]/5 rounded-full text-[#3E2723]/60 uppercase tracking-wide">
+                        <span key={tag} className="text-[10px] px-2 py-0.5 bg-[#3E2723]/5 rounded-full text-[#3E2723]/60 uppercase tracking-wide shrink-0">
                           {tag}
                         </span>
                       ))}
