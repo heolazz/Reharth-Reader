@@ -194,16 +194,11 @@ const App: React.FC = () => {
 
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
 
-  // Filter books based on search query AND collection
+  // Filter books based on search query only (collection filtering is now handled inside CollectionsManager)
   const filteredBooks = React.useMemo(() => {
     let result = books;
 
-    // 1. Filter by Collection first if selected
-    if (selectedCollectionId) {
-      result = result.filter(book => book.collectionIds?.includes(selectedCollectionId));
-    }
-
-    // 2. Filter by search query
+    // Filter by search query
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(book =>
@@ -213,7 +208,7 @@ const App: React.FC = () => {
     }
 
     return result;
-  }, [books, searchQuery, selectedCollectionId]);
+  }, [books, searchQuery]);
 
   // Load books from DB on mount
   useEffect(() => {
@@ -511,9 +506,6 @@ const App: React.FC = () => {
           appState={mode}
           searchQuery={searchQuery}
           onSearch={setSearchQuery}
-          selectedCollectionId={selectedCollectionId}
-          onClearCollection={() => setSelectedCollectionId(null)}
-          allCollections={[]} // We'll fetch this if needed or pass as prop. Actually better to fetch inside or pass
         />
       </div>
 
@@ -525,6 +517,8 @@ const App: React.FC = () => {
             setCurrentPage(page);
             setIsDetailOpen(false);
             setEditingBook(null);
+            // Clear collection filter when leaving collections page
+            if (page !== 'collections') setSelectedCollectionId(null);
           }}
           searchQuery={searchQuery}
           onSearch={setSearchQuery}
@@ -566,8 +560,10 @@ const App: React.FC = () => {
           onUpdateBook={handleUpdateBook}
           onSelectCollection={(id) => {
             setSelectedCollectionId(id);
-            setCurrentPage('library');
           }}
+          selectedCollectionId={selectedCollectionId}
+          onClearCollection={() => setSelectedCollectionId(null)}
+          onSelectBook={handleSelectBook}
         />
       )}
 
