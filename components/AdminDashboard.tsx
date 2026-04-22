@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, Library, Users, Search, Plus, Edit2, Trash2,
-    MoreVertical, Check, X, Upload, FileText, Image as ImageIcon, Loader2
+    MoreVertical, Check, X, Upload, FileText, Image as ImageIcon, Loader2,
+    Calendar, Eye, TrendingUp, BookOpen, Shield, Mail
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { fetchAdminBooks, PublicBook } from '../lib/publicBooksApi';
@@ -12,14 +13,17 @@ export const AdminDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'overview' | 'books' | 'users'>('books');
 
     return (
-        <div className="min-h-screen bg-[#F9F7F2] text-[#3D3028] font-sans pt-20 pb-24 px-6 md:px-12">
+        <div className="min-h-screen bg-white text-[#3D3028] font-sans pt-20 pb-24 px-6 md:px-12">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row gap-8">
                     {/* Sidebar */}
                     <div className="w-full md:w-64 shrink-0 space-y-2">
                         <div className="mb-8 pl-4">
-                            <h1 className="font-serif text-2xl text-[#3D3028]">Admin Panel</h1>
-                            <p className="text-sm text-[#3D3028]/60">Global Library Manager</p>
+                            <div className="flex items-center gap-2 mb-1">
+                                <Shield size={18} className="text-[#9CAF88]" />
+                                <h1 className="font-serif text-2xl text-[#3D3028]">Admin</h1>
+                            </div>
+                            <p className="text-xs font-bold uppercase tracking-widest text-black/30 pl-0.5">System Manager</p>
                         </div>
 
                         <nav className="space-y-1">
@@ -45,7 +49,7 @@ export const AdminDashboard: React.FC = () => {
                     </div>
 
                     {/* Main Content */}
-                    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-[#3D3028]/5 p-6 md:p-8 min-h-[600px] overflow-hidden">
+                    <div className="flex-1 bg-[#FAFAFA] rounded-2xl shadow-sm border border-black/5 p-6 md:p-8 min-h-[600px] overflow-hidden">
                         {activeTab === 'books' && <BooksManager />}
                         {activeTab === 'overview' && <OverviewManager />}
                         {activeTab === 'users' && <UsersManager />}
@@ -60,12 +64,12 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }: any) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active
-            ? 'bg-[#3D3028] text-[#F9F7F2] shadow-md'
-            : 'text-[#3D3028]/60 hover:bg-[#3D3028]/5 hover:text-[#3D3028]'
+            ? 'bg-[#3D3028] text-white shadow-md'
+            : 'text-black/40 hover:bg-black/5 hover:text-[#3D3028]'
             }`}
     >
-        <Icon size={20} />
-        <span className="font-medium">{label}</span>
+        <Icon size={18} />
+        <span className="text-sm font-medium">{label}</span>
     </button>
 );
 
@@ -430,6 +434,17 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
                     }
 
                     // Auto-fill form with extracted data
+                    // Parse year from metadata.date (e.g. "2024-01-15" or "2024")
+                    // Note: ePub.js types don't expose 'date' but it exists at runtime
+                    let extractedYear: number | undefined;
+                    const metaDate = (metadata as any).date || (metadata as any).pubdate;
+                    if (metaDate) {
+                        const yearMatch = String(metaDate).match(/(\d{4})/);
+                        if (yearMatch) {
+                            extractedYear = parseInt(yearMatch[1]);
+                        }
+                    }
+
                     setFormData(prev => ({
                         ...prev,
                         epub_url: publicUrl,
@@ -439,6 +454,7 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
                         publisher: metadata.publisher || prev.publisher || '',
                         language: metadata.language || prev.language || 'en',
                         isbn: metadata.identifier || prev.isbn || '',
+                        published_year: extractedYear || prev.published_year,
                         // If cover exists in EPUB and no cover_url set yet
                         cover_url: (!prev.cover_url && publicCoverUrl) ? publicCoverUrl : prev.cover_url
                     }));
@@ -791,13 +807,13 @@ const OverviewManager = () => {
 };
 
 const StatCard = ({ icon: Icon, label, value, color }: any) => (
-    <div className="bg-[#FAFAFA] border border-[#3D3028]/5 rounded-2xl p-6 shadow-sm">
+    <div className="bg-white border border-black/5 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between">
             <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-[#3D3028]/30 mb-2">{label}</p>
-                <p className="text-2xl font-serif text-[#3D3028]">{value}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-2">{label}</p>
+                <p className="text-3xl font-serif text-[#3D3028]">{value}</p>
             </div>
-            <div className="p-2 rounded-xl" style={{ backgroundColor: `${color}15` }}>
+            <div className="p-2.5 rounded-xl" style={{ backgroundColor: `${color}10` }}>
                 <Icon size={20} style={{ color }} />
             </div>
         </div>
@@ -821,18 +837,27 @@ const UsersManager = () => {
             let query = supabase
                 .from('profiles')
                 .select('*')
-                .order('created_at', { ascending: false });
+                .order('updated_at', { ascending: false });
 
             if (searchQuery) {
-                query = query.or(`full_name.ilike.%${searchQuery}%,username.ilike.%${searchQuery}%`);
+                // Only filter by full_name to avoid errors if username column doesn't exist
+                query = query.ilike('full_name', `%${searchQuery}%`);
             }
 
             const { data, error } = await query;
-            if (error) throw error;
+            if (error) {
+                console.error('Profile query error:', error);
+                // If the query fails (e.g. table doesn't exist), show helpful message
+                if (error.message?.includes('does not exist') || error.code === '42P01') {
+                    showToast('Profiles table not found. Make sure it exists in Supabase.', 'error');
+                } else {
+                    throw error;
+                }
+            }
             setUsers(data || []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading users:', error);
-            showToast('Failed to load users', 'error');
+            showToast(`Failed to load users: ${error?.message || 'Unknown error'}`, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -871,66 +896,90 @@ const UsersManager = () => {
 
     return (
         <div className="space-y-6">
-            <div className="relative w-full md:w-96 group">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#3D3028]/40 group-focus-within:text-[#3D3028]">
-                    <Search size={18} />
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="relative w-full md:w-96 group">
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-black/30 group-focus-within:text-[#3D3028]">
+                        <Search size={18} />
+                    </div>
+                    <input
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search users by name..."
+                        className="w-full bg-white border border-black/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-black/20 transition-all"
+                    />
                 </div>
-                <input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search users by name..."
-                    className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-all"
-                />
+                <div className="text-[10px] font-bold uppercase tracking-widest text-black/30">
+                    {users.length} {users.length === 1 ? 'user' : 'users'} registered
+                </div>
             </div>
 
             {isLoading ? (
-                <div className="flex justify-center py-20 text-[#3D3028]/10">
-                    <Loader2 size={32} className="animate-spin" />
+                <div className="flex justify-center py-20">
+                    <Loader2 size={32} className="animate-spin text-black/10" />
                 </div>
             ) : users.length > 0 ? (
-                <div className="border border-[#3D3028]/10 rounded-xl overflow-hidden overflow-x-auto">
-                    <table className="w-full text-left text-sm min-w-[600px]">
-                        <thead className="bg-[#FAFAFA] text-[#3D3028]/60 border-b border-[#3D3028]/10">
+                <div className="border border-black/5 rounded-xl overflow-hidden overflow-x-auto">
+                    <table className="w-full text-left text-sm min-w-[700px]">
+                        <thead className="bg-white text-black/40 border-b border-black/5">
                             <tr>
-                                <th className="px-6 py-4 font-medium">User</th>
-                                <th className="px-6 py-4 font-medium">Joined</th>
-                                <th className="px-6 py-4 font-medium text-center">Role</th>
-                                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest">User</th>
+                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest">Email / ID</th>
+                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest">Joined</th>
+                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-center">Role</th>
+                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#3D3028]/5">
+                        <tbody className="divide-y divide-black/5">
                             {users.map((profile) => (
-                                <tr key={profile.id} className="hover:bg-[#FAFAFA]/50 transition-colors group">
+                                <tr key={profile.id} className="hover:bg-[#FAFAFA] transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-[#3D3028]/5 border border-[#3D3028]/10 flex items-center justify-center overflow-hidden">
+                                            <div className="w-9 h-9 rounded-full bg-[#FAFAFA] border border-black/5 flex items-center justify-center overflow-hidden shadow-sm">
                                                 {profile.avatar_url ? (
                                                     <img src={profile.avatar_url} className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <span className="text-[10px] font-bold text-[#3D3028]/20">{profile.full_name?.charAt(0) || '?'}</span>
+                                                    <span className="text-xs font-bold text-black/20">{(profile.full_name || profile.username || '?').charAt(0).toUpperCase()}</span>
                                                 )}
                                             </div>
                                             <div>
-                                                <p className="font-medium text-[#3D3028]">{profile.full_name || 'Anonymous'}</p>
-                                                <p className="text-[10px] text-[#3D3028]/40 truncate max-w-[150px]">{profile.id}</p>
+                                                <p className="font-medium text-[#3D3028]">{profile.full_name || profile.username || 'Anonymous'}</p>
+                                                {profile.username && profile.full_name && (
+                                                    <p className="text-[10px] text-black/30">@{profile.username}</p>
+                                                )}
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-[#3D3028]/60 text-xs">
-                                        {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2 text-black/40">
+                                            <Mail size={12} />
+                                            <span className="text-xs truncate max-w-[180px]">{profile.email || profile.id?.substring(0, 12) + '...'}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2 text-black/40">
+                                            <Calendar size={12} />
+                                            <span className="text-xs">
+                                                {profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${profile.role === 'admin'
-                                            ? 'bg-purple-100 text-purple-700'
-                                            : 'bg-gray-100 text-gray-600'
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${profile.role === 'admin'
+                                            ? 'bg-[#9CAF88]/15 text-[#6B8E6D]'
+                                            : 'bg-black/5 text-black/40'
                                             }`}>
+                                            {profile.role === 'admin' && <Shield size={10} />}
                                             {profile.role || 'user'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <button
                                             onClick={() => handleToggleRole(profile.id, profile.role || 'user')}
-                                            className="px-3 py-1.5 rounded-lg border border-[#3D3028]/10 text-xs font-medium hover:bg-black/5 transition-colors"
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${profile.role === 'admin'
+                                                ? 'border border-red-200 text-red-500 hover:bg-red-50'
+                                                : 'border border-[#9CAF88]/30 text-[#6B8E6D] hover:bg-[#9CAF88]/10'
+                                                }`}
                                         >
                                             {profile.role === 'admin' ? 'Revoke Admin' : 'Make Admin'}
                                         </button>
@@ -941,8 +990,12 @@ const UsersManager = () => {
                     </table>
                 </div>
             ) : (
-                <div className="text-center py-20 border-2 border-dashed border-[#3D3028]/10 rounded-xl">
-                    <p className="text-[#3D3028]/40">No users found</p>
+                <div className="text-center py-20 border-2 border-dashed border-black/5 rounded-xl">
+                    <div className="w-16 h-16 rounded-full bg-[#FAFAFA] border border-black/5 flex items-center justify-center mx-auto mb-4">
+                        <Users size={24} className="text-black/15" />
+                    </div>
+                    <p className="text-black/40 font-serif italic">No users found</p>
+                    <p className="text-[10px] text-black/30 mt-2">Users will appear here after they register.</p>
                 </div>
             )}
         </div>
