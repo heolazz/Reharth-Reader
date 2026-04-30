@@ -4,6 +4,7 @@ import { X, Plus, Trash2, Check, ArrowRight, ArrowLeft, Layers, BookOpen } from 
 import { Collection, Book } from '../types';
 import { generateUUID } from '../utils/uuid';
 import { getAllCollections, saveCollection, deleteCollection } from '../utils/db';
+import { getAllCollectionsFromSupabase, saveCollectionToSupabase, deleteCollectionFromSupabase, syncBookCollectionIds } from '../lib/supabaseDb';
 
 interface CollectionsManagerProps {
     isOpen: boolean;
@@ -54,8 +55,29 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
 
     const loadCollections = async () => {
         try {
-            const cols = await getAllCollections();
-            const withCounts = cols.map(col => ({
+            // Load from both sources
+            const [localCols, supabaseCols] = await Promise.all([
+                getAllCollections(),
+                getAllCollectionsFromSupabase().catch(() => [] as Collection[])
+            ]);
+
+            // Merge: Supabase is source of truth, local fills gaps
+            const merged = new Map<string, Collection>();
+            supabaseCols.forEach(c => merged.set(c.id, c));
+            localCols.forEach(c => {
+                if (!merged.has(c.id)) {
+                    merged.set(c.id, c);
+                    // Sync local-only collections to Supabase
+                    saveCollectionToSupabase(c).catch(() => {});
+                }
+            });
+            // Save Supabase collections locally for offline access
+            for (const c of supabaseCols) {
+                saveCollection(c).catch(() => {});
+            }
+
+            const allCols = Array.from(merged.values());
+            const withCounts = allCols.map(col => ({
                 ...col,
                 bookCount: books.filter(b => b.collectionIds?.includes(col.id)).length,
                 previewBooks: books.filter(b => b.collectionIds?.includes(col.id)).slice(0, 3)
@@ -77,7 +99,9 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
             createdAt: Date.now(),
         };
 
+        // Save to both local and Supabase
         await saveCollection(newCollection);
+        saveCollectionToSupabase(newCollection).catch(e => console.warn('Supabase sync failed:', e));
         loadCollections();
         setNewCollectionName('');
         setNewCollectionDescription('');
@@ -93,16 +117,18 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
             onClearCollection?.();
         }
 
+        // Delete from both local and Supabase
         await deleteCollection(id);
+        deleteCollectionFromSupabase(id).catch(e => console.warn('Supabase delete failed:', e));
         setCollections(prev => prev.filter(c => c.id !== id));
 
         books.forEach(book => {
             if (book.collectionIds?.includes(id)) {
-                const updated = {
-                    ...book,
-                    collectionIds: book.collectionIds ? book.collectionIds.filter(cid => cid !== id) : []
-                };
+                const updatedIds = book.collectionIds ? book.collectionIds.filter(cid => cid !== id) : [];
+                const updated = { ...book, collectionIds: updatedIds };
                 onUpdateBook(updated);
+                // Sync updated collection_ids to Supabase
+                syncBookCollectionIds(book.id, updatedIds).catch(() => {});
             }
         });
     };
@@ -113,14 +139,18 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
         const currentCollections = selectedBook.collectionIds || [];
         const isInCollection = currentCollections.includes(collectionId);
 
+        const newCollectionIds = isInCollection
+            ? currentCollections.filter(id => id !== collectionId)
+            : [...currentCollections, collectionId];
+
         const updatedBook: Book = {
             ...selectedBook,
-            collectionIds: isInCollection
-                ? currentCollections.filter(id => id !== collectionId)
-                : [...currentCollections, collectionId]
+            collectionIds: newCollectionIds
         };
 
         onUpdateBook(updatedBook);
+        // Sync to Supabase
+        syncBookCollectionIds(selectedBook.id, newCollectionIds).catch(() => {});
         setTimeout(loadCollections, 100);
     };
 

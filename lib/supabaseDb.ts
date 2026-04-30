@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Book, Highlight, Bookmark, ReadingGoal } from '../types';
+import { Book, Highlight, Bookmark, ReadingGoal, Collection } from '../types';
 
 // Convert Supabase book record to App Book type
 const mapSupabaseBookToBook = (record: any): Book => {
@@ -24,6 +24,7 @@ const mapSupabaseBookToBook = (record: any): Book => {
         dateAdded: record.created_at ? new Date(record.created_at).getTime() : Date.now(),
         isFavorite: record.is_favorite || false,
         isArchived: record.is_archived || false,
+        collectionIds: record.collection_ids || [],
     };
 };
 
@@ -49,6 +50,7 @@ const mapBookToSupabaseRecord = (book: Book, userId: string) => {
         last_read_at: book.lastReadDate ? new Date(book.lastReadDate).toISOString() : new Date().toISOString(),
         is_favorite: book.isFavorite || false,
         is_archived: book.isArchived || false,
+        collection_ids: book.collectionIds || [],
     };
 };
 
@@ -479,3 +481,84 @@ export const saveReadingGoalToSupabase = async (goal: ReadingGoal): Promise<void
     }
 };
 
+// =============================================
+// COLLECTIONS - Supabase Sync
+// =============================================
+
+export const getAllCollectionsFromSupabase = async (): Promise<Collection[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+        .from('user_collections')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.warn('Could not load collections from Supabase:', error.message);
+        return [];
+    }
+
+    return (data || []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        description: r.description || undefined,
+        color: r.color || '#3E2723',
+        icon: r.icon || undefined,
+        createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+    }));
+};
+
+export const saveCollectionToSupabase = async (collection: Collection): Promise<void> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const record = {
+        id: collection.id,
+        user_id: user.id,
+        name: collection.name,
+        description: collection.description || null,
+        color: collection.color || '#3E2723',
+        icon: collection.icon || null,
+    };
+
+    const { error } = await supabase
+        .from('user_collections')
+        .upsert(record, { onConflict: 'id' });
+
+    if (error) {
+        console.warn('Could not save collection to Supabase:', error.message);
+    }
+};
+
+export const deleteCollectionFromSupabase = async (id: string): Promise<void> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+        .from('user_collections')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.warn('Could not delete collection from Supabase:', error.message);
+    }
+};
+
+// Sync collection_ids for a specific book to Supabase
+export const syncBookCollectionIds = async (bookId: string, collectionIds: string[]): Promise<void> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+        .from('books')
+        .update({ collection_ids: collectionIds })
+        .eq('id', bookId)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.warn('Could not sync collection_ids:', error.message);
+    }
+};

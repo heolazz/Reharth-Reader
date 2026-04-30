@@ -721,8 +721,13 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
             // Always create collection if we have books
             if (booksToUpdate.length > 0) {
                 await saveCollection(newCollection);
+                // Also sync collection to Supabase
+                const { saveCollectionToSupabase, syncBookCollectionIds } = await import('../lib/supabaseDb');
+                saveCollectionToSupabase(newCollection).catch(() => {});
                 for (const b of booksToUpdate) {
                     await saveBook(b);
+                    // Sync each book's collection_ids to Supabase
+                    syncBookCollectionIds(b.id, b.collectionIds || []).catch(() => {});
                 }
                 if (onBooksAdded) onBooksAdded(booksToUpdate);
             }

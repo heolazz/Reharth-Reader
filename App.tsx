@@ -254,10 +254,11 @@ const App: React.FC = () => {
           const localBooks = await getAllBooks();
           const mergedBooks = supabaseBooks.map(sb => {
             const local = localBooks.find(lb => lb.id === sb.id);
-            if (local && local.collectionIds) {
-              return { ...sb, collectionIds: local.collectionIds };
-            }
-            return sb;
+            // Supabase collection_ids take priority; merge local only if Supabase has none
+            const supabaseCollIds = sb.collectionIds || [];
+            const localCollIds = local?.collectionIds || [];
+            const mergedCollIds = supabaseCollIds.length > 0 ? supabaseCollIds : localCollIds;
+            return { ...sb, collectionIds: mergedCollIds };
           });
           setBooks(mergedBooks);
         } catch (e) {
