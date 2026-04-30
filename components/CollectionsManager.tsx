@@ -117,9 +117,12 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
             onClearCollection?.();
         }
 
-        // Delete from both local and Supabase
-        await deleteCollection(id);
-        deleteCollectionFromSupabase(id).catch(e => console.warn('Supabase delete failed:', e));
+        // Delete from both local and Supabase (Await both to prevent race conditions during state reload)
+        await Promise.all([
+            deleteCollection(id),
+            deleteCollectionFromSupabase(id).catch(e => console.warn('Supabase delete failed:', e))
+        ]);
+        
         setCollections(prev => prev.filter(c => c.id !== id));
 
         books.forEach(book => {
