@@ -708,6 +708,7 @@ const App: React.FC = () => {
       <PublicBookDetailModal
         book={selectedPublicBook}
         isOpen={!!selectedPublicBook}
+        userBooks={books}
         onClose={() => {
           setSelectedPublicBook(null);
           // Go back to /explore (remove the slug)
@@ -717,6 +718,19 @@ const App: React.FC = () => {
         }}
         onBookAdded={(newBook) => {
           setBooks(prev => [...prev, newBook]);
+        }}
+        onReadNow={(addedBook) => {
+          // Close the public book modal
+          setSelectedPublicBook(null);
+          // Find the book in our library (it was just added)
+          const libraryBook = books.find(b => b.id === addedBook.id) || addedBook;
+          // Set it as selected and enter reading mode
+          setSelectedBookId(libraryBook.id);
+          prevPageRef.current = currentPage;
+          setTimeout(() => {
+            setMode('reading');
+            navigate(`/reading/${slugify(libraryBook.title)}`, { replace: true });
+          }, 200);
         }}
       />
     </div>

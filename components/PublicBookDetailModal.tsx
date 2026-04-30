@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Check, Loader2, Star, BookOpen, Share2 } from 'lucide-react';
+import { X, Plus, Check, Loader2, Star, BookOpen, Share2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { PublicBook, addPublicBookToLibrary } from '../lib/publicBooksApi';
 import { useAuthStore } from '../stores/useAuthStore';
 import { useToast } from './Toast';
@@ -12,21 +12,45 @@ interface PublicBookDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     onBookAdded?: (book: Book) => void;
+    onReadNow?: (book: Book) => void;
+    userBooks?: Book[];
 }
 
-export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ book, isOpen, onClose, onBookAdded }) => {
+export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ book, isOpen, onClose, onBookAdded, onReadNow, userBooks }) => {
     const { user } = useAuthStore();
     const { showToast } = useToast();
     const [isAdding, setIsAdding] = useState(false);
     const [isAdded, setIsAdded] = useState(false);
+    const [addedBook, setAddedBook] = useState<Book | null>(null);
+    const [isPartialSave, setIsPartialSave] = useState(false);
+    const [hasFailed, setHasFailed] = useState(false);
 
-    // Reset state when modal opens/closes
+    // Reset state when modal closes
     React.useEffect(() => {
         if (!isOpen) {
             setIsAdded(false);
             setIsAdding(false);
+            setAddedBook(null);
+            setIsPartialSave(false);
+            setHasFailed(false);
         }
     }, [isOpen, book]);
+
+    // Auto-detect if book is already in user's library
+    React.useEffect(() => {
+        if (!isOpen || !book || !userBooks || userBooks.length === 0) return;
+
+        const normalise = (s: string) => s.trim().toLowerCase();
+        const match = userBooks.find(ub =>
+            normalise(ub.title) === normalise(book.title) &&
+            normalise(ub.author) === normalise(book.author)
+        );
+
+        if (match) {
+            setIsAdded(true);
+            setAddedBook(match);
+        }
+    }, [isOpen, book, userBooks]);
 
     // ESC to close modal
     React.useEffect(() => {
@@ -49,6 +73,8 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
         }
 
         setIsAdding(true);
+        setHasFailed(false);
+        setIsPartialSave(false);
         setAddingStatus('Connecting to cloud...');
         
         try {
@@ -60,6 +86,17 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                 if (errMsg.includes('already')) {
                     showToast('Book is already in your library', 'info');
                     setIsAdded(true);
+                    // Try to build a minimal Book object for Read Now
+                    setAddedBook(data as Book || {
+                        id: book.id,
+                        title: book.title,
+                        author: book.author,
+                        color: '#8B7355',
+                        fileType: book.epub_url ? 'epub' : 'text',
+                        coverImage: book.cover_url || '',
+                        coverUrl: book.cover_url || '',
+                        fileUrl: book.epub_url || '',
+                    } as Book);
                     return;
                 } else {
                     throw error;
@@ -69,6 +106,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
             if (data) {
                 // Step 2: Save to local IndexedDB
                 setAddingStatus('Syncing to local library...');
+                let localSaveOk = true;
                 try {
                     const { saveBook } = await import('../utils/db');
                     await saveBook(data as Book);
@@ -77,11 +115,19 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                     await new Promise(resolve => setTimeout(resolve, 500));
                 } catch (e) {
                     console.warn('Could not save to local DB:', e);
+                    localSaveOk = false;
+                    setIsPartialSave(true);
                 }
 
-                setAddingStatus('Completed!');
+                setAddingStatus(localSaveOk ? 'Completed!' : 'Saved to cloud only');
                 setIsAdded(true);
-                showToast(`"${book.title}" added to your library`, 'success');
+                setAddedBook(data as Book);
+
+                if (localSaveOk) {
+                    showToast(`"${book.title}" added to your library`, 'success');
+                } else {
+                    showToast(`"${book.title}" saved to cloud, but local sync failed. The book may not be available offline.`, 'info');
+                }
                 
                 if (onBookAdded) {
                     onBookAdded(data as Book);
@@ -91,11 +137,14 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
             console.error('Failed to add book:', error);
             const errMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
             showToast(`Failed to add book: ${errMsg}`, 'error');
-            setAddingStatus('Error occurred');
+            setAddingStatus('Failed to save');
+            setHasFailed(true);
         } finally {
             setIsAdding(false);
-            // Reset status after a delay
-            setTimeout(() => setAddingStatus(''), 2000);
+            // Only auto-reset status if not failed/partial
+            if (!hasFailed && !isPartialSave) {
+                setTimeout(() => setAddingStatus(''), 2000);
+            }
         }
     };
 
@@ -271,49 +320,113 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2 }}
-                                className="pt-4 flex flex-col md:flex-row gap-4"
+                                className="pt-4 flex flex-col gap-3"
                             >
-                                <button
-                                    onClick={handleAddToLibrary}
-                                    disabled={isAdding || isAdded}
-                                    className={`flex-1 py-4 rounded-xl font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] ${isAdded
-                                        ? 'bg-[#6B8E6D] text-white hover:bg-[#5a7a5c]'
-                                        : 'bg-[#3D3028] text-white hover:bg-[#2C1810]'
-                                        }`}
-                                >
-                                    {isAdding ? (
+                                {/* Primary Action Row */}
+                                <div className="flex flex-col md:flex-row gap-3">
+                                    {isAdded ? (
+                                        /* After added: Show "Read Now" + "Added" indicator */
                                         <>
-                                            <Loader2 size={18} className="animate-spin" />
-                                            <span>{addingStatus || 'Processing...'}</span>
+                                            <button
+                                                onClick={() => {
+                                                    if (addedBook && onReadNow) {
+                                                        onReadNow(addedBook);
+                                                    }
+                                                }}
+                                                className="flex-1 py-4 rounded-xl font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] bg-[#E86C46] text-white hover:bg-[#D45A35]"
+                                            >
+                                                <BookOpen size={18} />
+                                                <span>Read Now</span>
+                                            </button>
+                                            <div className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#6B8E6D]/10 text-[#6B8E6D] text-sm font-medium">
+                                                <Check size={16} />
+                                                <span>In Library</span>
+                                            </div>
                                         </>
-                                    ) : isAdded ? (
-                                        <>
-                                            <Check size={18} />
-                                            <span>Added to Library</span>
-                                        </>
+                                    ) : hasFailed ? (
+                                        /* Failed state: Show retry */
+                                        <button
+                                            onClick={handleAddToLibrary}
+                                            disabled={isAdding}
+                                            className="flex-1 py-4 rounded-xl font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] bg-red-600 text-white hover:bg-red-700"
+                                        >
+                                            <RefreshCw size={18} />
+                                            <span>Retry — Add to Library</span>
+                                        </button>
                                     ) : (
-                                        <>
-                                            <Plus size={18} />
-                                            <span>Add to My Library</span>
-                                        </>
+                                        /* Default: Add to Library */
+                                        <button
+                                            onClick={handleAddToLibrary}
+                                            disabled={isAdding}
+                                            className="flex-1 py-4 rounded-xl font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] bg-[#3D3028] text-white hover:bg-[#2C1810]"
+                                        >
+                                            {isAdding ? (
+                                                <>
+                                                    <Loader2 size={18} className="animate-spin" />
+                                                    <span>{addingStatus || 'Processing...'}</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Plus size={18} />
+                                                    <span>Add to My Library</span>
+                                                </>
+                                            )}
+                                        </button>
                                     )}
-                                </button>
+                                </div>
 
+                                {/* Share button row */}
                                 <button
                                     onClick={handleShare}
-                                    className="md:w-auto w-full px-6 py-4 rounded-xl border border-[#3D3028]/10 text-[#3D3028]/60 hover:text-[#3D3028] hover:bg-[#3D3028]/5 transition-colors flex items-center justify-center gap-2 font-medium"
+                                    className="w-full px-6 py-3 rounded-xl border border-[#3D3028]/10 text-[#3D3028]/60 hover:text-[#3D3028] hover:bg-[#3D3028]/5 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
                                 >
-                                    <Share2 size={18} />
+                                    <Share2 size={16} />
                                     <span>Share</span>
                                 </button>
                             </motion.div>
                             
-                            {/* Detailed Status Text (only when adding) */}
-                            {addingStatus && (
+                            {/* Partial Save Warning */}
+                            <AnimatePresence>
+                                {isPartialSave && isAdded && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="mt-3 flex items-start gap-2.5 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800"
+                                    >
+                                        <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-xs font-semibold">Saved to cloud only</p>
+                                            <p className="text-[11px] text-amber-700 mt-0.5">Local sync failed — this book may not be available offline. Try refreshing the app later.</p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Failed State Info */}
+                            <AnimatePresence>
+                                {hasFailed && !isAdding && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="mt-3 flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-800"
+                                    >
+                                        <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-xs font-semibold">Could not save book</p>
+                                            <p className="text-[11px] text-red-700 mt-0.5">Please check your connection and try again.</p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Detailed Status Text (only when actively adding) */}
+                            {isAdding && addingStatus && (
                                 <motion.p 
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="mt-3 text-center text-xs font-bold uppercase tracking-widest text-[#E86C46] animate-pulse"
+                                    className="mt-2 text-center text-xs font-bold uppercase tracking-widest text-[#E86C46] animate-pulse"
                                 >
                                     {addingStatus}
                                 </motion.p>
