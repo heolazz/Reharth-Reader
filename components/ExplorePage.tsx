@@ -31,7 +31,7 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
     const book = books[activeIndex];
 
     return (
-        <div className="relative w-full h-[460px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-2xl bg-[#3D3028]">
+        <div className="relative w-full h-[240px] md:h-[400px] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl bg-[#3D3028]">
             {/* Background Image with heavy blur */}
             <div className="absolute inset-0">
                 {book.cover_url ? (
@@ -49,14 +49,14 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1A1410] via-[#1A1410]/40 to-transparent" />
             </div>
 
-            <div className="relative z-10 w-full h-full flex flex-col md:flex-row items-center justify-center p-6 md:p-12 gap-6 md:gap-12">
+            <div className="relative z-10 w-full h-full flex flex-row items-center p-4 md:p-12 gap-4 md:gap-12">
                 {/* Book Cover */}
                 <motion.div 
                     key={`cover-${book.id}`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="w-[140px] md:w-[200px] shrink-0 aspect-[2/3] rounded-md shadow-[0_12px_32px_rgba(0,0,0,0.6)] overflow-hidden cursor-pointer mt-4 md:mt-0"
+                    className="w-[100px] md:w-[200px] shrink-0 aspect-[2/3] rounded-md shadow-[0_12px_32px_rgba(0,0,0,0.6)] overflow-hidden cursor-pointer"
                     onClick={() => onOpenBook?.(book)}
                 >
                     {book.cover_url ? (
@@ -74,35 +74,35 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
-                    className="flex-1 text-white text-center md:text-left flex flex-col justify-center items-center md:items-start"
+                    className="flex-1 text-white text-left flex flex-col justify-center min-w-0"
                 >
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-[10px] font-bold uppercase tracking-widest mb-3 md:mb-4">
-                        <Award size={12} className="text-[#E86C46]" />
-                        Featured Collection
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 md:px-3 md:py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mb-2 md:mb-4 w-fit">
+                        <Award size={10} className="text-[#E86C46] shrink-0" />
+                        Featured
                     </div>
-                    <h2 className="font-serif text-2xl md:text-4xl lg:text-5xl leading-tight mb-2 line-clamp-2 cursor-pointer hover:text-white/90 transition-colors" onClick={() => onOpenBook?.(book)}>
+                    <h2 className="font-serif text-lg md:text-4xl lg:text-5xl leading-tight mb-1.5 md:mb-2 line-clamp-2 cursor-pointer hover:text-white/90 transition-colors" onClick={() => onOpenBook?.(book)}>
                         {book.title}
                     </h2>
-                    <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 uppercase tracking-widest font-bold flex items-center justify-center md:justify-start gap-2">
-                        <span>{book.author}</span>
+                    <p className="text-[9px] md:text-sm text-white/60 mb-2 md:mb-6 uppercase tracking-widest font-bold flex items-center gap-1.5 md:gap-2 flex-wrap">
+                        <span className="line-clamp-1">{book.author}</span>
                         {book.genre && book.genre.length > 0 && (
                             <>
-                                <span className="w-1 h-1 rounded-full bg-white/40"></span>
-                                <span className="text-[#E86C46]">
-                                    {Array.isArray(book.genre) ? book.genre.join(', ') : book.genre}
+                                <span className="w-1 h-1 rounded-full bg-white/40 shrink-0"></span>
+                                <span className="text-[#E86C46] line-clamp-1">
+                                    {Array.isArray(book.genre) ? book.genre.slice(0, 2).join(', ') : book.genre}
                                 </span>
                             </>
                         )}
                     </p>
                     {book.description && (
-                        <p className="text-xs md:text-sm text-white/70 line-clamp-3 mb-6 md:mb-8 max-w-xl">
+                        <p className="hidden md:block text-sm text-white/70 line-clamp-3 mb-8 max-w-xl">
                             {book.description}
                         </p>
                     )}
                     
                     <button 
                         onClick={() => onOpenBook?.(book)}
-                        className="bg-[#E86C46] text-white px-6 md:px-8 py-2.5 md:py-3 rounded-xl font-medium text-sm hover:bg-[#D65A34] transition-colors shadow-lg"
+                        className="bg-[#E86C46] text-white px-5 md:px-8 py-2 md:py-3 rounded-xl font-medium text-xs md:text-sm hover:bg-[#D65A34] transition-colors shadow-lg w-fit"
                     >
                         Read Now
                     </button>
@@ -111,12 +111,12 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
 
             {/* Controls */}
             {books.length > 1 && (
-                <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
+                <div className="absolute bottom-3 md:bottom-6 left-0 right-0 flex justify-center gap-1.5 md:gap-2 z-20">
                     {books.map((_, idx) => (
                         <button
                             key={idx}
                             onClick={() => setActiveIndex(idx)}
-                            className={`h-1.5 rounded-full transition-all ${idx === activeIndex ? 'w-6 bg-[#E86C46]' : 'w-2 bg-white/30 hover:bg-white/50'}`}
+                            className={`h-1 md:h-1.5 rounded-full transition-all ${idx === activeIndex ? 'w-5 md:w-6 bg-[#E86C46]' : 'w-1.5 md:w-2 bg-white/30 hover:bg-white/50'}`}
                         />
                     ))}
                 </div>
@@ -388,12 +388,12 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
             <div className="max-w-6xl mx-auto space-y-6 md:space-y-10">
 
                 {/* 1. Hero / Header */}
-                <div className="text-center space-y-3 md:space-y-4 py-4 md:py-8">
+                <div className="text-center space-y-3 md:space-y-4 py-2 md:py-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 bg-[#3D3028]/5 rounded-full text-[#3D3028]/60 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1"
+                        className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-[#3D3028]/5 rounded-full text-[#3D3028]/60 text-xs font-bold uppercase tracking-widest mb-1"
                     >
                         <Compass size={12} />
                         Explore Library
@@ -403,9 +403,9 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1, duration: 0.6 }}
-                        className="font-serif text-2xl md:text-6xl text-[#3D3028] leading-tight"
+                        className="hidden md:block font-serif text-6xl text-[#3D3028] leading-tight"
                     >
-                        Find your next <br className="hidden md:block" />
+                        Find your next <br />
                         great adventure.
                     </motion.h1>
 
@@ -413,17 +413,17 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.6 }}
-                        className="max-w-xl mx-auto relative group pt-2"
+                        className="max-w-xl mx-auto relative group pt-0 md:pt-2"
                     >
-                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none mt-2">
-                            <Search size={20} className="text-[#3D3028]/40" />
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                            <Search size={18} className="text-[#3D3028]/40" />
                         </div>
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search by title, author, or genre..."
-                            className="w-full bg-white border border-[#3D3028]/10 rounded-2xl py-3 md:py-4 pl-12 pr-4 text-base md:text-lg text-[#3D3028] placeholder-[#3D3028]/30 focus:outline-none focus:border-[#3D3028]/30 focus:shadow-lg transition-all shadow-sm"
+                            className="w-full bg-white border border-[#3D3028]/10 rounded-2xl py-3 md:py-4 pl-12 pr-4 text-sm md:text-lg text-[#3D3028] placeholder-[#3D3028]/30 focus:outline-none focus:border-[#3D3028]/30 focus:shadow-lg transition-all shadow-sm"
                         />
                     </motion.div>
                 </div>
