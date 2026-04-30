@@ -565,209 +565,252 @@ const BookModal = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="relative bg-[#FDFBF7] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col border border-black/5"
             >
-                <div className="p-6 border-b border-[#3D3028]/10 flex justify-between items-center bg-[#FAFAFA] sticky top-0 z-10">
-                    <h2 className="font-serif text-xl text-[#3D3028]">
-                        {book ? 'Edit Book' : 'Add New Book'}
-                    </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-[#3D3028]/10 rounded-full transition-colors">
+                <div className="p-6 border-b border-[#3D3028]/10 flex justify-between items-center bg-white sticky top-0 z-10">
+                    <div>
+                        <h2 className="font-serif text-2xl text-[#3D3028]">
+                            {book ? 'Edit Book Details' : 'Add New Book'}
+                        </h2>
+                        <p className="text-xs text-[#3D3028]/50 mt-1">
+                            {book ? 'Update information and settings' : 'Fill in the details for the new book'}
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="p-2.5 bg-black/5 hover:bg-black/10 rounded-full transition-colors text-[#3D3028]">
                         <X size={20} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Basic Info */}
-                        <div className="space-y-4">
+                <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
+                    {/* SECTION 1: Essential Info */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-[#3D3028]/40 border-b border-[#3D3028]/10 pb-2">Essential Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Title</label>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Title *</label>
                                 <input
                                     required
                                     value={formData.title}
                                     onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
                                     placeholder="Enter book title"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Author</label>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Author *</label>
                                 <input
                                     required
                                     value={formData.author}
                                     onChange={e => setFormData({ ...formData, author: e.target.value })}
-                                    className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
                                     placeholder="Enter author name"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Description</label>
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Description / Synopsis</label>
                                 <textarea
                                     rows={4}
                                     value={formData.description || ''}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30 resize-none"
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm resize-none"
                                     placeholder="Enter book synopsis..."
                                 />
                             </div>
+                        </div>
+                    </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Year</label>
-                                    <input
-                                        type="number"
-                                        value={formData.published_year || ''}
-                                        onChange={e => setFormData({ ...formData, published_year: parseInt(e.target.value) || undefined })}
-                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                        placeholder="e.g. 2024"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Category Type</label>
-                                    <select
-                                        value={formData.category_type || 'Fiction'}
-                                        onChange={e => setFormData({ ...formData, category_type: e.target.value as any })}
-                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                    >
-                                        <option value="Fiction">Fiction & Literature</option>
-                                        <option value="Non-Fiction">Non-Fiction & Knowledge</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Series / Collection</label>
-                                    <select
-                                        value={formData.series_id || ''}
-                                        onChange={e => setFormData({ ...formData, series_id: e.target.value || undefined })}
-                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                    >
-                                        <option value="">-- No Series --</option>
-                                        {seriesList.map(s => (
-                                            <option key={s.id} value={s.id}>{s.title}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Volume Number</label>
-                                    <input
-                                        type="number"
-                                        value={formData.volume_number || ''}
-                                        onChange={e => setFormData({ ...formData, volume_number: parseInt(e.target.value) || undefined })}
-                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                        placeholder="e.g. 1"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Genre</label>
-                                    <input
-                                        type="text"
-                                        value={formData.genre?.join(', ') || ''}
-                                        onChange={e => {
-                                            const genreArray = e.target.value.split(',').map(t => t.trim()).filter(t => t);
-                                            setFormData({ ...formData, genre: genreArray });
-                                        }}
-                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                        placeholder="Fiksi, Fantasi..."
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Tags</label>
-                                    <input
-                                        type="text"
-                                        value={formData.tags?.join(', ') || ''}
-                                        onChange={e => {
-                                            // Split by comma, trim whitespace, and clean empty strings
-                                            const tagsArray = e.target.value.split(',').map(t => t.trim()).filter(t => t);
-                                            setFormData({ ...formData, tags: tagsArray });
-                                        }}
-                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                        placeholder="magic, epic..."
-                                    />
-                                </div>
+                    {/* SECTION 2: Categorization */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-[#3D3028]/40 border-b border-[#3D3028]/10 pb-2">Categorization</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Category Type</label>
+                                <select
+                                    value={formData.category_type || 'Fiction'}
+                                    onChange={e => setFormData({ ...formData, category_type: e.target.value as any })}
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
+                                >
+                                    <option value="Fiction">Fiction & Literature</option>
+                                    <option value="Non-Fiction">Non-Fiction & Knowledge</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Published Year</label>
+                                <input
+                                    type="number"
+                                    value={formData.published_year || ''}
+                                    onChange={e => setFormData({ ...formData, published_year: parseInt(e.target.value) || undefined })}
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
+                                    placeholder="e.g. 2024"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Series / Collection</label>
+                                <select
+                                    value={formData.series_id || ''}
+                                    onChange={e => setFormData({ ...formData, series_id: e.target.value || undefined })}
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
+                                >
+                                    <option value="">-- No Series --</option>
+                                    {seriesList.map(s => (
+                                        <option key={s.id} value={s.id}>{s.title}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Volume Number</label>
+                                <input
+                                    type="number"
+                                    value={formData.volume_number || ''}
+                                    onChange={e => setFormData({ ...formData, volume_number: parseInt(e.target.value) || undefined })}
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm disabled:opacity-50 disabled:bg-[#FAFAFA]"
+                                    placeholder="e.g. 1"
+                                    disabled={!formData.series_id}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Genres (Comma separated)</label>
+                                <input
+                                    type="text"
+                                    value={formData.genre?.join(', ') || ''}
+                                    onChange={e => {
+                                        const genreArray = e.target.value.split(',').map(t => t.trim()).filter(t => t);
+                                        setFormData({ ...formData, genre: genreArray });
+                                    }}
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
+                                    placeholder="Fantasy, Romance..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Tags (Comma separated)</label>
+                                <input
+                                    type="text"
+                                    value={formData.tags?.join(', ') || ''}
+                                    onChange={e => {
+                                        const tagsArray = e.target.value.split(',').map(t => t.trim()).filter(t => t);
+                                        setFormData({ ...formData, tags: tagsArray });
+                                    }}
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
+                                    placeholder="magic, epic, dark..."
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        {/* URLs & Settings */}
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Cover Image</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        value={formData.cover_url || ''}
-                                        onChange={e => setFormData({ ...formData, cover_url: e.target.value })}
-                                        className="flex-1 bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                        placeholder="https://..."
-                                    />
-                                    <label className={`flex items-center justify-center px-4 bg-[#3D3028]/5 hover:bg-[#3D3028]/10 rounded-xl cursor-pointer transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                                        <Upload size={18} className="text-[#3D3028]/60" />
-                                        <input type="file" onChange={e => handleFileUpload(e, 'cover')} accept="image/*" className="hidden" />
-                                    </label>
+                    {/* SECTION 3: Media & Files */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-[#3D3028]/40 border-b border-[#3D3028]/10 pb-2">Media & Assets</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white p-5 rounded-2xl border border-[#3D3028]/10 flex flex-col gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Cover Image URL</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            value={formData.cover_url || ''}
+                                            onChange={e => setFormData({ ...formData, cover_url: e.target.value })}
+                                            className="flex-1 bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
+                                            placeholder="https://..."
+                                        />
+                                        <label className={`flex items-center justify-center px-4 bg-[#3D3028]/5 hover:bg-[#3D3028]/10 rounded-xl cursor-pointer transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                            <Upload size={18} className="text-[#3D3028]/60" />
+                                            <input type="file" onChange={e => handleFileUpload(e, 'cover')} accept="image/*" className="hidden" />
+                                        </label>
+                                    </div>
                                 </div>
                                 {formData.cover_url && (
-                                    <div className="mt-2 h-24 w-16 bg-[#EAE5DD] rounded overflow-hidden border border-[#3D3028]/10">
+                                    <div className="mt-2 h-32 w-24 bg-[#EAE5DD] rounded-lg overflow-hidden border border-[#3D3028]/10 mx-auto shadow-sm">
                                         <img src={formData.cover_url} className="w-full h-full object-cover" />
                                     </div>
                                 )}
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">EPUB File</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        value={formData.epub_url || ''}
-                                        onChange={e => setFormData({ ...formData, epub_url: e.target.value })}
-                                        className="flex-1 bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                        placeholder="https://..."
-                                    />
-                                    <label className={`flex items-center justify-center px-4 bg-[#3D3028]/5 hover:bg-[#3D3028]/10 rounded-xl cursor-pointer transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                                        <Upload size={18} className="text-[#3D3028]/60" />
-                                        <input type="file" onChange={e => handleFileUpload(e, 'epub')} accept=".epub" className="hidden" />
-                                    </label>
+                            <div className="bg-white p-5 rounded-2xl border border-[#3D3028]/10 flex flex-col gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">EPUB File URL</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            value={formData.epub_url || ''}
+                                            onChange={e => setFormData({ ...formData, epub_url: e.target.value })}
+                                            className="flex-1 bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
+                                            placeholder="https://..."
+                                        />
+                                        <label className={`flex items-center justify-center px-4 bg-[#3D3028]/5 hover:bg-[#3D3028]/10 rounded-xl cursor-pointer transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                            <Upload size={18} className="text-[#3D3028]/60" />
+                                            <input type="file" onChange={e => handleFileUpload(e, 'epub')} accept=".epub" className="hidden" />
+                                        </label>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="pt-4 border-t border-[#3D3028]/5 space-y-3">
-                                <label className="flex items-center gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.is_featured || false}
-                                        onChange={e => setFormData({ ...formData, is_featured: e.target.checked })}
-                                        className="w-4 h-4 rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
-                                    />
-                                    <span className="text-sm">Feature this book</span>
-                                </label>
-                                <label className="flex items-center gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.is_trending || false}
-                                        onChange={e => setFormData({ ...formData, is_trending: e.target.checked })}
-                                        className="w-4 h-4 rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
-                                    />
-                                    <span className="text-sm">Mark as Trending</span>
-                                </label>
+                                <div className="mt-2 bg-[#FAFAFA] p-3 rounded-xl border border-[#3D3028]/5">
+                                    <p className="text-xs text-[#3D3028]/50 leading-relaxed">
+                                        You can upload an EPUB file directly. The system will attempt to automatically extract the cover, title, author, and description from the file metadata.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-6 border-t border-[#3D3028]/10">
+                    {/* SECTION 4: Settings */}
+                    <div className="bg-[#3D3028]/5 p-5 rounded-2xl border border-[#3D3028]/10">
+                        <div className="flex flex-wrap gap-6">
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center justify-center w-5 h-5">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.is_featured || false}
+                                        onChange={e => setFormData({ ...formData, is_featured: e.target.checked })}
+                                        className="peer appearance-none w-5 h-5 border-2 border-[#3D3028]/20 rounded transition-colors checked:bg-[#3D3028] checked:border-[#3D3028] cursor-pointer"
+                                    />
+                                    <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
+                                <span className="text-sm font-medium text-[#3D3028]/70 group-hover:text-[#3D3028] transition-colors">Feature this book</span>
+                            </label>
+                            
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center justify-center w-5 h-5">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.is_trending || false}
+                                        onChange={e => setFormData({ ...formData, is_trending: e.target.checked })}
+                                        className="peer appearance-none w-5 h-5 border-2 border-[#3D3028]/20 rounded transition-colors checked:bg-[#E86C46] checked:border-[#E86C46] cursor-pointer"
+                                    />
+                                    <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
+                                <span className="text-sm font-medium text-[#3D3028]/70 group-hover:text-[#3D3028] transition-colors">Mark as Trending</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#3D3028]/10 sticky bottom-0 bg-[#FDFBF7] pb-2 -mb-2 mt-4 z-10">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-2.5 rounded-xl text-sm font-medium text-[#3D3028]/60 hover:bg-[#3D3028]/5 transition-colors"
+                            className="px-6 py-3 rounded-xl text-sm font-bold tracking-wide text-[#3D3028]/60 hover:bg-[#3D3028]/5 transition-colors"
                         >
-                            Cancel
+                            CANCEL
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-6 py-2.5 rounded-xl text-sm font-medium bg-[#3D3028] text-white hover:bg-[#2C1810] transition-colors shadow-md disabled:opacity-50 flex items-center gap-2"
+                            className="px-8 py-3 rounded-xl text-sm font-bold tracking-wide bg-[#3D3028] text-white hover:bg-[#2C1810] transition-colors shadow-md disabled:opacity-50 flex items-center gap-2"
                         >
                             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-                            {book ? 'Save Changes' : 'Draft Book'}
+                            {book ? 'SAVE CHANGES' : 'CREATE BOOK'}
                         </button>
                     </div>
                 </form>
@@ -1265,100 +1308,118 @@ const SeriesModal = ({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
-                className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
+                className="relative w-full max-w-2xl bg-[#FDFBF7] rounded-2xl shadow-2xl overflow-hidden border border-black/5"
             >
-                <div className="p-6 border-b border-black/5 flex justify-between items-center bg-[#FAFAFA]">
+                <div className="p-6 border-b border-[#3D3028]/10 flex justify-between items-center bg-white">
                     <div>
-                        <h2 className="font-serif text-xl text-[#3D3028]">
-                            {series ? 'Edit Series' : 'New Series'}
+                        <h2 className="font-serif text-2xl text-[#3D3028]">
+                            {series ? 'Edit Series Details' : 'Create New Series'}
                         </h2>
-                        <p className="text-xs text-black/40 mt-0.5">
-                            {series ? 'Update collection details' : 'Create a new epic collection'}
+                        <p className="text-xs text-[#3D3028]/50 mt-1">
+                            {series ? 'Update collection information' : 'Start a new epic collection'}
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors">
-                        <X size={18} />
+                    <button onClick={onClose} className="p-2.5 bg-black/5 hover:bg-black/10 rounded-full transition-colors text-[#3D3028]">
+                        <X size={20} />
                     </button>
                 </div>
 
-                <div className="p-6 space-y-4">
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Title *</label>
-                        <input
-                            type="text"
-                            value={formData.title || ''}
-                            onChange={e => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors"
-                            placeholder="e.g. Lord of the Mysteries"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Author</label>
-                        <input
-                            type="text"
-                            value={formData.author || ''}
-                            onChange={e => setFormData({ ...formData, author: e.target.value })}
-                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors"
-                            placeholder="e.g. Cuttlefish That Loves Diving"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Cover URL</label>
-                        <input
-                            type="text"
-                            value={formData.cover_url || ''}
-                            onChange={e => setFormData({ ...formData, cover_url: e.target.value })}
-                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors"
-                            placeholder="https://..."
-                        />
-                        {formData.cover_url && (
-                            <div className="mt-2 h-20 w-32 bg-[#EAE5DD] rounded-lg overflow-hidden border border-black/5">
+                <div className="p-6 md:p-8 space-y-6 flex flex-col md:flex-row gap-8">
+                    {/* Cover Preview Side */}
+                    <div className="w-full md:w-48 shrink-0 flex flex-col gap-3">
+                        <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 ml-1">Series Cover</label>
+                        <div className="w-full aspect-[2/3] bg-white rounded-xl overflow-hidden border border-[#3D3028]/10 shadow-sm flex flex-col items-center justify-center relative">
+                            {formData.cover_url ? (
                                 <img src={formData.cover_url} className="w-full h-full object-cover" />
+                            ) : (
+                                <>
+                                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+                                    <div className="text-[#3D3028]/20 flex flex-col items-center gap-2">
+                                        <BookOpen size={32} />
+                                        <span className="text-xs font-serif italic">No Cover</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                    
+                    {/* Form Fields Side */}
+                    <div className="flex-1 space-y-5">
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Title *</label>
+                            <input
+                                type="text"
+                                value={formData.title || ''}
+                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all"
+                                placeholder="e.g. Lord of the Mysteries"
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Author</label>
+                                <input
+                                    type="text"
+                                    value={formData.author || ''}
+                                    onChange={e => setFormData({ ...formData, author: e.target.value })}
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all"
+                                    placeholder="e.g. Cuttlefish That Loves Diving"
+                                />
                             </div>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Category Type</label>
-                        <select
-                            value={formData.category_type || 'Fiction'}
-                            onChange={e => setFormData({ ...formData, category_type: e.target.value as any })}
-                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors"
-                        >
-                            <option value="Fiction">Fiction</option>
-                            <option value="Non-Fiction">Non-Fiction</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Description</label>
-                        <textarea
-                            value={formData.description || ''}
-                            onChange={e => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors h-24 resize-none"
-                            placeholder="Brief description of the series..."
-                        />
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Category Type</label>
+                                <select
+                                    value={formData.category_type || 'Fiction'}
+                                    onChange={e => setFormData({ ...formData, category_type: e.target.value as any })}
+                                    className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all"
+                                >
+                                    <option value="Fiction">Fiction</option>
+                                    <option value="Non-Fiction">Non-Fiction</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Cover URL</label>
+                            <input
+                                type="text"
+                                value={formData.cover_url || ''}
+                                onChange={e => setFormData({ ...formData, cover_url: e.target.value })}
+                                className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all"
+                                placeholder="https://..."
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Description</label>
+                            <textarea
+                                value={formData.description || ''}
+                                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all h-28 resize-none"
+                                placeholder="Brief description of the series..."
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div className="p-6 pt-0 flex gap-3">
+                <div className="p-6 border-t border-black/10 bg-white flex justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-3 text-sm font-medium text-black/60 bg-[#FAFAFA] border border-black/5 rounded-xl hover:bg-black/5 transition-colors"
+                        className="px-6 py-3 text-sm font-bold tracking-wide text-[#3D3028]/60 hover:bg-[#3D3028]/5 rounded-xl transition-colors"
                     >
-                        Cancel
+                        CANCEL
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={isSaving || !formData.title?.trim()}
-                        className="flex-1 py-3 text-sm font-medium text-white bg-[#3D3028] rounded-xl hover:bg-[#3D3028]/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="px-8 py-3 text-sm font-bold tracking-wide text-white bg-[#3D3028] rounded-xl hover:bg-[#2C1810] transition-colors shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isSaving && <Loader2 size={16} className="animate-spin" />}
-                        {series ? 'Save Changes' : 'Create Series'}
+                        {series ? 'SAVE CHANGES' : 'CREATE SERIES'}
                     </button>
                 </div>
             </motion.div>
