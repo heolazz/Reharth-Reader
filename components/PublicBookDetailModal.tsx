@@ -57,10 +57,17 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                 } else {
                     throw error;
                 }
-            } else {
+            } else if (data) {
                 setIsAdded(true);
+                // Save to local IndexedDB for immediate availability
+                try {
+                    const { saveBook } = await import('../utils/db');
+                    await saveBook(data as Book);
+                } catch (e) {
+                    console.warn('Could not save to local DB:', e);
+                }
                 showToast(`"${book.title}" added to your library`, 'success');
-                if (onBookAdded && data) onBookAdded(data as Book);
+                if (onBookAdded) onBookAdded(data as Book);
             }
         } catch (error: any) {
             console.error('Failed to add book:', error);
@@ -263,7 +270,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                     ) : (
                                         <>
                                             <Plus size={18} />
-                                            <span>Save to My Collection</span>
+                                            <span>Add to My Library</span>
                                         </>
                                     )}
                                 </button>
