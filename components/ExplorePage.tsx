@@ -77,14 +77,14 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
                     transition={{ duration: 0.5, delay: 0.1 }}
                     className="flex-1 text-white text-left flex flex-col justify-center min-w-0"
                 >
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 md:px-3 md:py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mb-2 md:mb-4 w-fit">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 md:px-3 md:py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mb-2 md:mb-3 w-fit">
                         <Award size={10} className="text-[#E86C46] shrink-0" />
                         Featured
                     </div>
                     <h2 className="font-serif text-lg md:text-4xl lg:text-5xl leading-tight mb-1.5 md:mb-2 line-clamp-2 cursor-pointer hover:text-white/90 transition-colors" onClick={() => onOpenBook?.(book)}>
                         {book.title}
                     </h2>
-                    <p className="text-[9px] md:text-sm text-white/60 mb-2 md:mb-6 uppercase tracking-widest font-bold flex items-center gap-1.5 md:gap-2 flex-wrap">
+                    <p className="text-[9px] md:text-sm text-white/60 mb-2 md:mb-4 uppercase tracking-widest font-bold flex items-center gap-1.5 md:gap-2 flex-wrap">
                         <span className="line-clamp-1">{book.author}</span>
                         {book.genre && book.genre.length > 0 && (
                             <>
@@ -96,14 +96,14 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
                         )}
                     </p>
                     {book.description && (
-                        <p className="hidden md:block text-sm text-white/70 line-clamp-3 mb-8 max-w-xl">
-                            {book.description}
+                        <p className="hidden md:block text-sm text-white/70 line-clamp-3 mb-4 md:mb-5 max-w-xl">
+                            {book.description.length > 220 ? `${book.description.substring(0, 220)}...` : book.description}
                         </p>
                     )}
 
                     <button
                         onClick={() => onOpenBook?.(book)}
-                        className="bg-[#E86C46] text-white px-5 md:px-8 py-2 md:py-3 rounded-xl font-medium text-xs md:text-sm hover:bg-[#D65A34] transition-colors shadow-lg w-fit"
+                        className="bg-[#E86C46] text-white px-5 md:px-8 py-2 md:py-3 rounded-xl font-medium text-xs md:text-sm hover:bg-[#D65A34] transition-colors shadow-lg w-fit shrink-0"
                     >
                         Read Now
                     </button>
