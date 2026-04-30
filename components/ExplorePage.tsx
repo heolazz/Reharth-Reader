@@ -7,6 +7,7 @@ import { useToast } from './Toast';
 
 interface ExplorePageProps {
     onOpenBook?: (book: PublicBook) => void;
+    onBooksAdded?: (books: import('../types').Book[]) => void;
 }
 
 // ------------------------------------------------------------------
@@ -613,6 +614,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                             setSeriesBooks([]);
                             onOpenBook?.(book);
                         }}
+                        onBooksAdded={onBooksAdded}
                     />
                 )}
             </AnimatePresence>
@@ -623,12 +625,13 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
 // ------------------------------------------------------------------
 // SERIES DETAIL MODAL
 // ------------------------------------------------------------------
-const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook }: {
+const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBooksAdded }: {
     series: PublicSeries;
     books: PublicBook[];
     isLoading: boolean;
     onClose: () => void;
     onOpenBook: (book: PublicBook) => void;
+    onBooksAdded?: (books: import('../types').Book[]) => void;
 }) => {
     const { user } = useAuthStore();
     const { showToast } = useToast();
@@ -647,18 +650,48 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook }: {
 
         setIsAdding(true);
         try {
+            const { saveCollection, saveBook } = await import('../utils/db');
+            const { generateUUID } = await import('../utils/uuid');
+            
+            const newCollection = {
+                id: generateUUID(),
+                name: series.title,
+                description: series.author ? `Books from the ${series.title} series by ${series.author}` : undefined,
+                color: '#3E2723',
+                createdAt: Date.now()
+            };
+
             let successCount = 0;
+            const booksToUpdate: import('../types').Book[] = [];
+
             for (const book of books) {
-                const { error } = await addPublicBookToLibrary(book.id, user.id);
+                const { error, data } = await addPublicBookToLibrary(book.id, user.id);
                 // We count it as success if there's no error or if it's already in the library
                 if (!error || (error.message && error.message.includes('already'))) {
                     successCount++;
+                    if (data) {
+                        const appBook = data as import('../types').Book;
+                        const updatedBook = {
+                            ...appBook,
+                            collectionIds: [...(appBook.collectionIds || []), newCollection.id]
+                        };
+                        booksToUpdate.push(updatedBook);
+                    }
                 }
             }
+            
+            if (booksToUpdate.length > 0) {
+                await saveCollection(newCollection);
+                for (const b of booksToUpdate) {
+                    await saveBook(b);
+                }
+                if (onBooksAdded) onBooksAdded(booksToUpdate);
+            }
+
             if (successCount === books.length) {
-                showToast(`Saved ${successCount} volumes from "${series.title}" to your library`, 'success');
+                showToast(`Saved ${successCount} volumes to "My Collections"`, 'success');
             } else {
-                showToast(`Saved ${successCount}/${books.length} volumes to your library`, 'info');
+                showToast(`Saved ${successCount}/${books.length} volumes to "My Collections"`, 'info');
             }
         } catch (error) {
             console.error('Failed to add series:', error);

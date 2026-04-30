@@ -248,7 +248,21 @@ const App: React.FC = () => {
         // Load from Supabase if authenticated
         const { getAllBooksFromSupabase } = await import('./lib/supabaseDb');
         const supabaseBooks = await getAllBooksFromSupabase();
-        setBooks(supabaseBooks);
+        
+        try {
+          const { getAllBooks } = await import('./utils/db');
+          const localBooks = await getAllBooks();
+          const mergedBooks = supabaseBooks.map(sb => {
+            const local = localBooks.find(lb => lb.id === sb.id);
+            if (local && local.collectionIds) {
+              return { ...sb, collectionIds: local.collectionIds };
+            }
+            return sb;
+          });
+          setBooks(mergedBooks);
+        } catch (e) {
+          setBooks(supabaseBooks);
+        }
       } catch (error) {
         console.error("Failed to load books from Supabase", error);
         // Fallback to local DB if Supabase fails
@@ -438,6 +452,9 @@ const App: React.FC = () => {
     setEditingBook(null); // Close edit mode
 
     try {
+      const { saveBook } = await import('./utils/db');
+      await saveBook(updatedBook); // Save locally for collectionIds
+
       const { saveBookToSupabase } = await import('./lib/supabaseDb');
       await saveBookToSupabase(updatedBook);
     } catch (error) {
@@ -608,11 +625,24 @@ const App: React.FC = () => {
       {/* 4. Explore Page */}
       {currentPage === 'explore' && mode === 'library' && (
         <div className="absolute inset-0 z-30 overflow-y-auto bg-[#F9F7F2]">
-          <ExplorePage onOpenBook={(book) => {
-            setSelectedPublicBook(book);
-            // Push URL for deep-linking
-            navigate(`/explore/${slugify(book.title)}`, { replace: false });
-          }} />
+          <ExplorePage 
+            onOpenBook={(book) => {
+              setSelectedPublicBook(book);
+              // Push URL for deep-linking
+              navigate(`/explore/${slugify(book.title)}`, { replace: false });
+            }}
+            onBooksAdded={(newBooks) => {
+              setBooks(prev => {
+                const updated = [...prev];
+                newBooks.forEach(nb => {
+                  const idx = updated.findIndex(b => b.id === nb.id);
+                  if (idx >= 0) updated[idx] = nb;
+                  else updated.push(nb);
+                });
+                return updated;
+              });
+            }}
+          />
         </div>
       )}
 
