@@ -146,7 +146,7 @@ const HorizontalBookCarousel = ({ title, icon: Icon, books, onOpenBook }: { titl
                     >
                         <div className="relative w-full aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
                             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
-                            <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-10 pointer-events-none" />
+                            <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
                             
                             {book.cover_url ? (
                                 <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
@@ -255,7 +255,7 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
                         onClick={() => onOpenSeries?.(series)}
                     >
                         <div className="relative w-full aspect-[16/10] rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
-                            <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-10 pointer-events-none" />
+                            <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
                             
                             {series.cover_url ? (
                                 <img src={series.cover_url} alt={series.title} className="w-full h-full object-cover" loading="lazy" />
@@ -553,7 +553,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                                         >
                                             <div className="relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
                                                 <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
-                                                <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-10 pointer-events-none" />
+                                                <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
                                                 
                                                 {book.cover_url ? (
                                                     <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
