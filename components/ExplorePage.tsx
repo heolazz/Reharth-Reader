@@ -4,10 +4,11 @@ import { Search, TrendingUp, Compass, Star, Loader2, Award, BookOpen, X, Chevron
 import { fetchPublicBooks, fetchAvailableGenres, PublicBook, fetchPublicSeries, PublicSeries, addPublicBookToLibrary } from '../lib/publicBooksApi';
 import { useAuthStore } from '../stores/useAuthStore';
 import { useToast } from './Toast';
+import { Book } from '../types';
 
 interface ExplorePageProps {
     onOpenBook?: (book: PublicBook) => void;
-    onBooksAdded?: (books: import('../types').Book[]) => void;
+    onBooksAdded?: (books: Book[]) => void;
 }
 
 // ------------------------------------------------------------------
@@ -285,7 +286,7 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
     );
 };
 
-export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
+export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdded }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
 
@@ -382,19 +383,19 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
     const isHomeView = activeCategory === 'All' && !searchQuery;
 
     return (
-        <div className="min-h-screen bg-white text-[#3D3028] font-sans pb-24 md:pb-12 pt-20 md:pt-24 px-6 md:px-12">
+        <div className="min-h-screen bg-white text-[#3D3028] font-sans pb-24 md:pb-12 pt-16 md:pt-24 px-4 md:px-12">
 
-            <div className="max-w-6xl mx-auto space-y-10">
+            <div className="max-w-6xl mx-auto space-y-6 md:space-y-10">
 
                 {/* 1. Hero / Header */}
-                <div className="text-center space-y-4 py-6 md:py-8">
+                <div className="text-center space-y-3 md:space-y-4 py-4 md:py-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 bg-[#3D3028]/5 rounded-full text-[#3D3028]/60 text-xs font-bold uppercase tracking-widest mb-2"
+                        className="inline-flex items-center gap-2 px-3 py-1 bg-[#3D3028]/5 rounded-full text-[#3D3028]/60 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1"
                     >
-                        <Compass size={14} />
+                        <Compass size={12} />
                         Explore Library
                     </motion.div>
 
@@ -402,7 +403,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1, duration: 0.6 }}
-                        className="font-serif text-4xl md:text-6xl text-[#3D3028] leading-tight"
+                        className="font-serif text-2xl md:text-6xl text-[#3D3028] leading-tight"
                     >
                         Find your next <br className="hidden md:block" />
                         great adventure.
@@ -422,7 +423,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search by title, author, or genre..."
-                            className="w-full bg-white border border-[#3D3028]/10 rounded-2xl py-4 pl-12 pr-4 text-lg text-[#3D3028] placeholder-[#3D3028]/30 focus:outline-none focus:border-[#3D3028]/30 focus:shadow-lg transition-all shadow-sm"
+                            className="w-full bg-white border border-[#3D3028]/10 rounded-2xl py-3 md:py-4 pl-12 pr-4 text-base md:text-lg text-[#3D3028] placeholder-[#3D3028]/30 focus:outline-none focus:border-[#3D3028]/30 focus:shadow-lg transition-all shadow-sm"
                         />
                     </motion.div>
                 </div>
@@ -439,13 +440,13 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
 
                 {/* 3. Categories (Genres Only) */}
                 {categories.length > 0 && (
-                    <div className="overflow-x-auto pb-4 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
-                        <div className="flex gap-3 w-max mx-auto">
+                    <div className="overflow-x-auto pb-3 md:pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+                        <div className="flex gap-2 md:gap-3 w-max mx-auto">
                             {categories.map((cat) => (
                                 <button
                                     key={cat}
                                     onClick={() => setActiveCategory(cat)}
-                                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${activeCategory === cat
+                                    className={`px-3.5 md:px-5 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all ${activeCategory === cat
                                         ? 'bg-[#3D3028] text-white shadow-md'
                                         : 'bg-white text-[#3D3028]/60 hover:bg-[#3D3028]/5 border border-[#3D3028]/5'
                                         }`}
@@ -542,7 +543,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                             </div>
 
                             {books.length > 0 ? (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                                     {books.map((book) => (
                                         <motion.div
                                             key={book.id}
@@ -631,7 +632,7 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
     isLoading: boolean;
     onClose: () => void;
     onOpenBook: (book: PublicBook) => void;
-    onBooksAdded?: (books: import('../types').Book[]) => void;
+    onBooksAdded?: (books: Book[]) => void;
 }) => {
     const { user } = useAuthStore();
     const { showToast } = useToast();
@@ -650,36 +651,74 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
 
         setIsAdding(true);
         try {
-            const { saveCollection, saveBook } = await import('../utils/db');
+            const { saveCollection, saveBook, getAllBooks } = await import('../utils/db');
             const { generateUUID } = await import('../utils/uuid');
+            const { supabase } = await import('../lib/supabase');
             
+            const collectionId = generateUUID();
             const newCollection = {
-                id: generateUUID(),
+                id: collectionId,
                 name: series.title,
-                description: series.author ? `Books from the ${series.title} series by ${series.author}` : undefined,
+                description: series.author ? `${series.title} by ${series.author}` : `${series.title} collection`,
                 color: '#3E2723',
                 createdAt: Date.now()
             };
 
             let successCount = 0;
-            const booksToUpdate: import('../types').Book[] = [];
+            const booksToUpdate: Book[] = [];
 
             for (const book of books) {
-                const { error, data } = await addPublicBookToLibrary(book.id, user.id);
-                // We count it as success if there's no error or if it's already in the library
-                if (!error || (error.message && error.message.includes('already'))) {
-                    successCount++;
-                    if (data) {
-                        const appBook = data as import('../types').Book;
-                        const updatedBook = {
-                            ...appBook,
-                            collectionIds: [...(appBook.collectionIds || []), newCollection.id]
-                        };
-                        booksToUpdate.push(updatedBook);
+                try {
+                    const { error, data } = await addPublicBookToLibrary(book.id, user.id);
+                    
+                    if (!error && data) {
+                        // New book added successfully
+                        const appBook = data as Book;
+                        booksToUpdate.push({ ...appBook, collectionIds: [...(appBook.collectionIds || []), collectionId] });
+                        successCount++;
+                    } else if (error && error.message && error.message.includes('already')) {
+                        // Book already in library - fetch it from Supabase
+                        const { data: existing } = await supabase
+                            .from('books')
+                            .select('*')
+                            .eq('user_id', user.id)
+                            .ilike('title', book.title)
+                            .ilike('author', book.author)
+                            .maybeSingle();
+                        
+                        if (existing) {
+                            const appBook: Book = {
+                                id: existing.id,
+                                title: existing.title,
+                                author: existing.author || 'Unknown',
+                                color: existing.color || '#8B7355',
+                                fileType: existing.file_type || 'epub',
+                                coverImage: existing.cover_url || '',
+                                coverUrl: existing.cover_url || '',
+                                fileUrl: existing.file_url || '',
+                                tags: existing.tags || [],
+                                year: existing.year || '',
+                                summary: existing.summary || '',
+                                progressPercent: existing.progress_percent || 0,
+                                lastLocation: existing.last_location || '',
+                                timeRead: existing.time_read_seconds || 0,
+                                isFavorite: existing.is_favorite || false,
+                                isArchived: false,
+                            };
+                            // Merge with local collectionIds
+                            const localBooks = await getAllBooks();
+                            const localBook = localBooks.find(lb => lb.id === existing.id);
+                            const existingCollections = localBook?.collectionIds || [];
+                            booksToUpdate.push({ ...appBook, collectionIds: [...existingCollections, collectionId] });
+                        }
+                        successCount++;
                     }
+                } catch (e) {
+                    console.warn(`Failed to process book: ${book.title}`, e);
                 }
             }
             
+            // Always create collection if we have books
             if (booksToUpdate.length > 0) {
                 await saveCollection(newCollection);
                 for (const b of booksToUpdate) {
@@ -688,21 +727,21 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                 if (onBooksAdded) onBooksAdded(booksToUpdate);
             }
 
-            if (successCount === books.length) {
-                showToast(`Saved ${successCount} volumes to "My Collections"`, 'success');
+            if (successCount > 0) {
+                showToast(`Saved ${successCount} volume${successCount > 1 ? 's' : ''} to "${series.title}" collection!`, 'success');
             } else {
-                showToast(`Saved ${successCount}/${books.length} volumes to "My Collections"`, 'info');
+                showToast('Could not save books. Please try again.', 'error');
             }
         } catch (error) {
             console.error('Failed to add series:', error);
-            showToast('Failed to add some books', 'error');
+            showToast('Failed to save collection', 'error');
         } finally {
             setIsAdding(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4">
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -711,92 +750,96 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
             <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 40 }}
+                className="relative w-full md:max-w-2xl h-[92vh] md:h-auto md:max-h-[85vh] bg-white rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col"
             >
                 {/* Header with cover */}
-                <div className="relative h-40 md:h-48 bg-gradient-to-br from-[#3D3028] to-[#5a4a3a] overflow-hidden shrink-0">
+                <div className="relative h-36 md:h-48 bg-gradient-to-br from-[#3D3028] to-[#5a4a3a] overflow-hidden shrink-0">
                     {series.cover_url && (
                         <img src={series.cover_url} alt={series.title} className="absolute inset-0 w-full h-full object-cover opacity-30" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors z-10"
+                        className="absolute top-3 right-3 md:top-4 md:right-4 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors z-10"
                     >
                         <X size={18} />
                     </button>
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <div className="inline-flex px-2.5 py-1 bg-white/15 backdrop-blur-md rounded-md text-white text-[10px] font-bold uppercase tracking-wider mb-2">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+                        <div className="inline-flex px-2.5 py-1 bg-white/15 backdrop-blur-md rounded-md text-white text-[10px] font-bold uppercase tracking-wider mb-1.5">
                             {series.category_type || 'Series'} · {books.length} Volume{books.length !== 1 ? 's' : ''}
                         </div>
-                        <h2 className="font-serif text-2xl md:text-3xl text-white leading-tight">{series.title}</h2>
+                        <h2 className="font-serif text-xl md:text-3xl text-white leading-tight line-clamp-2">{series.title}</h2>
                         {series.author && (
-                            <p className="text-white/60 text-xs font-bold uppercase tracking-widest mt-1.5">{series.author}</p>
+                            <p className="text-white/60 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1">{series.author}</p>
                         )}
                     </div>
                 </div>
 
-                {/* Description & Action */}
-                <div className="px-6 pt-5 pb-2 flex flex-col gap-4">
-                    {series.description && (
-                        <p className="text-sm text-[#3D3028]/60 leading-relaxed">{series.description}</p>
-                    )}
+                {/* Save Button - Always visible, sticky */}
+                <div className="px-4 md:px-6 py-3 border-b border-[#3D3028]/5 bg-[#FAFAF8] shrink-0">
                     <button
                         onClick={handleAddSeriesToLibrary}
                         disabled={isAdding || books.length === 0 || isLoading}
-                        className="self-start px-4 py-2.5 bg-[#3D3028] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-[#2C1810] transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+                        className="w-full md:w-auto px-6 py-3 bg-[#E86C46] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-[#D45A35] transition-all shadow-md active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                        {isAdding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                        {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                         {isAdding ? 'Saving...' : 'Save to My Collection'}
                     </button>
                 </div>
 
+                {/* Description */}
+                {series.description && (
+                    <div className="px-4 md:px-6 pt-3 pb-1 shrink-0">
+                        <p className="text-xs md:text-sm text-[#3D3028]/60 leading-relaxed line-clamp-3">{series.description}</p>
+                    </div>
+                )}
+
                 {/* Volume List */}
-                <div className="flex-1 overflow-y-auto px-6 py-4">
+                <div className="flex-1 overflow-y-auto px-4 md:px-6 py-3">
                     {isLoading ? (
                         <div className="flex justify-center py-12">
                             <Loader2 size={28} className="animate-spin text-[#3D3028]/20" />
                         </div>
                     ) : books.length > 0 ? (
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             {books.map((book, idx) => (
                                 <motion.div
                                     key={book.id}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.05 }}
+                                    transition={{ delay: idx * 0.03 }}
                                     onClick={() => onOpenBook(book)}
-                                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#FAFAFA] cursor-pointer group transition-colors border border-transparent hover:border-[#3D3028]/5"
+                                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#FAFAFA] cursor-pointer group transition-colors border border-transparent hover:border-[#3D3028]/5"
                                 >
                                     {/* Volume Number */}
-                                    <div className="w-8 h-8 shrink-0 rounded-lg bg-[#3D3028]/5 flex items-center justify-center">
-                                        <span className="text-sm font-bold text-[#3D3028]/40">{book.volume_number || idx + 1}</span>
+                                    <div className="w-7 h-7 shrink-0 rounded-lg bg-[#3D3028]/5 flex items-center justify-center">
+                                        <span className="text-xs font-bold text-[#3D3028]/40">{book.volume_number || idx + 1}</span>
                                     </div>
 
                                     {/* Cover */}
-                                    <div className="w-10 h-14 shrink-0 rounded overflow-hidden bg-[#EAE5DD] border border-[#3D3028]/10">
+                                    <div className="w-9 h-12 shrink-0 rounded overflow-hidden bg-[#EAE5DD] border border-[#3D3028]/10">
                                         {book.cover_url ? (
                                             <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-[8px] text-[#3D3028]/30 p-1">No Cover</div>
+                                            <div className="w-full h-full flex items-center justify-center text-[7px] text-[#3D3028]/30 p-1">No Cover</div>
                                         )}
                                     </div>
 
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="font-medium text-sm text-[#3D3028] line-clamp-1 group-hover:underline decoration-[#3D3028]/20 underline-offset-2">
+                                        <h4 className="font-medium text-[13px] text-[#3D3028] line-clamp-1 group-hover:underline decoration-[#3D3028]/20 underline-offset-2">
                                             {book.title}
                                         </h4>
-                                        <p className="text-[11px] text-[#3D3028]/40 mt-0.5">{book.author}</p>
+                                        <p className="text-[10px] text-[#3D3028]/40 mt-0.5">{book.author}</p>
                                     </div>
 
                                     {/* Rating */}
                                     {book.rating_average !== undefined && book.rating_average > 0 && (
                                         <div className="flex items-center gap-1 text-xs text-[#3D3028]/50 shrink-0">
-                                            <Star size={12} className="fill-[#E86C46] text-[#E86C46]" />
+                                            <Star size={11} className="fill-[#E86C46] text-[#E86C46]" />
                                             {book.rating_average.toFixed(1)}
                                         </div>
                                     )}
