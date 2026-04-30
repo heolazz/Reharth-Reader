@@ -13,6 +13,7 @@ export interface PublicBook {
     cover_url?: string;
     epub_url?: string;
     genre?: string[];
+    category_type?: 'Fiction' | 'Non-Fiction';
     tags?: string[];
     language?: string;
     page_count?: number;
@@ -71,9 +72,13 @@ export async function fetchPublicBooks(options: FetchBooksOptions = {}) {
             .select('*')
             .eq('status', 'published');
 
-        // Filter by tags (we use the genre parameter for compatibility, but check the tags column)
+        // Filter by genre or tags
         if (genre && genre !== 'All') {
-            query = query.contains('tags', [genre]);
+            // Check if the parameter exists in genre OR tags
+            // Supabase doesn't easily do OR across array columns with contains, 
+            // so we'll use an OR condition with raw text search if needed, 
+            // but for arrays, we can do:
+            query = query.or(`genre.cs.{${genre}},tags.cs.{${genre}}`);
         }
 
         // Filter featured books
@@ -171,7 +176,7 @@ export async function fetchTrendingBooks(limit = 10) {
 }
 
 /**
- * Fetch available tags (used as categories)
+ * Fetch available tags (used as specific topics)
  */
 export async function fetchAvailableTags() {
     try {
@@ -191,6 +196,31 @@ export async function fetchAvailableTags() {
         return { data: Array.from(tagsSet).sort(), error: null };
     } catch (error) {
         console.error('Error fetching tags:', error);
+        return { data: null, error };
+    }
+}
+
+/**
+ * Fetch available genres (used as main categories)
+ */
+export async function fetchAvailableGenres() {
+    try {
+        const { data, error } = await supabase
+            .from('public_books')
+            .select('genre')
+            .eq('status', 'published');
+
+        if (error) throw error;
+
+        // Extract unique genres
+        const genreSet = new Set<string>();
+        data?.forEach(book => {
+            book.genre?.forEach((g: string) => genreSet.add(g));
+        });
+
+        return { data: Array.from(genreSet).sort(), error: null };
+    } catch (error) {
+        console.error('Error fetching genres:', error);
         return { data: null, error };
     }
 }
@@ -324,6 +354,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                         author: restoredData.author,
                         color: restoredData.color || '#8B7355',
                         icon: 'feather',
+                        genre: restoredData.genre || [],
                         tags: restoredData.tags || [],
                         year: restoredData.year || new Date().getFullYear().toString(),
                         summary: restoredData.summary || '',
@@ -355,6 +386,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             title: publicBook.title,
             author: publicBook.author,
             color: '#8B7355',
+            genre: publicBook.genre || [],
             tags: publicBook.tags || [],
             year: publicBook.published_year ? publicBook.published_year.toString() : new Date().getFullYear().toString(),
             summary: publicBook.description || '',
@@ -412,6 +444,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             author: data.author,
             color: data.color || '#8B7355',
             icon: 'feather',
+            genre: data.genre || [],
             tags: data.tags || [],
             year: data.year || new Date().getFullYear().toString(),
             summary: data.summary || '',

@@ -1,20 +1,250 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Search, TrendingUp, Sparkles, BookOpen, Compass, ArrowRight, Star, Loader2 } from 'lucide-react';
-import { fetchPublicBooks, fetchTrendingBooks, fetchAvailableTags, PublicBook } from '../lib/publicBooksApi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, TrendingUp, Compass, Star, Loader2, Award, BookOpen } from 'lucide-react';
+import { fetchPublicBooks, fetchAvailableGenres, PublicBook } from '../lib/publicBooksApi';
 
 interface ExplorePageProps {
     onOpenBook?: (book: PublicBook) => void;
 }
+
+// ------------------------------------------------------------------
+// FEATURED BOOKS SLIDER COMPONENT
+// ------------------------------------------------------------------
+const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpenBook?: (book: PublicBook) => void }) => {
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    // Auto-slide every 5 seconds
+    useEffect(() => {
+        if (!books || books.length <= 1) return;
+        const interval = setInterval(() => {
+            setActiveIndex((prev) => (prev + 1) % books.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [books]);
+
+    if (!books || books.length === 0) return null;
+
+    const book = books[activeIndex];
+
+    return (
+        <div className="relative w-full h-[460px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-2xl bg-[#3D3028]">
+            {/* Background Image with heavy blur */}
+            <div className="absolute inset-0">
+                {book.cover_url ? (
+                    <motion.img 
+                        key={`bg-${book.id}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.3 }}
+                        transition={{ duration: 1 }}
+                        src={book.cover_url} 
+                        className="w-full h-full object-cover blur-[40px] scale-125" 
+                    />
+                ) : (
+                    <div className="w-full h-full bg-[#3D3028]" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1410] via-[#1A1410]/40 to-transparent" />
+            </div>
+
+            <div className="relative z-10 w-full h-full flex flex-col md:flex-row items-center justify-center p-6 md:p-12 gap-6 md:gap-12">
+                {/* Book Cover */}
+                <motion.div 
+                    key={`cover-${book.id}`}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-[140px] md:w-[200px] shrink-0 aspect-[2/3] rounded-md shadow-[0_12px_32px_rgba(0,0,0,0.6)] overflow-hidden cursor-pointer mt-4 md:mt-0"
+                    onClick={() => onOpenBook?.(book)}
+                >
+                    {book.cover_url ? (
+                        <img src={book.cover_url} className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-[10px] text-center">
+                            No Cover
+                        </div>
+                    )}
+                </motion.div>
+
+                {/* Info */}
+                <motion.div 
+                    key={`info-${book.id}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="flex-1 text-white text-center md:text-left flex flex-col justify-center items-center md:items-start"
+                >
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-[10px] font-bold uppercase tracking-widest mb-3 md:mb-4">
+                        <Award size={12} className="text-[#E86C46]" />
+                        Featured Collection
+                    </div>
+                    <h2 className="font-serif text-2xl md:text-4xl lg:text-5xl leading-tight mb-2 line-clamp-2 cursor-pointer hover:text-white/90 transition-colors" onClick={() => onOpenBook?.(book)}>
+                        {book.title}
+                    </h2>
+                    <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 uppercase tracking-widest font-bold flex items-center justify-center md:justify-start gap-2">
+                        <span>{book.author}</span>
+                        {book.genre && book.genre.length > 0 && (
+                            <>
+                                <span className="w-1 h-1 rounded-full bg-white/40"></span>
+                                <span className="text-[#E86C46]">
+                                    {Array.isArray(book.genre) ? book.genre.join(', ') : book.genre}
+                                </span>
+                            </>
+                        )}
+                    </p>
+                    {book.description && (
+                        <p className="text-xs md:text-sm text-white/70 line-clamp-3 mb-6 md:mb-8 max-w-xl">
+                            {book.description}
+                        </p>
+                    )}
+                    
+                    <button 
+                        onClick={() => onOpenBook?.(book)}
+                        className="bg-[#E86C46] text-white px-6 md:px-8 py-2.5 md:py-3 rounded-xl font-medium text-sm hover:bg-[#D65A34] transition-colors shadow-lg"
+                    >
+                        Read Now
+                    </button>
+                </motion.div>
+            </div>
+
+            {/* Controls */}
+            {books.length > 1 && (
+                <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
+                    {books.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setActiveIndex(idx)}
+                            className={`h-1.5 rounded-full transition-all ${idx === activeIndex ? 'w-6 bg-[#E86C46]' : 'w-2 bg-white/30 hover:bg-white/50'}`}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ------------------------------------------------------------------
+// HORIZONTAL CAROUSEL COMPONENT
+// ------------------------------------------------------------------
+const HorizontalBookCarousel = ({ title, icon: Icon, books, onOpenBook }: { title: string, icon?: any, books: PublicBook[], onOpenBook?: (book: PublicBook) => void }) => {
+    if (!books || books.length === 0) return null;
+    return (
+        <div className="space-y-4 pb-4">
+            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-3">
+                {Icon && <Icon size={24} className="text-[#E86C46]" />}
+                {title}
+            </h2>
+            <div className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0">
+                {books.map(book => (
+                    <motion.div
+                        key={book.id}
+                        whileHover={{ y: -5 }}
+                        className="group cursor-pointer w-[140px] md:w-[160px] shrink-0 snap-start flex flex-col items-center text-center"
+                        onClick={() => onOpenBook?.(book)}
+                    >
+                        <div className="relative w-full aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
+                            <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
+                            <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-10 pointer-events-none" />
+                            
+                            {book.cover_url ? (
+                                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                                <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-xs">
+                                    No Cover
+                                </div>
+                            )}
+                            
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/20" />
+                            <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-10 transition-opacity" />
+                            
+                            {book.rating_average !== undefined && book.rating_average > 0 && (
+                                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 shadow-sm z-20">
+                                    <Star size={10} className="fill-[#E86C46] text-[#E86C46]" />
+                                    {book.rating_average.toFixed(1)}
+                                </div>
+                            )}
+                        </div>
+                        <h3 className="font-serif text-[15px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2 w-full px-1">
+                            {book.title}
+                        </h3>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1 w-full px-1">
+                            {book.author}
+                        </p>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// ------------------------------------------------------------------
+// TOP BOOKS CAROUSEL COMPONENT (Ranks 1-9)
+// ------------------------------------------------------------------
+const TopBooksCarousel = ({ books, onOpenBook }: { books: PublicBook[], onOpenBook?: (book: PublicBook) => void }) => {
+    if (!books || books.length === 0) return null;
+    return (
+        <div className="space-y-4 pb-4">
+            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-3">
+                <TrendingUp size={24} className="text-[#E86C46]" />
+                Top Books
+            </h2>
+            <div className="flex overflow-x-auto gap-8 pb-8 pt-4 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0">
+                {books.slice(0, 9).map((book, idx) => (
+                    <motion.div
+                        key={book.id}
+                        whileHover={{ y: -5 }}
+                        className="group cursor-pointer w-[240px] md:w-[280px] shrink-0 snap-start flex items-center gap-4 relative"
+                        onClick={() => onOpenBook?.(book)}
+                    >
+                        {/* Huge Number Background */}
+                        <div className="absolute -left-4 -bottom-6 text-[100px] md:text-[120px] font-serif font-bold text-[#3D3028]/5 z-0 select-none pointer-events-none leading-none group-hover:text-[#E86C46]/5 transition-colors">
+                            {idx + 1}
+                        </div>
+                        
+                        <div className="relative w-[80px] md:w-[100px] shrink-0 aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden z-10 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-shadow">
+                             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
+                             {book.cover_url ? (
+                                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                                <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-[10px] text-center">
+                                    No Cover
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="flex-1 z-10">
+                            <h3 className="font-serif text-[15px] md:text-[16px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2">
+                                {book.title}
+                            </h3>
+                            <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1">
+                                {book.author}
+                            </p>
+                            {book.rating_average !== undefined && book.rating_average > 0 && (
+                                <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-[#3D3028]/60">
+                                    <Star size={12} className="fill-[#E86C46] text-[#E86C46]" />
+                                    {book.rating_average.toFixed(1)}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
 
     // Data States
-    const [books, setBooks] = useState<PublicBook[]>([]);
-    const [trendingBooks, setTrendingBooks] = useState<PublicBook[]>([]);
-    const [genres, setGenres] = useState<string[]>([]);
+    const [books, setBooks] = useState<PublicBook[]>([]); 
+    
+    // Home View States
+    const [featuredBooks, setFeaturedBooks] = useState<PublicBook[]>([]);
+    const [topBooks, setTopBooks] = useState<PublicBook[]>([]);
+    const [fictionBooks, setFictionBooks] = useState<PublicBook[]>([]);
+    const [nonFictionBooks, setNonFictionBooks] = useState<PublicBook[]>([]);
+
+    const [categories, setCategories] = useState<string[]>([]); // Only genres now
 
     // UI States
     const [isLoading, setIsLoading] = useState(true);
@@ -25,17 +255,24 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
         const loadInitialData = async () => {
             setIsLoading(true);
             try {
-                // Fetch genres (now using tags)
-                const { data: genresData } = await fetchAvailableTags();
-                if (genresData) setGenres(['All', ...genresData]);
+                // Fetch only genres for the pill buttons
+                const { data: genresData } = await fetchAvailableGenres();
+                setCategories(['All', ...(genresData || [])]);
 
-                // Fetch trending books initially
-                const { data: trendingData } = await fetchTrendingBooks(4);
-                if (trendingData) setTrendingBooks(trendingData);
+                // 1. Fetch Featured Books
+                const { data: featuredData } = await fetchPublicBooks({ featured: true, limit: 10 });
+                if (featuredData) setFeaturedBooks(featuredData);
 
-                // Fetch default books (All)
-                const { data: booksData } = await fetchPublicBooks({ limit: 8 });
-                if (booksData) setBooks(booksData);
+                // 2. Fetch Top Books (Trending / High Rating)
+                const { data: topData } = await fetchPublicBooks({ sortBy: 'trending', limit: 9 });
+                if (topData) setTopBooks(topData);
+
+                // 3. Fetch Fiction & Literature
+                const { data: allBooksData } = await fetchPublicBooks({ limit: 100 });
+                if (allBooksData) {
+                    setFictionBooks(allBooksData.filter(b => b.category_type === 'Fiction' || !b.category_type));
+                    setNonFictionBooks(allBooksData.filter(b => b.category_type === 'Non-Fiction'));
+                }
 
             } catch (error) {
                 console.error("Failed to load explore data:", error);
@@ -49,13 +286,18 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
 
     // Fetch on Category or Search Change
     useEffect(() => {
+        if (activeCategory === 'All' && !searchQuery) {
+            setBooks([]); // Reset search books when returning to home view
+            return;
+        }
+
         const fetchData = async () => {
             setIsSearching(true);
             try {
                 const { data } = await fetchPublicBooks({
                     genre: activeCategory === 'All' ? undefined : activeCategory,
                     search: searchQuery,
-                    limit: 12
+                    limit: 24
                 });
                 if (data) setBooks(data);
             } catch (error) {
@@ -73,13 +315,15 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
         return () => clearTimeout(timeoutId);
     }, [activeCategory, searchQuery]);
 
+    const isHomeView = activeCategory === 'All' && !searchQuery;
+
     return (
         <div className="min-h-screen bg-white text-[#3D3028] font-sans pb-24 md:pb-12 pt-20 md:pt-24 px-6 md:px-12">
 
-            <div className="max-w-6xl mx-auto space-y-12">
+            <div className="max-w-6xl mx-auto space-y-10">
 
                 {/* 1. Hero / Header */}
-                <div className="text-center space-y-4 py-8">
+                <div className="text-center space-y-4 py-6 md:py-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -104,9 +348,9 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.6 }}
-                        className="max-w-xl mx-auto relative group"
+                        className="max-w-xl mx-auto relative group pt-2"
                     >
-                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none mt-2">
                             <Search size={20} className="text-[#3D3028]/40" />
                         </div>
                         <input
@@ -119,11 +363,21 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                     </motion.div>
                 </div>
 
-                {/* 2. Categories */}
-                {genres.length > 0 && (
+                {/* 2. Featured Collections Slider (Hidden during text search) */}
+                {!searchQuery && !isLoading && featuredBooks.length > 0 && (
+                    <div className="pt-2">
+                        <FeaturedBooksSlider 
+                            books={featuredBooks} 
+                            onOpenBook={onOpenBook} 
+                        />
+                    </div>
+                )}
+
+                {/* 3. Categories (Genres Only) */}
+                {categories.length > 0 && (
                     <div className="overflow-x-auto pb-4 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
                         <div className="flex gap-3 w-max mx-auto">
-                            {genres.map((cat) => (
+                            {categories.map((cat) => (
                                 <button
                                     key={cat}
                                     onClick={() => setActiveCategory(cat)}
@@ -139,86 +393,120 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                     </div>
                 )}
 
-                {/* 3. Book Grid (Main Content) */}
-                <div className="space-y-6">
-                    <div className="flex items-end justify-between border-b border-[#3D3028]/5 pb-4">
-                        <div>
-                            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-2">
-                                {searchQuery ? <Search size={24} className="text-[#E86C46]" /> : <TrendingUp size={24} className="text-[#E86C46]" />}
-                                {searchQuery ? `Results for "${searchQuery}"` : (activeCategory === 'All' ? 'Trending & Recent' : activeCategory)}
-                            </h2>
-                            <p className="text-[#3D3028]/50 text-sm mt-1">
-                                {isSearching ? 'Searching...' : `Showing ${books.length} books`}
-                            </p>
-                        </div>
+                {/* 4. Main Content Area */}
+                {isLoading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 size={40} className="animate-spin text-[#3D3028]/20" />
                     </div>
+                ) : isHomeView ? (
+                    /* --- HOME VIEW: TOP BOOKS & MACRO CATEGORIES --- */
+                    <AnimatePresence mode="wait">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="space-y-12 pt-4"
+                        >
+                            {/* Top Books 1-9 */}
+                            {topBooks.length > 0 && (
+                                <TopBooksCarousel 
+                                    books={topBooks} 
+                                    onOpenBook={onOpenBook} 
+                                />
+                            )}
 
-                    {isLoading ? (
-                        <div className="flex justify-center py-20">
-                            <Loader2 size={40} className="animate-spin text-[#3D3028]/20" />
-                        </div>
-                    ) : books.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-                            {books.map((book) => (
-                                <motion.div
-                                    key={book.id}
-                                    whileHover={{ y: -5 }}
-                                    className="group cursor-pointer w-full flex justify-center flex-col items-center text-center"
-                                    onClick={() => onOpenBook?.(book)}
-                                >
-                                    <div className="relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
-                                        {/* Spine Hinge Detail */}
-                                        <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
+                            {/* Fiction & Literature */}
+                            {fictionBooks.length > 0 && (
+                                <HorizontalBookCarousel 
+                                    title="Fiction & Literature" 
+                                    icon={BookOpen} 
+                                    books={fictionBooks} 
+                                    onOpenBook={onOpenBook} 
+                                />
+                            )}
 
-                                        {/* Minimal Noise Texture */}
-                                        <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-10 pointer-events-none" />
-
-                                        {/* Cover Image */}
-                                        {book.cover_url ? (
-                                            <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
-                                        ) : (
-                                            <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-xs">
-                                                No Cover
-                                            </div>
-                                        )}
-
-                                        {/* Gradient Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/20" />
-
-                                        {/* Hover Overlay */}
-                                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-10 transition-opacity" />
-
-                                        {/* Rating Badge - Only if rating exists */}
-                                        {book.rating_average !== undefined && book.rating_average > 0 && (
-                                            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 shadow-sm z-20">
-                                                <Star size={10} className="fill-[#E86C46] text-[#E86C46]" />
-                                                {book.rating_average.toFixed(1)}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <h3 className="font-serif text-lg leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2">
-                                        {book.title}
-                                    </h3>
-                                    <p className="text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1">
-                                        {book.author}
+                            {/* Non-Fiction & Knowledge */}
+                            {nonFictionBooks.length > 0 && (
+                                <HorizontalBookCarousel 
+                                    title="Non-Fiction & Knowledge" 
+                                    icon={BookOpen} 
+                                    books={nonFictionBooks} 
+                                    onOpenBook={onOpenBook} 
+                                />
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                ) : (
+                    /* --- SEARCH/CATEGORY VIEW: GRID --- */
+                    <AnimatePresence mode="wait">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="space-y-6"
+                        >
+                            <div className="flex items-end justify-between border-b border-[#3D3028]/5 pb-4">
+                                <div>
+                                    <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-2">
+                                        <Search size={24} className="text-[#E86C46]" />
+                                        {searchQuery ? `Results for "${searchQuery}"` : activeCategory}
+                                    </h2>
+                                    <p className="text-[#3D3028]/50 text-sm mt-1">
+                                        {isSearching ? 'Searching...' : `Showing ${books.length} books`}
                                     </p>
-                                </motion.div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-20 text-[#3D3028]/40">
-                            <p className="font-serif text-lg">No books found.</p>
-                        </div>
-                    )}
-                </div>
+                                </div>
+                            </div>
 
-                {/* 4. Curated Collections Banner - Hidden for now per user request */}
-                {/* 
-                {activeCategory === 'All' && !searchQuery && (
-                    ... collections code ...
+                            {books.length > 0 ? (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+                                    {books.map((book) => (
+                                        <motion.div
+                                            key={book.id}
+                                            whileHover={{ y: -5 }}
+                                            className="group cursor-pointer w-full flex justify-center flex-col items-center text-center"
+                                            onClick={() => onOpenBook?.(book)}
+                                        >
+                                            <div className="relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
+                                                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
+                                                <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-10 pointer-events-none" />
+                                                
+                                                {book.cover_url ? (
+                                                    <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-xs">
+                                                        No Cover
+                                                    </div>
+                                                )}
+                                                
+                                                <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/20" />
+                                                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-10 transition-opacity" />
+                                                
+                                                {book.rating_average !== undefined && book.rating_average > 0 && (
+                                                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 shadow-sm z-20">
+                                                        <Star size={10} className="fill-[#E86C46] text-[#E86C46]" />
+                                                        {book.rating_average.toFixed(1)}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <h3 className="font-serif text-[15px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2 w-full px-1">
+                                                {book.title}
+                                            </h3>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1 w-full px-1">
+                                                {book.author}
+                                            </p>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-20 text-[#3D3028]/40">
+                                    <p className="font-serif text-lg">No books found.</p>
+                                </div>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
                 )}
-                */}
+
                 {/* 5. Minimal Footer Quote */}
                 <div className="text-center pt-16 pb-8 border-t border-[#3D3028]/5">
                     <p className="font-serif text-xl md:text-2xl text-[#3D3028]/40 italic">
@@ -231,3 +519,4 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
         </div>
     );
 };
+

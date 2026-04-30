@@ -7,6 +7,8 @@ export interface Book {
   fileType: 'text' | 'epub';
   content?: string;
   epubData?: ArrayBuffer; // For storing raw EPUB binary
+  genre?: string[]; // Main categories/genres
+  category_type?: 'Fiction' | 'Non-Fiction'; // Macro category
   tags?: string[]; // Array of categories/tags
   icon?: string; // Icon name for the cover
   coverImage?: string; // Base64 or URL for the book cover visual

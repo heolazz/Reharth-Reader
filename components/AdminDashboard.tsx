@@ -233,6 +233,7 @@ const BooksManager = () => {
                             <tr>
                                 <th className="px-6 py-4 font-medium">Book</th>
                                 <th className="px-6 py-4 font-medium">Author</th>
+                                <th className="px-6 py-4 font-medium">Genre</th>
                                 <th className="px-6 py-4 font-medium text-center">Stats</th>
                                 <th className="px-6 py-4 font-medium text-center">Status</th>
                                 <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -255,6 +256,19 @@ const BooksManager = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-[#3D3028]/80">{book.author}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-wrap gap-1 max-w-[150px]">
+                                            {book.genre && book.genre.length > 0 ? (
+                                                book.genre.map((g, idx) => (
+                                                    <span key={idx} className="text-[10px] bg-[#3D3028]/5 px-1.5 py-0.5 rounded text-[#3D3028]/60 whitespace-nowrap">
+                                                        {g}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-[10px] text-[#3D3028]/30">-</span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="px-6 py-4 text-center">
                                         <div className="flex flex-col items-center gap-1">
                                             <span className="text-xs font-medium bg-[#3D3028]/5 px-2 py-0.5 rounded-full text-[#3D3028]/60">
@@ -338,7 +352,7 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
     const [isUploading, setIsUploading] = useState(false);
     const [formData, setFormData] = useState<Partial<PublicBook>>({
         title: '', author: '', description: '',
-        status: 'published', genre: [],
+        status: 'published', genre: [], category_type: 'Fiction',
         cover_url: '', epub_url: '',
         is_featured: false, is_trending: false
     });
@@ -580,7 +594,7 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Year</label>
                                     <input
@@ -589,6 +603,30 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
                                         onChange={e => setFormData({ ...formData, published_year: parseInt(e.target.value) || undefined })}
                                         className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
                                         placeholder="e.g. 2024"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Category Type</label>
+                                    <select
+                                        value={formData.category_type || 'Fiction'}
+                                        onChange={e => setFormData({ ...formData, category_type: e.target.value as any })}
+                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
+                                    >
+                                        <option value="Fiction">Fiction & Literature</option>
+                                        <option value="Non-Fiction">Non-Fiction & Knowledge</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Genre</label>
+                                    <input
+                                        type="text"
+                                        value={formData.genre?.join(', ') || ''}
+                                        onChange={e => {
+                                            const genreArray = e.target.value.split(',').map(t => t.trim()).filter(t => t);
+                                            setFormData({ ...formData, genre: genreArray });
+                                        }}
+                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
+                                        placeholder="Fiksi, Fantasi..."
                                     />
                                 </div>
                                 <div>
@@ -602,7 +640,7 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
                                             setFormData({ ...formData, tags: tagsArray });
                                         }}
                                         className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
-                                        placeholder="fantasy, magic, epic..."
+                                        placeholder="magic, epic..."
                                     />
                                 </div>
                             </div>
