@@ -136,7 +136,7 @@ const HorizontalBookCarousel = ({ title, icon: Icon, books, onOpenBook }: { titl
                 {Icon && <Icon size={24} className="text-[#E86C46]" />}
                 {title}
             </h2>
-            <div className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0">
+            <div className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-hide snap-x -mx-4 px-4 md:mx-0 md:px-0">
                 {books.map(book => (
                     <motion.div
                         key={book.id}
@@ -190,7 +190,7 @@ const TopBooksCarousel = ({ books, onOpenBook }: { books: PublicBook[], onOpenBo
                 <TrendingUp size={24} className="text-[#E86C46]" />
                 Top Books
             </h2>
-            <div className="flex overflow-x-auto gap-8 pb-8 pt-4 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0">
+            <div className="flex overflow-x-auto gap-8 pb-8 pt-4 scrollbar-hide snap-x -mx-4 px-4 md:mx-0 md:px-0">
                 {books.slice(0, 9).map((book, idx) => (
                     <motion.div
                         key={book.id}
@@ -246,7 +246,7 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
                 {Icon && <Icon size={24} className="text-[#E86C46]" />}
                 {title}
             </h2>
-            <div className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0">
+            <div className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-hide snap-x -mx-4 px-4 md:mx-0 md:px-0">
                 {seriesList.map(series => (
                     <motion.div
                         key={series.id}
@@ -383,7 +383,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
     const isHomeView = activeCategory === 'All' && !searchQuery;
 
     return (
-        <div className="min-h-screen bg-white text-[#3D3028] font-sans pb-24 md:pb-12 pt-16 md:pt-24 px-4 md:px-12">
+        <div className="min-h-screen bg-white text-[#3D3028] font-sans pb-24 md:pb-12 pt-16 md:pt-24 px-4 md:px-12 overflow-x-hidden">
 
             <div className="max-w-6xl mx-auto space-y-6 md:space-y-10">
 
