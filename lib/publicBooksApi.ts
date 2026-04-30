@@ -30,6 +30,20 @@ export interface PublicBook {
     created_at?: string;
     updated_at?: string;
     published_at?: string;
+
+    // Series fields
+    series_id?: string;
+    volume_number?: number;
+}
+
+export interface PublicSeries {
+    id: string;
+    title: string;
+    description?: string;
+    author?: string;
+    cover_url?: string;
+    category_type?: 'Fiction' | 'Non-Fiction';
+    created_at?: string;
 }
 
 export interface BookReview {
@@ -51,6 +65,9 @@ export interface FetchBooksOptions {
     offset?: number;
     sortBy?: 'rating' | 'trending' | 'recent' | 'popular';
     featured?: boolean;
+    category_type?: 'Fiction' | 'Non-Fiction';
+    series_id?: string;
+    hideSeriesContinuations?: boolean; // If true, only fetches volume 1 or books without a series
 }
 
 /**
@@ -63,7 +80,10 @@ export async function fetchPublicBooks(options: FetchBooksOptions = {}) {
         limit = 20,
         offset = 0,
         sortBy = 'recent',
-        featured = false
+        featured,
+        category_type,
+        series_id,
+        hideSeriesContinuations
     } = options;
 
     try {
@@ -71,6 +91,19 @@ export async function fetchPublicBooks(options: FetchBooksOptions = {}) {
             .from('public_books')
             .select('*')
             .eq('status', 'published');
+
+        // Apply filters
+        if (category_type) {
+            query = query.eq('category_type', category_type);
+        }
+        
+        if (series_id) {
+            query = query.eq('series_id', series_id);
+        }
+
+        if (hideSeriesContinuations) {
+            query = query.or('volume_number.is.null,volume_number.eq.1');
+        }
 
         // Filter by genre or tags
         if (genre && genre !== 'All') {
@@ -529,4 +562,88 @@ export async function submitBookReview(
     }
 }
 
-// Re-export other things if needed? No.
+// =============================================
+// PUBLIC SERIES API
+// =============================================
+
+export async function fetchPublicSeries() {
+    try {
+        const { data, error } = await supabase
+            .from('public_series')
+            .select('*')
+            .order('title', { ascending: true });
+
+        if (error) throw error;
+        return { data: data as PublicSeries[], error: null };
+    } catch (error) {
+        console.error('Error fetching series:', error);
+        return { data: null, error };
+    }
+}
+
+export async function getPublicSeriesById(id: string) {
+    try {
+        const { data, error } = await supabase
+            .from('public_series')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+        return { data: data as PublicSeries, error: null };
+    } catch (error) {
+        console.error('Error fetching series by id:', error);
+        return { data: null, error };
+    }
+}
+
+export async function createPublicSeries(series: Partial<PublicSeries>) {
+    try {
+        const { data, error } = await supabase
+            .from('public_series')
+            .insert([series])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Supabase create series error:', JSON.stringify(error, null, 2));
+            return { data: null, error: new Error(error.message || error.details || 'Unknown database error') };
+        }
+        return { data: data as PublicSeries, error: null };
+    } catch (error: any) {
+        console.error('Error creating series:', JSON.stringify(error, null, 2));
+        return { data: null, error: new Error(error?.message || 'Failed to create series') };
+    }
+}
+
+export async function updatePublicSeries(id: string, updates: Partial<PublicSeries>) {
+    try {
+        const { data, error } = await supabase
+            .from('public_series')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { data: data as PublicSeries, error: null };
+    } catch (error) {
+        console.error('Error updating series:', error);
+        return { data: null, error };
+    }
+}
+
+export async function deletePublicSeries(id: string) {
+    try {
+        const { error } = await supabase
+            .from('public_series')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        console.error('Error deleting series:', error);
+        return { error };
+    }
+}

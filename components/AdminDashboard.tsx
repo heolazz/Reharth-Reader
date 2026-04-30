@@ -6,11 +6,11 @@ import {
     Calendar, Eye, TrendingUp, BookOpen, Shield, Mail
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { fetchAdminBooks, PublicBook } from '../lib/publicBooksApi';
+import { fetchAdminBooks, PublicBook, PublicSeries, fetchPublicSeries, createPublicSeries, updatePublicSeries, deletePublicSeries } from '../lib/publicBooksApi';
 import { useToast } from './Toast';
 
 export const AdminDashboard: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'books' | 'users'>('books');
+    const [activeTab, setActiveTab] = useState<'overview' | 'books' | 'series' | 'users'>('books');
 
     return (
         <div className="min-h-screen bg-white text-[#3D3028] font-sans pt-20 pb-24 px-6 md:px-12">
@@ -40,6 +40,12 @@ export const AdminDashboard: React.FC = () => {
                                 onClick={() => setActiveTab('books')}
                             />
                             <SidebarItem
+                                icon={BookOpen}
+                                label="Series & Collections"
+                                active={activeTab === 'series'}
+                                onClick={() => setActiveTab('series')}
+                            />
+                            <SidebarItem
                                 icon={Users}
                                 label="Users"
                                 active={activeTab === 'users'}
@@ -51,6 +57,7 @@ export const AdminDashboard: React.FC = () => {
                     {/* Main Content */}
                     <div className="flex-1 bg-[#FAFAFA] rounded-2xl shadow-sm border border-black/5 p-6 md:p-8 min-h-[600px] overflow-hidden">
                         {activeTab === 'books' && <BooksManager />}
+                        {activeTab === 'series' && <SeriesManager />}
                         {activeTab === 'overview' && <OverviewManager />}
                         {activeTab === 'users' && <UsersManager />}
                     </div>
@@ -84,6 +91,7 @@ const BooksManager = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingBook, setEditingBook] = useState<PublicBook | null>(null);
+    const [seriesList, setSeriesList] = useState<PublicSeries[]>([]);
 
     // Fetch Books
     const loadBooks = async () => {
@@ -92,6 +100,9 @@ const BooksManager = () => {
             const { data, error } = await fetchAdminBooks(searchQuery, 50);
             if (error) throw error;
             if (data) setBooks(data);
+
+            const { data: sData } = await fetchPublicSeries();
+            if (sData) setSeriesList(sData);
         } catch (error) {
             console.error('Error loading books:', error);
             showToast('Failed to load books', 'error');
@@ -330,6 +341,7 @@ const BooksManager = () => {
                 {showModal && (
                     <BookModal
                         book={editingBook}
+                        seriesList={seriesList}
                         onClose={() => setShowModal(false)}
                         onSaved={() => {
                             setShowModal(false);
@@ -346,7 +358,17 @@ const BooksManager = () => {
 // BOOK MODAL COMPONENT (Add/Edit)
 // ------------------------------------------------------------------
 
-const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClose: () => void, onSaved: () => void }) => {
+const BookModal = ({
+    book,
+    seriesList,
+    onClose,
+    onSaved
+}: {
+    book: PublicBook | null,
+    seriesList: PublicSeries[],
+    onClose: () => void,
+    onSaved: () => void
+}) => {
     const { showToast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -615,6 +637,29 @@ const BookModal = ({ book, onClose, onSaved }: { book: PublicBook | null, onClos
                                         <option value="Fiction">Fiction & Literature</option>
                                         <option value="Non-Fiction">Non-Fiction & Knowledge</option>
                                     </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Series / Collection</label>
+                                    <select
+                                        value={formData.series_id || ''}
+                                        onChange={e => setFormData({ ...formData, series_id: e.target.value || undefined })}
+                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
+                                    >
+                                        <option value="">-- No Series --</option>
+                                        {seriesList.map(s => (
+                                            <option key={s.id} value={s.id}>{s.title}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Volume Number</label>
+                                    <input
+                                        type="number"
+                                        value={formData.volume_number || ''}
+                                        onChange={e => setFormData({ ...formData, volume_number: parseInt(e.target.value) || undefined })}
+                                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/30"
+                                        placeholder="e.g. 1"
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/40 mb-2">Genre</label>
@@ -1035,6 +1080,288 @@ const UsersManager = () => {
                     <p className="text-[10px] text-black/30 mt-2">Users will appear here after they register.</p>
                 </div>
             )}
+        </div>
+    );
+};
+
+// ------------------------------------------------------------------
+// SERIES MANAGER COMPONENT
+// ------------------------------------------------------------------
+
+const SeriesManager = () => {
+    const { showToast } = useToast();
+    const [seriesList, setSeriesList] = useState<PublicSeries[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [editingSeries, setEditingSeries] = useState<PublicSeries | null>(null);
+
+    const loadSeries = async () => {
+        setIsLoading(true);
+        try {
+            const { data, error } = await fetchPublicSeries();
+            if (error) throw error;
+            if (data) setSeriesList(data);
+        } catch (error: any) {
+            console.error('Error loading series:', error);
+            showToast(error?.message || 'Failed to load series', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadSeries();
+    }, []);
+
+    const handleSaveSeries = async (seriesData: Partial<PublicSeries>) => {
+        try {
+            if (editingSeries?.id) {
+                const { error } = await updatePublicSeries(editingSeries.id, seriesData);
+                if (error) throw error;
+                showToast('Series updated successfully', 'success');
+            } else {
+                const { error } = await createPublicSeries(seriesData);
+                if (error) throw error;
+                showToast('Series created successfully', 'success');
+            }
+            setShowModal(false);
+            setEditingSeries(null);
+            loadSeries();
+        } catch (error: any) {
+            console.error('Error saving series:', error);
+            showToast(error?.message || 'Failed to save series', 'error');
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this series? Books in this series will be unlinked.')) return;
+        try {
+            const { error } = await deletePublicSeries(id);
+            if (error) throw error;
+            showToast('Series deleted', 'success');
+            loadSeries();
+        } catch (error: any) {
+            console.error('Error deleting series:', error);
+            showToast(error?.message || 'Failed to delete series', 'error');
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h2 className="font-serif text-2xl text-[#3D3028]">Series Management</h2>
+                    <p className="text-sm text-black/40 mt-1">Manage epic collections and universes</p>
+                </div>
+                <button
+                    onClick={() => { setEditingSeries(null); setShowModal(true); }}
+                    className="bg-[#3D3028] text-white px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 hover:bg-[#3D3028]/90 transition-colors shadow-sm"
+                >
+                    <Plus size={16} />
+                    New Series
+                </button>
+            </div>
+
+            {isLoading ? (
+                <div className="flex justify-center py-20">
+                    <Loader2 size={32} className="animate-spin text-black/20" />
+                </div>
+            ) : seriesList.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {seriesList.map(series => (
+                        <div key={series.id} className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm flex flex-col">
+                            <div className="flex gap-4">
+                                <div className="w-16 h-24 shrink-0 bg-[#FAFAFA] rounded-md overflow-hidden border border-black/5 flex items-center justify-center">
+                                    {series.cover_url ? (
+                                        <img src={series.cover_url} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <BookOpen size={20} className="text-black/15" />
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-serif text-lg font-bold text-[#3D3028] line-clamp-2 leading-tight mb-1">{series.title}</h3>
+                                    <p className="text-xs uppercase tracking-widest text-black/40 font-bold mb-2">{series.author || 'Unknown'}</p>
+                                    <div className="inline-flex px-2 py-0.5 bg-black/5 rounded text-[10px] text-black/60 font-medium">
+                                        {series.category_type || 'Unknown'}
+                                    </div>
+                                </div>
+                            </div>
+                            {series.description && (
+                                <p className="text-xs text-black/40 mt-3 line-clamp-2">{series.description}</p>
+                            )}
+                            <div className="mt-4 pt-4 border-t border-black/5 flex justify-end gap-2">
+                                <button
+                                    onClick={() => { setEditingSeries(series); setShowModal(true); }}
+                                    className="p-2 text-black/40 hover:text-[#3D3028] hover:bg-black/5 rounded-lg transition-colors"
+                                    title="Edit"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(series.id)}
+                                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Delete"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-20 border-2 border-dashed border-black/5 rounded-2xl">
+                    <BookOpen size={32} className="mx-auto text-black/15 mb-3" />
+                    <p className="text-black/40 font-serif italic mb-1">No series found</p>
+                    <p className="text-xs text-black/30">Create your first collection to group related books.</p>
+                </div>
+            )}
+
+            <AnimatePresence>
+                {showModal && (
+                    <SeriesModal
+                        series={editingSeries}
+                        onClose={() => { setShowModal(false); setEditingSeries(null); }}
+                        onSave={handleSaveSeries}
+                    />
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+// ------------------------------------------------------------------
+// SERIES MODAL COMPONENT (Add/Edit)
+// ------------------------------------------------------------------
+
+const SeriesModal = ({
+    series,
+    onClose,
+    onSave
+}: {
+    series: PublicSeries | null;
+    onClose: () => void;
+    onSave: (data: Partial<PublicSeries>) => void;
+}) => {
+    const [formData, setFormData] = useState<Partial<PublicSeries>>({
+        title: series?.title || '',
+        description: series?.description || '',
+        author: series?.author || '',
+        cover_url: series?.cover_url || '',
+        category_type: series?.category_type || 'Fiction'
+    });
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSubmit = async () => {
+        if (!formData.title?.trim()) return;
+        setIsSaving(true);
+        await onSave(formData);
+        setIsSaving(false);
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            />
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
+            >
+                <div className="p-6 border-b border-black/5 flex justify-between items-center bg-[#FAFAFA]">
+                    <div>
+                        <h2 className="font-serif text-xl text-[#3D3028]">
+                            {series ? 'Edit Series' : 'New Series'}
+                        </h2>
+                        <p className="text-xs text-black/40 mt-0.5">
+                            {series ? 'Update collection details' : 'Create a new epic collection'}
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors">
+                        <X size={18} />
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Title *</label>
+                        <input
+                            type="text"
+                            value={formData.title || ''}
+                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors"
+                            placeholder="e.g. Lord of the Mysteries"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Author</label>
+                        <input
+                            type="text"
+                            value={formData.author || ''}
+                            onChange={e => setFormData({ ...formData, author: e.target.value })}
+                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors"
+                            placeholder="e.g. Cuttlefish That Loves Diving"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Cover URL</label>
+                        <input
+                            type="text"
+                            value={formData.cover_url || ''}
+                            onChange={e => setFormData({ ...formData, cover_url: e.target.value })}
+                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors"
+                            placeholder="https://..."
+                        />
+                        {formData.cover_url && (
+                            <div className="mt-2 h-20 w-32 bg-[#EAE5DD] rounded-lg overflow-hidden border border-black/5">
+                                <img src={formData.cover_url} className="w-full h-full object-cover" />
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Category Type</label>
+                        <select
+                            value={formData.category_type || 'Fiction'}
+                            onChange={e => setFormData({ ...formData, category_type: e.target.value as any })}
+                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors"
+                        >
+                            <option value="Fiction">Fiction</option>
+                            <option value="Non-Fiction">Non-Fiction</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-black/40 mb-1.5 ml-1">Description</label>
+                        <textarea
+                            value={formData.description || ''}
+                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                            className="w-full bg-[#FAFAFA] border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-colors h-24 resize-none"
+                            placeholder="Brief description of the series..."
+                        />
+                    </div>
+                </div>
+
+                <div className="p-6 pt-0 flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-3 text-sm font-medium text-black/60 bg-[#FAFAFA] border border-black/5 rounded-xl hover:bg-black/5 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isSaving || !formData.title?.trim()}
+                        className="flex-1 py-3 text-sm font-medium text-white bg-[#3D3028] rounded-xl hover:bg-[#3D3028]/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                        {isSaving && <Loader2 size={16} className="animate-spin" />}
+                        {series ? 'Save Changes' : 'Create Series'}
+                    </button>
+                </div>
+            </motion.div>
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, TrendingUp, Compass, Star, Loader2, Award, BookOpen } from 'lucide-react';
-import { fetchPublicBooks, fetchAvailableGenres, PublicBook } from '../lib/publicBooksApi';
+import { Search, TrendingUp, Compass, Star, Loader2, Award, BookOpen, X, ChevronLeft } from 'lucide-react';
+import { fetchPublicBooks, fetchAvailableGenres, PublicBook, fetchPublicSeries, PublicSeries } from '../lib/publicBooksApi';
 
 interface ExplorePageProps {
     onOpenBook?: (book: PublicBook) => void;
@@ -231,6 +231,57 @@ const TopBooksCarousel = ({ books, onOpenBook }: { books: PublicBook[], onOpenBo
     );
 };
 
+// ------------------------------------------------------------------
+// HORIZONTAL SERIES CAROUSEL COMPONENT
+// ------------------------------------------------------------------
+const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries }: { title: string, icon?: any, seriesList: PublicSeries[], onOpenSeries?: (series: PublicSeries) => void }) => {
+    if (!seriesList || seriesList.length === 0) return null;
+    return (
+        <div className="space-y-4 pb-4">
+            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-3">
+                {Icon && <Icon size={24} className="text-[#E86C46]" />}
+                {title}
+            </h2>
+            <div className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0">
+                {seriesList.map(series => (
+                    <motion.div
+                        key={series.id}
+                        whileHover={{ y: -5 }}
+                        className="group cursor-pointer w-[180px] md:w-[220px] shrink-0 snap-start flex flex-col"
+                        onClick={() => onOpenSeries?.(series)}
+                    >
+                        <div className="relative w-full aspect-[16/10] rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
+                            <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-10 pointer-events-none" />
+                            
+                            {series.cover_url ? (
+                                <img src={series.cover_url} alt={series.title} className="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-[#EAE5DD] to-[#D5CEC4] flex items-center justify-center p-4 text-[#3D3028]/40 font-serif text-xs text-center">
+                                    {series.title}
+                                </div>
+                            )}
+                            
+                            {/* Overlay tag */}
+                            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md z-20">
+                                Series
+                            </div>
+                        </div>
+                        
+                        <h3 className="font-serif text-[15px] md:text-[16px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2">
+                            {series.title}
+                        </h3>
+                        {series.author && (
+                            <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1">
+                                {series.author}
+                            </p>
+                        )}
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
@@ -243,6 +294,12 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
     const [topBooks, setTopBooks] = useState<PublicBook[]>([]);
     const [fictionBooks, setFictionBooks] = useState<PublicBook[]>([]);
     const [nonFictionBooks, setNonFictionBooks] = useState<PublicBook[]>([]);
+    const [seriesList, setSeriesList] = useState<PublicSeries[]>([]);
+
+    // Series Detail Modal
+    const [selectedSeries, setSelectedSeries] = useState<PublicSeries | null>(null);
+    const [seriesBooks, setSeriesBooks] = useState<PublicBook[]>([]);
+    const [isLoadingSeriesBooks, setIsLoadingSeriesBooks] = useState(false);
 
     const [categories, setCategories] = useState<string[]>([]); // Only genres now
 
@@ -264,11 +321,15 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                 if (featuredData) setFeaturedBooks(featuredData);
 
                 // 2. Fetch Top Books (Trending / High Rating)
-                const { data: topData } = await fetchPublicBooks({ sortBy: 'trending', limit: 9 });
+                const { data: topData } = await fetchPublicBooks({ sortBy: 'trending', limit: 9, hideSeriesContinuations: true });
                 if (topData) setTopBooks(topData);
 
-                // 3. Fetch Fiction & Literature
-                const { data: allBooksData } = await fetchPublicBooks({ limit: 100 });
+                // 3. Fetch Series
+                const { data: seriesData } = await fetchPublicSeries();
+                if (seriesData) setSeriesList(seriesData);
+
+                // 4. Fetch Fiction & Literature
+                const { data: allBooksData } = await fetchPublicBooks({ limit: 100, hideSeriesContinuations: true });
                 if (allBooksData) {
                     setFictionBooks(allBooksData.filter(b => b.category_type === 'Fiction' || !b.category_type));
                     setNonFictionBooks(allBooksData.filter(b => b.category_type === 'Non-Fiction'));
@@ -415,6 +476,26 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                                 />
                             )}
 
+                            {/* Epic Series & Collections */}
+                            {seriesList.length > 0 && (
+                                <HorizontalSeriesCarousel 
+                                    title="Epic Series & Collections" 
+                                    icon={Award} 
+                                    seriesList={seriesList} 
+                                    onOpenSeries={async (series) => {
+                                        setSelectedSeries(series);
+                                        setIsLoadingSeriesBooks(true);
+                                        try {
+                                            const { data } = await fetchPublicBooks({ series_id: series.id, limit: 50 });
+                                            if (data) {
+                                                setSeriesBooks(data.sort((a, b) => (a.volume_number || 0) - (b.volume_number || 0)));
+                                            }
+                                        } catch (e) { console.error(e); }
+                                        setIsLoadingSeriesBooks(false);
+                                    }} 
+                                />
+                            )}
+
                             {/* Fiction & Literature */}
                             {fictionBooks.length > 0 && (
                                 <HorizontalBookCarousel 
@@ -516,6 +597,140 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook }) => {
                 </div>
 
             </div>
+
+            {/* Series Detail Modal */}
+            <AnimatePresence>
+                {selectedSeries && (
+                    <SeriesDetailModal
+                        series={selectedSeries}
+                        books={seriesBooks}
+                        isLoading={isLoadingSeriesBooks}
+                        onClose={() => { setSelectedSeries(null); setSeriesBooks([]); }}
+                        onOpenBook={(book) => {
+                            setSelectedSeries(null);
+                            setSeriesBooks([]);
+                            onOpenBook?.(book);
+                        }}
+                    />
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+// ------------------------------------------------------------------
+// SERIES DETAIL MODAL
+// ------------------------------------------------------------------
+const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook }: {
+    series: PublicSeries;
+    books: PublicBook[];
+    isLoading: boolean;
+    onClose: () => void;
+    onOpenBook: (book: PublicBook) => void;
+}) => {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            >
+                {/* Header with cover */}
+                <div className="relative h-40 md:h-48 bg-gradient-to-br from-[#3D3028] to-[#5a4a3a] overflow-hidden shrink-0">
+                    {series.cover_url && (
+                        <img src={series.cover_url} alt={series.title} className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors z-10"
+                    >
+                        <X size={18} />
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <div className="inline-flex px-2.5 py-1 bg-white/15 backdrop-blur-md rounded-md text-white text-[10px] font-bold uppercase tracking-wider mb-2">
+                            {series.category_type || 'Series'} · {books.length} Volume{books.length !== 1 ? 's' : ''}
+                        </div>
+                        <h2 className="font-serif text-2xl md:text-3xl text-white leading-tight">{series.title}</h2>
+                        {series.author && (
+                            <p className="text-white/60 text-xs font-bold uppercase tracking-widest mt-1.5">{series.author}</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Description */}
+                {series.description && (
+                    <div className="px-6 pt-5 pb-2">
+                        <p className="text-sm text-[#3D3028]/60 leading-relaxed">{series.description}</p>
+                    </div>
+                )}
+
+                {/* Volume List */}
+                <div className="flex-1 overflow-y-auto px-6 py-4">
+                    {isLoading ? (
+                        <div className="flex justify-center py-12">
+                            <Loader2 size={28} className="animate-spin text-[#3D3028]/20" />
+                        </div>
+                    ) : books.length > 0 ? (
+                        <div className="space-y-3">
+                            {books.map((book, idx) => (
+                                <motion.div
+                                    key={book.id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    onClick={() => onOpenBook(book)}
+                                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#FAFAFA] cursor-pointer group transition-colors border border-transparent hover:border-[#3D3028]/5"
+                                >
+                                    {/* Volume Number */}
+                                    <div className="w-8 h-8 shrink-0 rounded-lg bg-[#3D3028]/5 flex items-center justify-center">
+                                        <span className="text-sm font-bold text-[#3D3028]/40">{book.volume_number || idx + 1}</span>
+                                    </div>
+
+                                    {/* Cover */}
+                                    <div className="w-10 h-14 shrink-0 rounded overflow-hidden bg-[#EAE5DD] border border-[#3D3028]/10">
+                                        {book.cover_url ? (
+                                            <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-[8px] text-[#3D3028]/30 p-1">No Cover</div>
+                                        )}
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-medium text-sm text-[#3D3028] line-clamp-1 group-hover:underline decoration-[#3D3028]/20 underline-offset-2">
+                                            {book.title}
+                                        </h4>
+                                        <p className="text-[11px] text-[#3D3028]/40 mt-0.5">{book.author}</p>
+                                    </div>
+
+                                    {/* Rating */}
+                                    {book.rating_average !== undefined && book.rating_average > 0 && (
+                                        <div className="flex items-center gap-1 text-xs text-[#3D3028]/50 shrink-0">
+                                            <Star size={12} className="fill-[#E86C46] text-[#E86C46]" />
+                                            {book.rating_average.toFixed(1)}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12">
+                            <BookOpen size={28} className="mx-auto text-[#3D3028]/15 mb-3" />
+                            <p className="text-sm text-[#3D3028]/40 font-serif italic">No volumes added yet</p>
+                            <p className="text-xs text-[#3D3028]/25 mt-1">Add books to this series from the Admin Panel.</p>
+                        </div>
+                    )}
+                </div>
+            </motion.div>
         </div>
     );
 };
