@@ -263,7 +263,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                     ) : (
                                         <>
                                             <Plus size={18} />
-                                            <span>Add to My Library</span>
+                                            <span>Save to My Collection</span>
                                         </>
                                     )}
                                 </button>

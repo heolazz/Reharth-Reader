@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, TrendingUp, Compass, Star, Loader2, Award, BookOpen, X, ChevronLeft } from 'lucide-react';
-import { fetchPublicBooks, fetchAvailableGenres, PublicBook, fetchPublicSeries, PublicSeries } from '../lib/publicBooksApi';
+import { Search, TrendingUp, Compass, Star, Loader2, Award, BookOpen, X, ChevronLeft, Plus, Check } from 'lucide-react';
+import { fetchPublicBooks, fetchAvailableGenres, PublicBook, fetchPublicSeries, PublicSeries, addPublicBookToLibrary } from '../lib/publicBooksApi';
+import { useAuthStore } from '../stores/useAuthStore';
+import { useToast } from './Toast';
 
 interface ExplorePageProps {
     onOpenBook?: (book: PublicBook) => void;
@@ -628,6 +630,44 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook }: {
     onClose: () => void;
     onOpenBook: (book: PublicBook) => void;
 }) => {
+    const { user } = useAuthStore();
+    const { showToast } = useToast();
+    const [isAdding, setIsAdding] = useState(false);
+    
+    const handleAddSeriesToLibrary = async () => {
+        if (!user) {
+            showToast('Please login to add books', 'error');
+            return;
+        }
+
+        if (!books || books.length === 0) {
+            showToast('No books in this series to add', 'info');
+            return;
+        }
+
+        setIsAdding(true);
+        try {
+            let successCount = 0;
+            for (const book of books) {
+                const { error } = await addPublicBookToLibrary(book.id, user.id);
+                // We count it as success if there's no error or if it's already in the library
+                if (!error || (error.message && error.message.includes('already'))) {
+                    successCount++;
+                }
+            }
+            if (successCount === books.length) {
+                showToast(`Saved ${successCount} volumes from "${series.title}" to your library`, 'success');
+            } else {
+                showToast(`Saved ${successCount}/${books.length} volumes to your library`, 'info');
+            }
+        } catch (error) {
+            console.error('Failed to add series:', error);
+            showToast('Failed to add some books', 'error');
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
@@ -666,12 +706,20 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook }: {
                     </div>
                 </div>
 
-                {/* Description */}
-                {series.description && (
-                    <div className="px-6 pt-5 pb-2">
+                {/* Description & Action */}
+                <div className="px-6 pt-5 pb-2 flex flex-col gap-4">
+                    {series.description && (
                         <p className="text-sm text-[#3D3028]/60 leading-relaxed">{series.description}</p>
-                    </div>
-                )}
+                    )}
+                    <button
+                        onClick={handleAddSeriesToLibrary}
+                        disabled={isAdding || books.length === 0 || isLoading}
+                        className="self-start px-4 py-2.5 bg-[#3D3028] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-[#2C1810] transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+                    >
+                        {isAdding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                        {isAdding ? 'Saving...' : 'Save to My Collection'}
+                    </button>
+                </div>
 
                 {/* Volume List */}
                 <div className="flex-1 overflow-y-auto px-6 py-4">
