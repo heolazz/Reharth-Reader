@@ -627,6 +627,7 @@ const App: React.FC = () => {
       {currentPage === 'explore' && mode === 'library' && (
         <div className="absolute inset-0 z-30 overflow-y-auto bg-[#F9F7F2]">
           <ExplorePage 
+            userBooks={books}
             onOpenBook={(book) => {
               setSelectedPublicBook(book);
               // Push URL for deep-linking

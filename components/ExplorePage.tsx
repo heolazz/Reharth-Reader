@@ -9,6 +9,7 @@ import { Book } from '../types';
 interface ExplorePageProps {
     onOpenBook?: (book: PublicBook) => void;
     onBooksAdded?: (books: Book[]) => void;
+    userBooks?: Book[];
 }
 
 // ------------------------------------------------------------------
@@ -286,7 +287,7 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
     );
 };
 
-export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdded }) => {
+export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdded, userBooks }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
 
@@ -608,6 +609,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                     <SeriesDetailModal
                         series={selectedSeries}
                         books={seriesBooks}
+                        userBooks={userBooks}
                         isLoading={isLoadingSeriesBooks}
                         onClose={() => { setSelectedSeries(null); setSeriesBooks([]); }}
                         onOpenBook={(book) => {
@@ -626,9 +628,10 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
 // ------------------------------------------------------------------
 // SERIES DETAIL MODAL
 // ------------------------------------------------------------------
-const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBooksAdded }: {
+const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpenBook, onBooksAdded }: {
     series: PublicSeries;
     books: PublicBook[];
+    userBooks?: Book[];
     isLoading: boolean;
     onClose: () => void;
     onOpenBook: (book: PublicBook) => void;
@@ -637,7 +640,7 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
     const { user } = useAuthStore();
     const { showToast } = useToast();
     const [isAdding, setIsAdding] = useState(false);
-
+    const [progress, setProgress] = useState(0);
     const [addingStatus, setAddingStatus] = useState<string>('');
 
     const handleAddSeriesToLibrary = async () => {
@@ -653,6 +656,7 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
         }
 
         setIsAdding(true);
+        setProgress(0);
         setAddingStatus(`Adding ${books.length} volumes...`);
 
         try {
@@ -674,6 +678,7 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
 
             for (let i = 0; i < books.length; i++) {
                 const book = books[i];
+                setProgress(Math.round(((i) / (books.length + 1)) * 100));
                 setAddingStatus(`Processing volume ${i + 1}/${books.length}...`);
 
                 try {
@@ -735,6 +740,7 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
 
             // Always create collection if we have books
             if (booksToUpdate.length > 0) {
+                setProgress(90);
                 setAddingStatus('Syncing collection...');
                 await saveCollection(newCollection);
 
@@ -755,6 +761,7 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
             }
 
             if (successCount > 0) {
+                setProgress(100);
                 setAddingStatus('Completed!');
                 showToast(`Saved ${successCount} volume${successCount > 1 ? 's' : ''} to "${series.title}" collection!`, 'success');
             } else {
@@ -806,6 +813,25 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                             <p className="text-white/60 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1">{series.author}</p>
                         )}
                     </div>
+
+                    {/* Progress Bar for batch add */}
+                    <AnimatePresence>
+                        {isAdding && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-20"
+                            >
+                                <motion.div 
+                                    className="h-full bg-[#E86C46]" 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progress}%` }}
+                                    transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 {/* Save Button - Always visible, sticky */}
@@ -844,46 +870,58 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                         </div>
                     ) : books.length > 0 ? (
                         <div className="space-y-2">
-                            {books.map((book, idx) => (
-                                <motion.div
-                                    key={book.id}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.03 }}
-                                    onClick={() => onOpenBook(book)}
-                                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#FAFAFA] cursor-pointer group transition-colors border border-transparent hover:border-[#3D3028]/5"
-                                >
-                                    {/* Volume Number */}
-                                    <div className="w-7 h-7 shrink-0 rounded-lg bg-[#3D3028]/5 flex items-center justify-center">
-                                        <span className="text-xs font-bold text-[#3D3028]/40">{book.volume_number || idx + 1}</span>
-                                    </div>
+                            {books.map((book, idx) => {
+                                // Check if user already owns this volume
+                                const normalise = (s: string) => s.trim().toLowerCase();
+                                const isOwned = userBooks?.some(ub => 
+                                    normalise(ub.title) === normalise(book.title) && 
+                                    normalise(ub.author) === normalise(book.author)
+                                );
 
-                                    {/* Cover */}
-                                    <div className="w-9 h-12 shrink-0 rounded overflow-hidden bg-[#EAE5DD] border border-[#3D3028]/10">
-                                        {book.cover_url ? (
-                                            <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-[7px] text-[#3D3028]/30 p-1">No Cover</div>
-                                        )}
-                                    </div>
-
-                                    {/* Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-medium text-[13px] text-[#3D3028] line-clamp-1 group-hover:underline decoration-[#3D3028]/20 underline-offset-2">
-                                            {book.title}
-                                        </h4>
-                                        <p className="text-[10px] text-[#3D3028]/40 mt-0.5">{book.author}</p>
-                                    </div>
-
-                                    {/* Rating */}
-                                    {book.rating_average !== undefined && book.rating_average > 0 && (
-                                        <div className="flex items-center gap-1 text-xs text-[#3D3028]/50 shrink-0">
-                                            <Star size={11} className="fill-[#E86C46] text-[#E86C46]" />
-                                            {book.rating_average.toFixed(1)}
+                                return (
+                                    <motion.div
+                                        key={book.id}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: idx * 0.05 }}
+                                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                                            isOwned 
+                                            ? 'bg-[#6B8E6D]/5 border-[#6B8E6D]/20 opacity-80' 
+                                            : 'bg-white border-[#3D3028]/5 hover:border-[#E86C46]/30'
+                                        }`}
+                                    >
+                                        <div className="w-10 h-14 bg-[#F3F0EB] rounded-md overflow-hidden shrink-0 shadow-sm border border-[#3D3028]/5">
+                                            {book.cover_url && (
+                                                <img src={book.cover_url} alt="" className="w-full h-full object-cover" />
+                                            )}
                                         </div>
-                                    )}
-                                </motion.div>
-                            ))}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-1.5">
+                                                <h4 className="font-serif text-sm text-[#3D3028] truncate">{book.title}</h4>
+                                                {isOwned && (
+                                                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#6B8E6D]/10 text-[#6B8E6D] text-[9px] font-bold uppercase">
+                                                        <Check size={8} strokeWidth={3} />
+                                                        <span>Owned</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-[10px] text-[#3D3028]/40 truncate">{book.author}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => !isOwned && onOpenBook(book)}
+                                            disabled={isAdding || isOwned}
+                                            className={`p-2 rounded-lg transition-all ${
+                                                isOwned
+                                                ? 'text-[#6B8E6D] bg-[#6B8E6D]/10'
+                                                : 'text-[#3D3028]/40 hover:text-[#E86C46] hover:bg-[#E86C46]/10'
+                                            }`}
+                                            title={isOwned ? "Already in library" : "View details"}
+                                        >
+                                            {isOwned ? <Check size={18} /> : <BookOpen size={18} />}
+                                        </button>
+                                    </motion.div>
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="text-center py-12">
