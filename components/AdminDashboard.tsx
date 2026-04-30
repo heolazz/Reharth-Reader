@@ -481,16 +481,47 @@ const BookModal = ({
                         }
                     }
 
+                    // Series Detection Logic
+                    let detectedSeriesId = undefined;
+                    let nextVol = undefined;
+                    const bookTitle = metadata.title || '';
+                    
+                    // Try to find a series that matches the title (e.g. "Series Name" is part of "Series Name - Vol 1")
+                    const matchingSeries = seriesList.find(s => 
+                        bookTitle.toLowerCase().includes(s.title.toLowerCase()) ||
+                        s.title.toLowerCase().includes(bookTitle.toLowerCase())
+                    );
+
+                    if (matchingSeries) {
+                        detectedSeriesId = matchingSeries.id;
+                        try {
+                            const { data: volData } = await supabase
+                                .from('public_books')
+                                .select('volume_number')
+                                .eq('series_id', detectedSeriesId)
+                                .order('volume_number', { ascending: false })
+                                .limit(1);
+                            
+                            nextVol = (volData && volData.length > 0) ? (volData[0].volume_number || 0) + 1 : 1;
+                            showToast(`Series detected: ${matchingSeries.title}`, 'info');
+                        } catch (e) {
+                            console.error('Series vol fetch error:', e);
+                        }
+                    }
+
                     setFormData(prev => ({
                         ...prev,
                         epub_url: publicUrl,
-                        title: metadata.title || prev.title || '',
-                        author: metadata.creator || prev.author || '',
+                        title: bookTitle || prev.title || '',
+                        author: metadata.creator || matchingSeries?.author || prev.author || '',
                         description: cleanDescription || prev.description || '',
                         publisher: metadata.publisher || prev.publisher || '',
                         language: metadata.language || prev.language || 'en',
                         isbn: metadata.identifier || prev.isbn || '',
                         published_year: extractedYear || prev.published_year,
+                        series_id: detectedSeriesId || prev.series_id,
+                        volume_number: nextVol || prev.volume_number,
+                        category_type: matchingSeries?.category_type || prev.category_type || 'Fiction',
                         // If cover exists in EPUB and no cover_url set yet
                         cover_url: (!prev.cover_url && publicCoverUrl) ? publicCoverUrl : prev.cover_url
                     }));
@@ -660,7 +691,40 @@ const BookModal = ({
                                 <label className="block text-xs font-bold uppercase tracking-widest text-[#3D3028]/60 mb-2 ml-1">Series / Collection</label>
                                 <select
                                     value={formData.series_id || ''}
-                                    onChange={e => setFormData({ ...formData, series_id: e.target.value || undefined })}
+                                    onChange={async (e) => {
+                                        const seriesId = e.target.value || undefined;
+                                        const selectedSeries = seriesList.find(s => s.id === seriesId);
+                                        
+                                        let nextVolume = undefined;
+                                        if (seriesId) {
+                                            try {
+                                                // Fetch highest volume number for this series
+                                                const { data: volData } = await supabase
+                                                    .from('public_books')
+                                                    .select('volume_number')
+                                                    .eq('series_id', seriesId)
+                                                    .order('volume_number', { ascending: false })
+                                                    .limit(1);
+                                                
+                                                if (volData && volData.length > 0) {
+                                                    nextVolume = (volData[0].volume_number || 0) + 1;
+                                                } else {
+                                                    nextVolume = 1;
+                                                }
+                                            } catch (err) {
+                                                console.error("Error fetching next volume:", err);
+                                            }
+                                        }
+
+                                        setFormData(prev => ({ 
+                                            ...prev, 
+                                            series_id: seriesId,
+                                            // Auto-fill from series if values are empty or if it's a new book
+                                            author: selectedSeries?.author || prev.author || '',
+                                            category_type: selectedSeries?.category_type || prev.category_type || 'Fiction',
+                                            volume_number: nextVolume || prev.volume_number
+                                        }));
+                                    }}
                                     className="w-full bg-white border border-[#3D3028]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#3D3028]/40 focus:ring-1 focus:ring-[#3D3028]/40 transition-all text-sm"
                                 >
                                     <option value="">-- No Series --</option>
