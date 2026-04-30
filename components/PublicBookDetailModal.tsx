@@ -40,6 +40,8 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
 
     if (!book) return null;
 
+    const [addingStatus, setAddingStatus] = useState<string>('');
+
     const handleAddToLibrary = async () => {
         if (!user) {
             showToast('Please login to add books', 'error');
@@ -47,34 +49,53 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
         }
 
         setIsAdding(true);
+        setAddingStatus('Connecting to cloud...');
+        
         try {
+            // Step 1: Add to Supabase
             const { error, data } = await addPublicBookToLibrary(book.id, user.id);
+            
             if (error) {
                 const errMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
                 if (errMsg.includes('already')) {
                     showToast('Book is already in your library', 'info');
                     setIsAdded(true);
+                    return;
                 } else {
                     throw error;
                 }
-            } else if (data) {
-                setIsAdded(true);
-                // Save to local IndexedDB for immediate availability
+            } 
+            
+            if (data) {
+                // Step 2: Save to local IndexedDB
+                setAddingStatus('Syncing to local library...');
                 try {
                     const { saveBook } = await import('../utils/db');
                     await saveBook(data as Book);
+                    
+                    // Small delay to ensure DB write is finalized
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 } catch (e) {
                     console.warn('Could not save to local DB:', e);
                 }
+
+                setAddingStatus('Completed!');
+                setIsAdded(true);
                 showToast(`"${book.title}" added to your library`, 'success');
-                if (onBookAdded) onBookAdded(data as Book);
+                
+                if (onBookAdded) {
+                    onBookAdded(data as Book);
+                }
             }
         } catch (error: any) {
             console.error('Failed to add book:', error);
             const errMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
             showToast(`Failed to add book: ${errMsg}`, 'error');
+            setAddingStatus('Error occurred');
         } finally {
             setIsAdding(false);
+            // Reset status after a delay
+            setTimeout(() => setAddingStatus(''), 2000);
         }
     };
 
@@ -261,7 +282,10 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                         }`}
                                 >
                                     {isAdding ? (
-                                        <Loader2 size={18} className="animate-spin" />
+                                        <>
+                                            <Loader2 size={18} className="animate-spin" />
+                                            <span>{addingStatus || 'Processing...'}</span>
+                                        </>
                                     ) : isAdded ? (
                                         <>
                                             <Check size={18} />
@@ -283,6 +307,17 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                     <span>Share</span>
                                 </button>
                             </motion.div>
+                            
+                            {/* Detailed Status Text (only when adding) */}
+                            {addingStatus && (
+                                <motion.p 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="mt-3 text-center text-xs font-bold uppercase tracking-widest text-[#E86C46] animate-pulse"
+                                >
+                                    {addingStatus}
+                                </motion.p>
+                            )}
                         </div>
                     </motion.div>
                 </div>

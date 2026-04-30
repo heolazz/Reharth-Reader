@@ -638,6 +638,8 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
     const { showToast } = useToast();
     const [isAdding, setIsAdding] = useState(false);
     
+    const [addingStatus, setAddingStatus] = useState<string>('');
+    
     const handleAddSeriesToLibrary = async () => {
         if (!user) {
             showToast('Please login to add books', 'error');
@@ -650,6 +652,8 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
         }
 
         setIsAdding(true);
+        setAddingStatus(`Adding ${books.length} volumes...`);
+
         try {
             const { saveCollection, saveBook, getAllBooks } = await import('../utils/db');
             const { generateUUID } = await import('../utils/uuid');
@@ -667,7 +671,10 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
             let successCount = 0;
             const booksToUpdate: Book[] = [];
 
-            for (const book of books) {
+            for (let i = 0; i < books.length; i++) {
+                const book = books[i];
+                setAddingStatus(`Processing volume ${i + 1}/${books.length}...`);
+                
                 try {
                     const { error, data } = await addPublicBookToLibrary(book.id, user.id);
                     
@@ -704,12 +711,19 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                                 timeRead: existing.time_read_seconds || 0,
                                 isFavorite: existing.is_favorite || false,
                                 isArchived: false,
+                                collectionIds: existing.collection_ids || []
                             };
                             // Merge with local collectionIds
                             const localBooks = await getAllBooks();
                             const localBook = localBooks.find(lb => lb.id === existing.id);
-                            const existingCollections = localBook?.collectionIds || [];
-                            booksToUpdate.push({ ...appBook, collectionIds: [...existingCollections, collectionId] });
+                            const existingCollections = localBook?.collectionIds || appBook.collectionIds || [];
+                            
+                            // Check if collectionId is already there
+                            const finalCollectionIds = existingCollections.includes(collectionId) 
+                                ? existingCollections 
+                                : [...existingCollections, collectionId];
+                                
+                            booksToUpdate.push({ ...appBook, collectionIds: finalCollectionIds });
                         }
                         successCount++;
                     }
@@ -720,19 +734,27 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
             
             // Always create collection if we have books
             if (booksToUpdate.length > 0) {
+                setAddingStatus('Syncing collection...');
                 await saveCollection(newCollection);
+                
                 // Also sync collection to Supabase
                 const { saveCollectionToSupabase, syncBookCollectionIds } = await import('../lib/supabaseDb');
-                saveCollectionToSupabase(newCollection).catch(() => {});
+                await saveCollectionToSupabase(newCollection).catch(() => {});
+                
                 for (const b of booksToUpdate) {
                     await saveBook(b);
                     // Sync each book's collection_ids to Supabase
-                    syncBookCollectionIds(b.id, b.collectionIds || []).catch(() => {});
+                    await syncBookCollectionIds(b.id, b.collectionIds || []).catch(() => {});
                 }
+                
+                // Small delay to ensure DB operations complete
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
                 if (onBooksAdded) onBooksAdded(booksToUpdate);
             }
 
             if (successCount > 0) {
+                setAddingStatus('Completed!');
                 showToast(`Saved ${successCount} volume${successCount > 1 ? 's' : ''} to "${series.title}" collection!`, 'success');
             } else {
                 showToast('Could not save books. Please try again.', 'error');
@@ -740,8 +762,10 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
         } catch (error) {
             console.error('Failed to add series:', error);
             showToast('Failed to save collection', 'error');
+            setAddingStatus('Failed');
         } finally {
             setIsAdding(false);
+            setTimeout(() => setAddingStatus(''), 2000);
         }
     };
 
@@ -790,8 +814,17 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                         disabled={isAdding || books.length === 0 || isLoading}
                         className="w-full md:w-auto px-6 py-3 bg-[#E86C46] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-[#D45A35] transition-all shadow-md active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                        {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                        {isAdding ? 'Saving...' : 'Save to My Collection'}
+                        {isAdding ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 size={18} className="animate-spin" />
+                                <span>{addingStatus || 'Saving...'}</span>
+                            </div>
+                        ) : (
+                            <>
+                                <Plus size={18} />
+                                <span>Save All to My Collection</span>
+                            </>
+                        )}
                     </button>
                 </div>
 
