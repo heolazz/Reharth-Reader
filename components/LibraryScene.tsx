@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book, AppState } from '../types';
-import { SlidersHorizontal, ArrowUpDown, Tag, X, LayoutGrid, List, Search } from 'lucide-react';
+import { SlidersHorizontal, ArrowUpDown, Tag, X, LayoutGrid, List, Search, Check } from 'lucide-react';
 
 interface LibrarySceneProps {
   books: Book[];
@@ -13,6 +13,7 @@ interface LibrarySceneProps {
   selectedCollectionId?: string | null;
   onClearCollection?: () => void;
   allCollections?: any[]; // Simplified for now since we just need names
+  onBulkDelete?: (ids: string[]) => void;
 }
 
 type SortOption = 'title-asc' | 'title-desc' | 'author-asc' | 'author-desc' | 'date-added-desc' | 'date-added-asc' | 'progress-desc' | 'progress-asc';
@@ -25,10 +26,15 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
   searchQuery,
   onSearch,
   selectedCollectionId,
-  onClearCollection
+  onClearCollection,
+  onBulkDelete
 }) => {
   const [columns, setColumns] = useState(4);
   const [collectionName, setCollectionName] = useState<string | null>(null);
+
+  // Selection state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedBookIds, setSelectedBookIds] = useState<Set<string>>(new Set());
 
   // Fetch collection name if needed
   useEffect(() => {
@@ -146,6 +152,28 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
     { value: 'progress-asc', label: 'Least Progress' },
   ];
 
+  const handleBookClick = (bookId: string) => {
+    if (selectionMode) {
+      setSelectedBookIds(prev => {
+        const next = new Set(prev);
+        if (next.has(bookId)) next.delete(bookId);
+        else next.add(bookId);
+        return next;
+      });
+    } else {
+      onSelectBook(bookId);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedBookIds.size === 0) return;
+    if (confirm(`Are you sure you want to delete ${selectedBookIds.size} books?`)) {
+      onBulkDelete?.(Array.from(selectedBookIds));
+      setSelectionMode(false);
+      setSelectedBookIds(new Set());
+    }
+  };
+
   return (
     <div className="w-full h-full min-h-screen bg-white overflow-y-auto overflow-x-hidden pt-32 pb-32 px-4 md:px-12">
       <div className="max-w-6xl mx-auto space-y-12">
@@ -252,8 +280,22 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
             </button>
           )}
 
+          {/* Select Mode Toggle */}
+          <button
+            onClick={() => {
+              setSelectionMode(!selectionMode);
+              if (selectionMode) setSelectedBookIds(new Set());
+            }}
+            className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 justify-center ml-auto ${selectionMode
+              ? 'bg-[#3E2723] text-[#F3F0EB] shadow-md'
+              : 'bg-white border border-[#3E2723]/10 text-[#3E2723] hover:border-[#3E2723]/20'
+              }`}
+          >
+            {selectionMode ? 'Cancel Selection' : 'Select'}
+          </button>
+
           {/* Results Count */}
-          <div className="hidden md:flex items-center gap-2 ml-auto text-sm text-[#3E2723]/60">
+          <div className="hidden lg:flex items-center gap-2 text-sm text-[#3E2723]/60">
             <span className="font-medium">{processedBooks.length}</span>
             <span>book{processedBooks.length !== 1 ? 's' : ''}</span>
           </div>
@@ -314,18 +356,25 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                     <motion.div
                       key={book.id}
                       layoutId={`book-cover-${book.id}`}
-                      onClick={() => onSelectBook(book.id)}
-                      whileHover={{
+                      onClick={() => handleBookClick(book.id)}
+                      whileHover={!selectionMode ? {
                         y: -10,
                         scale: 1.05,
                         transition: { duration: 0.2 }
-                      }}
-                      whileTap={{ scale: 0.98 }}
+                      } : {}}
+                      whileTap={!selectionMode ? { scale: 0.98 } : {}}
                       className="relative cursor-pointer group w-full flex justify-center"
                     >
+                      {selectionMode && (
+                        <div className="absolute top-2 right-2 z-30">
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedBookIds.has(book.id) ? 'bg-[#9CAF88] border-[#9CAF88]' : 'bg-white/80 border-[#3E2723]/20'}`}>
+                            {selectedBookIds.has(book.id) && <Check size={14} className="text-white" strokeWidth={3} />}
+                          </div>
+                        </div>
+                      )}
                       {/* Book Body - Max Width Constraint */}
                       <div
-                        className="relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)]"
+                        className={`relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-all ${!selectionMode && 'group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)]'} ${selectionMode && selectedBookIds.has(book.id) ? 'ring-4 ring-[#9CAF88] ring-offset-2' : ''}`}
                         style={{ backgroundColor: book.color }}
                       >
                         {/* Spine Hinge Detail */}
@@ -391,9 +440,16 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                 layoutId={`book-row-${book.id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                onClick={() => onSelectBook(book.id)}
-                className="group flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-4 rounded-2xl bg-white border border-[#3E2723]/10 hover:border-[#3E2723]/30 hover:shadow-md transition-all cursor-pointer"
+                onClick={() => handleBookClick(book.id)}
+                className={`group flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-4 rounded-2xl bg-white transition-all cursor-pointer ${selectionMode && selectedBookIds.has(book.id) ? 'border-2 border-[#9CAF88] shadow-md' : 'border border-[#3E2723]/10 hover:border-[#3E2723]/30 hover:shadow-md'}`}
               >
+                {selectionMode && (
+                  <div className="flex-shrink-0 mr-2">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedBookIds.has(book.id) ? 'bg-[#9CAF88] border-[#9CAF88]' : 'bg-white border-[#3E2723]/20'}`}>
+                      {selectedBookIds.has(book.id) && <Check size={14} className="text-white" strokeWidth={3} />}
+                    </div>
+                  </div>
+                )}
                 {/* Thumbnail */}
                 <div
                   className="w-16 h-24 flex-shrink-0 rounded shadow-sm overflow-hidden relative"
@@ -473,6 +529,30 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
         )}
 
       </div>
+
+      {/* Floating Action Bar for Selection Mode */}
+      <AnimatePresence>
+        {selectionMode && selectedBookIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[#3E2723]/10"
+          >
+            <span className="text-sm font-medium text-[#3E2723] whitespace-nowrap">
+              {selectedBookIds.size} selected
+            </span>
+            <div className="w-[1px] h-6 bg-[#3E2723]/10" />
+            <button
+              onClick={handleBulkDelete}
+              className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+            >
+              Delete
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

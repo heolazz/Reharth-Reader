@@ -447,6 +447,25 @@ const App: React.FC = () => {
     }
   };
 
+  const handleBulkDeleteBooks = async (ids: string[]) => {
+    setIsDetailOpen(false);
+    setSelectedBookId(null);
+    try {
+      if (isAuthenticated) {
+        const { deleteBookFromSupabase } = await import('./lib/supabaseDb');
+        await Promise.all(ids.map(id => deleteBookFromSupabase(id).catch(e => console.warn(e))));
+      } else {
+        const { deleteBook } = await import('./utils/db');
+        await Promise.all(ids.map(id => deleteBook(id).catch(e => console.warn(e))));
+      }
+      setBooks(prev => prev.filter(b => !ids.includes(b.id)));
+      showToast(`${ids.length} books deleted successfully`, 'success');
+    } catch (error: any) {
+      console.error("Failed to delete books:", error);
+      showToast(`Failed to delete books: ${error.message || 'Unknown error'}`, 'error');
+    }
+  };
+
   // Handle Update Book
   const handleUpdateBook = async (updatedBook: Book) => {
     setBooks(prev => prev.map(b => b.id === updatedBook.id ? updatedBook : b));
@@ -562,6 +581,7 @@ const App: React.FC = () => {
           appState={mode}
           searchQuery={searchQuery}
           onSearch={setSearchQuery}
+          onBulkDelete={handleBulkDeleteBooks}
         />
       </div>
 
@@ -620,6 +640,7 @@ const App: React.FC = () => {
           selectedCollectionId={selectedCollectionId}
           onClearCollection={() => setSelectedCollectionId(null)}
           onSelectBook={handleSelectBook}
+          onBulkDelete={handleBulkDeleteBooks}
         />
       )}
 

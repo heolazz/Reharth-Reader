@@ -12,10 +12,10 @@ interface CollectionsManagerProps {
     books: Book[];
     onUpdateBook: (book: Book) => void;
     selectedBook?: Book | null;
-    onSelectCollection?: (id: string) => void;
     selectedCollectionId?: string | null;
     onClearCollection?: () => void;
     onSelectBook?: (id: string) => void;
+    onBulkDelete?: (ids: string[]) => void;
 }
 
 export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
@@ -27,13 +27,18 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
     onSelectCollection,
     selectedCollectionId,
     onClearCollection,
-    onSelectBook
+    onSelectBook,
+    onBulkDelete
 }) => {
     const [collections, setCollections] = useState<(Collection & { bookCount: number, previewBooks: Book[] })[]>([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [newCollectionName, setNewCollectionName] = useState('');
     const [newCollectionDescription, setNewCollectionDescription] = useState('');
     const [selectedColor, setSelectedColor] = useState('#3E2723');
+
+    // Selection state for Collection Detail View
+    const [selectionMode, setSelectionMode] = useState(false);
+    const [selectedBookIds, setSelectedBookIds] = useState<Set<string>>(new Set());
 
     const isModal = Boolean(selectedBook);
 
@@ -160,6 +165,28 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
     const activeCollection = selectedCollectionId ? collections.find(c => c.id === selectedCollectionId) : null;
     const collectionBooks = selectedCollectionId ? books.filter(b => b.collectionIds?.includes(selectedCollectionId)) : [];
 
+    const handleBookClick = (bookId: string) => {
+        if (selectionMode) {
+            setSelectedBookIds(prev => {
+                const next = new Set(prev);
+                if (next.has(bookId)) next.delete(bookId);
+                else next.add(bookId);
+                return next;
+            });
+        } else {
+            onSelectBook?.(bookId);
+        }
+    };
+
+    const handleBulkDelete = () => {
+        if (selectedBookIds.size === 0) return;
+        if (confirm(`Are you sure you want to delete ${selectedBookIds.size} books?`)) {
+            onBulkDelete?.(Array.from(selectedBookIds));
+            setSelectionMode(false);
+            setSelectedBookIds(new Set());
+        }
+    };
+
     if (!isOpen) return null;
 
     // === PAGE VIEW RENDER (Main Collections Tab) ===
@@ -176,15 +203,36 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                     <div className="max-w-6xl mx-auto space-y-10">
                         {/* Detail Header */}
                         <div className="flex flex-col space-y-6 border-b border-black/5 pb-8">
-                            <button
-                                onClick={onClearCollection}
-                                className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-black/40 hover:text-[#3E2723] transition-colors self-start"
-                            >
-                                <div className="w-8 h-8 rounded-full bg-[#FAFAFA] border border-black/5 flex items-center justify-center group-hover:bg-[#3E2723] group-hover:text-white group-hover:border-transparent transition-all shadow-sm">
-                                    <ArrowLeft size={14} />
-                                </div>
-                                Back to Collections
-                            </button>
+                            <div className="flex items-center justify-between">
+                                <button
+                                    onClick={() => {
+                                        onClearCollection?.();
+                                        setSelectionMode(false);
+                                        setSelectedBookIds(new Set());
+                                    }}
+                                    className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-black/40 hover:text-[#3E2723] transition-colors self-start"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-[#FAFAFA] border border-black/5 flex items-center justify-center group-hover:bg-[#3E2723] group-hover:text-white group-hover:border-transparent transition-all shadow-sm">
+                                        <ArrowLeft size={14} />
+                                    </div>
+                                    Back to Collections
+                                </button>
+                                
+                                {collectionBooks.length > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            setSelectionMode(!selectionMode);
+                                            if (selectionMode) setSelectedBookIds(new Set());
+                                        }}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${selectionMode
+                                            ? 'bg-[#3E2723] text-white shadow-md'
+                                            : 'bg-[#FAFAFA] border border-black/5 text-[#3E2723] hover:border-black/10'
+                                            }`}
+                                    >
+                                        {selectionMode ? 'Cancel Selection' : 'Select Books'}
+                                    </button>
+                                )}
+                            </div>
 
                             <div className="space-y-3">
                                 <h1 className="text-5xl md:text-7xl font-serif text-[#3E2723] tracking-tight">{activeCollection.name}</h1>
@@ -208,10 +256,17 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.03 }}
-                                    onClick={() => onSelectBook?.(book.id)}
-                                    className="group cursor-pointer space-y-3"
+                                    onClick={() => handleBookClick(book.id)}
+                                    className="group cursor-pointer space-y-3 relative"
                                 >
-                                    <div className="relative aspect-[2/3] w-full bg-[#FAFAFA] rounded-xl overflow-hidden shadow-sm group-hover:shadow-xl transition-all duration-500 border border-black/5 group-hover:-translate-y-2">
+                                    {selectionMode && (
+                                        <div className="absolute top-2 right-2 z-30">
+                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedBookIds.has(book.id) ? 'bg-[#9CAF88] border-[#9CAF88]' : 'bg-white/80 border-black/20'}`}>
+                                                {selectedBookIds.has(book.id) && <Check size={14} className="text-white" strokeWidth={3} />}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className={`relative aspect-[2/3] w-full bg-[#FAFAFA] rounded-xl overflow-hidden shadow-sm group-hover:shadow-xl transition-all duration-500 border border-black/5 ${!selectionMode && 'group-hover:-translate-y-2'} ${selectionMode && selectedBookIds.has(book.id) ? 'ring-4 ring-[#9CAF88] ring-offset-2' : ''}`}>
                                         {book.coverImage || book.coverUrl ? (
                                             <img src={book.coverImage || book.coverUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={book.title} />
                                         ) : (
@@ -257,6 +312,30 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                             )}
                         </div>
                     </div>
+
+                    {/* Floating Action Bar for Selection Mode */}
+                    <AnimatePresence>
+                        {selectionMode && selectedBookIds.size > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 50 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 50 }}
+                                className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[#3E2723]/10"
+                            >
+                                <span className="text-sm font-medium text-[#3E2723] whitespace-nowrap">
+                                    {selectedBookIds.size} selected
+                                </span>
+                                <div className="w-[1px] h-6 bg-[#3E2723]/10" />
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+                                >
+                                    Delete
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                 </motion.div>
             );
         }
