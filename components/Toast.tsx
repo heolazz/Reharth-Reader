@@ -71,10 +71,10 @@ export const Toast: React.FC<ToastProps> = ({
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    initial={{ opacity: 0, y: -50, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                    className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999]"
+                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                    className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] w-full max-w-[90vw] md:max-w-md px-4"
                 >
                     <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg ${getBgColor()}`}>
                         {getIcon()}

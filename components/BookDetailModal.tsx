@@ -117,31 +117,36 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                 {isDeleting && (
                   <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="absolute inset-0 z-30 bg-white/95 backdrop-blur-sm flex items-center justify-center p-8"
+                    className="absolute inset-0 z-30 bg-[#3E2723]/20 backdrop-blur-[2px] flex items-center justify-center p-4 md:p-8"
                   >
-                    <div className="text-center max-w-sm space-y-6">
-                      <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <AlertTriangle size={32} />
+                    <motion.div 
+                      initial={{ scale: 0.9, y: 20 }}
+                      animate={{ scale: 1, y: 0 }}
+                      exit={{ scale: 0.9, y: 20 }}
+                      className="bg-white rounded-2xl p-6 md:p-8 shadow-2xl max-w-sm w-full border border-[#3E2723]/10"
+                    >
+                      <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <AlertTriangle size={24} />
                       </div>
-                      <h3 className="font-serif text-2xl text-[#3E2723] font-bold">Remove this book?</h3>
-                      <p className="text-[#3E2723]/60">
-                        Are you sure you want to delete <span className="font-bold italic text-[#3E2723]">"{book.title}"</span>? This action cannot be undone.
+                      <h3 className="font-serif text-xl text-[#3E2723] font-bold text-center mb-2">Remove Book?</h3>
+                      <p className="text-[#3E2723]/60 text-center text-sm mb-6">
+                        Are you sure you want to delete <span className="font-bold italic text-[#3E2723]">"{book.title}"</span>?
                       </p>
-                      <div className="flex gap-4 justify-center pt-2">
+                      <div className="flex gap-3">
                         <button
                           onClick={() => setIsDeleting(false)}
-                          className="px-6 py-3 rounded-full border border-[#3E2723]/20 text-[#3E2723]/60 font-medium hover:bg-[#F3F0EB] transition-colors"
+                          className="flex-1 px-4 py-2.5 rounded-xl border border-[#3E2723]/10 text-[#3E2723]/60 text-sm font-bold uppercase tracking-widest hover:bg-[#F3F0EB] transition-colors"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={() => onDelete && onDelete(book.id)}
-                          className="px-6 py-3 rounded-full bg-red-500 text-white font-medium hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                          className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold uppercase tracking-widest hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
                         >
                           Delete
                         </button>
                       </div>
-                    </div>
+                    </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>

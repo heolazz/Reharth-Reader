@@ -38,9 +38,9 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, onClose]);
 
-    if (!book) return null;
-
     const [addingStatus, setAddingStatus] = useState<string>('');
+
+    if (!book) return null;
 
     const handleAddToLibrary = async () => {
         if (!user) {
