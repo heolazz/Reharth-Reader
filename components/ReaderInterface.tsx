@@ -146,6 +146,8 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
   const [progressLabel, setProgressLabel] = useState("");
   const [isReady, setIsReady] = useState(false);
   const [selectionText, setSelectionText] = useState("");
+  const [loadingStatus, setLoadingStatus] = useState<string>('');
+  const [loadError, setLoadError] = useState<string | null>(null);
 
 
   // Refs
@@ -202,6 +204,8 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
   useEffect(() => {
     setIsReady(false);
     setEpubWarmup(false); // Reset warmup for new book
+    setLoadingStatus('');
+    setLoadError(null);
     // Load User Data
     if (book?.id) {
       loadUserData(book.id);
@@ -317,18 +321,21 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
 
       // Clear previous
       epubContainerRef.current.innerHTML = '';
+      setLoadError(null);
 
       let epubDataToUse = book.epubData;
 
       // If no epubData in memory but we have a fileUrl, download it
       if (!epubDataToUse && book.fileUrl) {
         console.log('⬇️ Downloading EPUB from:', book.fileUrl);
+        setLoadingStatus('Downloading book...');
         try {
           const { downloadBookFile } = await import('../lib/supabaseStorage');
           epubDataToUse = await downloadBookFile(book.fileUrl);
           console.log('✅ EPUB downloaded successfully, size:', epubDataToUse.byteLength, 'bytes');
 
           // Cache it locally to IndexedDB for offline reading later
+          setLoadingStatus('Caching for offline reading...');
           if (book.id) {
             const { saveBook } = await import('../utils/db');
             const updatedBook = { ...book, epubData: epubDataToUse };
@@ -340,16 +347,19 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
           }
         } catch (error) {
           console.error('❌ Failed to download EPUB file:', error);
-          alert('Failed to load book. Please try again.');
+          setLoadingStatus('');
+          setLoadError('Failed to download book. Check your connection and try again.');
           return;
         }
       }
 
       if (!epubDataToUse) {
         console.error('❌ No EPUB data available');
+        setLoadError('No book data available. The book may not have been downloaded correctly.');
         return;
       }
 
+      setLoadingStatus('Preparing book...');
       console.log('📚 Creating EPUB book instance...');
       const epubBook = ePub(epubDataToUse);
 
@@ -370,6 +380,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
 
       renditionRef.current = rendition;
 
+      setLoadingStatus('Rendering pages...');
       const startLocation = initialLocation || book.lastLocation || undefined;
       rendition.display(startLocation).then(() => {
         // Apply styles
@@ -397,6 +408,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
           setEpubWarmup(true);
         } else {
           // Real render done — show reader
+          setLoadingStatus('');
           setIsReady(true);
         }
       });
@@ -1355,6 +1367,58 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
               </div>
             )
           }
+
+          {/* EPUB Loading Overlay */}
+          {book.fileType === 'epub' && !isReady && !loadError && (
+            <div className="absolute inset-0 z-[45] flex flex-col items-center justify-center gap-6">
+              <div className="relative">
+                <div className={`w-16 h-16 rounded-full border-2 border-t-transparent animate-spin ${theme === 'dark' ? 'border-white/20 border-t-white/60' : 'border-[#3D3028]/10 border-t-[#3D3028]/50'}`} />
+                <BookOpen size={20} className={`absolute inset-0 m-auto ${theme === 'dark' ? 'text-white/40' : 'text-[#3D3028]/30'}`} />
+              </div>
+              <div className="text-center space-y-2">
+                <p className={`text-sm font-bold uppercase tracking-widest animate-pulse ${theme === 'dark' ? 'text-white/60' : 'text-[#3D3028]/50'}`}>
+                  {loadingStatus || 'Loading...'}
+                </p>
+                <p className={`text-xs ${theme === 'dark' ? 'text-white/30' : 'text-[#3D3028]/25'}`}>
+                  First load may take a moment
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* EPUB Load Error */}
+          {book.fileType === 'epub' && loadError && (
+            <div className="absolute inset-0 z-[45] flex flex-col items-center justify-center gap-6 px-8">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-red-500/10' : 'bg-red-50'}`}>
+                <BookOpen size={24} className="text-red-400" />
+              </div>
+              <div className="text-center space-y-2 max-w-sm">
+                <p className={`text-sm font-bold ${theme === 'dark' ? 'text-white/80' : 'text-[#3D3028]'}`}>
+                  Could not load book
+                </p>
+                <p className={`text-xs ${theme === 'dark' ? 'text-white/40' : 'text-[#3D3028]/50'}`}>
+                  {loadError}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setLoadError(null);
+                  setIsReady(false);
+                  setEpubWarmup(false);
+                  // Re-trigger the initEpub effect by toggling a dependency
+                  if (epubContainerRef.current) epubContainerRef.current.innerHTML = '';
+                  // Force re-run by updating a ref-based trigger
+                  setLoadingStatus('Retrying...');
+                  setTimeout(() => {
+                    setEpubWarmup(false); // triggers useEffect re-run
+                  }, 100);
+                }}
+                className={`px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-widest transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-[#3D3028] text-white hover:bg-[#2C1810]'}`}
+              >
+                Try Again
+              </button>
+            </div>
+          )}
 
           {/* EPUB CONTAINER */}
           {

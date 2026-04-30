@@ -35,13 +35,13 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
             {/* Background Image with heavy blur */}
             <div className="absolute inset-0">
                 {book.cover_url ? (
-                    <motion.img 
+                    <motion.img
                         key={`bg-${book.id}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 0.3 }}
                         transition={{ duration: 1 }}
-                        src={book.cover_url} 
-                        className="w-full h-full object-cover blur-[40px] scale-125" 
+                        src={book.cover_url}
+                        className="w-full h-full object-cover blur-[40px] scale-125"
                     />
                 ) : (
                     <div className="w-full h-full bg-[#3D3028]" />
@@ -51,7 +51,7 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
 
             <div className="relative z-10 w-full h-full flex flex-row items-center p-4 md:p-12 gap-4 md:gap-12">
                 {/* Book Cover */}
-                <motion.div 
+                <motion.div
                     key={`cover-${book.id}`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -69,7 +69,7 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
                 </motion.div>
 
                 {/* Info */}
-                <motion.div 
+                <motion.div
                     key={`info-${book.id}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -99,8 +99,8 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
                             {book.description}
                         </p>
                     )}
-                    
-                    <button 
+
+                    <button
                         onClick={() => onOpenBook?.(book)}
                         className="bg-[#E86C46] text-white px-5 md:px-8 py-2 md:py-3 rounded-xl font-medium text-xs md:text-sm hover:bg-[#D65A34] transition-colors shadow-lg w-fit"
                     >
@@ -147,7 +147,7 @@ const HorizontalBookCarousel = ({ title, icon: Icon, books, onOpenBook }: { titl
                         <div className="relative w-full aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
                             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
                             <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
-                            
+
                             {book.cover_url ? (
                                 <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
@@ -155,10 +155,10 @@ const HorizontalBookCarousel = ({ title, icon: Icon, books, onOpenBook }: { titl
                                     No Cover
                                 </div>
                             )}
-                            
+
                             <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/20" />
                             <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-10 transition-opacity" />
-                            
+
                             {book.rating_average !== undefined && book.rating_average > 0 && (
                                 <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 shadow-sm z-20">
                                     <Star size={10} className="fill-[#E86C46] text-[#E86C46]" />
@@ -202,10 +202,10 @@ const TopBooksCarousel = ({ books, onOpenBook }: { books: PublicBook[], onOpenBo
                         <div className="absolute -left-4 -bottom-6 text-[100px] md:text-[120px] font-serif font-bold text-[#3D3028]/5 z-0 select-none pointer-events-none leading-none group-hover:text-[#E86C46]/5 transition-colors">
                             {idx + 1}
                         </div>
-                        
+
                         <div className="relative w-[80px] md:w-[100px] shrink-0 aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden z-10 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-shadow">
-                             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
-                             {book.cover_url ? (
+                            <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
+                            {book.cover_url ? (
                                 <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
                                 <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-[10px] text-center">
@@ -213,7 +213,7 @@ const TopBooksCarousel = ({ books, onOpenBook }: { books: PublicBook[], onOpenBo
                                 </div>
                             )}
                         </div>
-                        
+
                         <div className="flex-1 z-10">
                             <h3 className="font-serif text-[15px] md:text-[16px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2">
                                 {book.title}
@@ -256,7 +256,7 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
                     >
                         <div className="relative w-full aspect-[16/10] rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
                             <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
-                            
+
                             {series.cover_url ? (
                                 <img src={series.cover_url} alt={series.title} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
@@ -264,13 +264,13 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
                                     {series.title}
                                 </div>
                             )}
-                            
+
                             {/* Overlay tag */}
                             <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md z-20">
                                 Series
                             </div>
                         </div>
-                        
+
                         <h3 className="font-serif text-[15px] md:text-[16px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2">
                             {series.title}
                         </h3>
@@ -291,8 +291,8 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
     const [activeCategory, setActiveCategory] = useState('All');
 
     // Data States
-    const [books, setBooks] = useState<PublicBook[]>([]); 
-    
+    const [books, setBooks] = useState<PublicBook[]>([]);
+
     // Home View States
     const [featuredBooks, setFeaturedBooks] = useState<PublicBook[]>([]);
     const [topBooks, setTopBooks] = useState<PublicBook[]>([]);
@@ -431,9 +431,9 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                 {/* 2. Featured Collections Slider (Hidden during text search) */}
                 {!searchQuery && !isLoading && featuredBooks.length > 0 && (
                     <div className="pt-2">
-                        <FeaturedBooksSlider 
-                            books={featuredBooks} 
-                            onOpenBook={onOpenBook} 
+                        <FeaturedBooksSlider
+                            books={featuredBooks}
+                            onOpenBook={onOpenBook}
                         />
                     </div>
                 )}
@@ -466,7 +466,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                 ) : isHomeView ? (
                     /* --- HOME VIEW: TOP BOOKS & MACRO CATEGORIES --- */
                     <AnimatePresence mode="wait">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
@@ -474,18 +474,18 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                         >
                             {/* Top Books 1-9 */}
                             {topBooks.length > 0 && (
-                                <TopBooksCarousel 
-                                    books={topBooks} 
-                                    onOpenBook={onOpenBook} 
+                                <TopBooksCarousel
+                                    books={topBooks}
+                                    onOpenBook={onOpenBook}
                                 />
                             )}
 
                             {/* Epic Series & Collections */}
                             {seriesList.length > 0 && (
-                                <HorizontalSeriesCarousel 
-                                    title="Epic Series & Collections" 
-                                    icon={Award} 
-                                    seriesList={seriesList} 
+                                <HorizontalSeriesCarousel
+                                    title="Epic Series & Collections"
+                                    icon={Award}
+                                    seriesList={seriesList}
                                     onOpenSeries={async (series) => {
                                         setSelectedSeries(series);
                                         setIsLoadingSeriesBooks(true);
@@ -496,27 +496,27 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                                             }
                                         } catch (e) { console.error(e); }
                                         setIsLoadingSeriesBooks(false);
-                                    }} 
+                                    }}
                                 />
                             )}
 
                             {/* Fiction & Literature */}
                             {fictionBooks.length > 0 && (
-                                <HorizontalBookCarousel 
-                                    title="Fiction & Literature" 
-                                    icon={BookOpen} 
-                                    books={fictionBooks} 
-                                    onOpenBook={onOpenBook} 
+                                <HorizontalBookCarousel
+                                    title="Fiction & Literature"
+                                    icon={BookOpen}
+                                    books={fictionBooks}
+                                    onOpenBook={onOpenBook}
                                 />
                             )}
 
                             {/* Non-Fiction & Knowledge */}
                             {nonFictionBooks.length > 0 && (
-                                <HorizontalBookCarousel 
-                                    title="Non-Fiction & Knowledge" 
-                                    icon={BookOpen} 
-                                    books={nonFictionBooks} 
-                                    onOpenBook={onOpenBook} 
+                                <HorizontalBookCarousel
+                                    title="Non-Fiction & Knowledge"
+                                    icon={BookOpen}
+                                    books={nonFictionBooks}
+                                    onOpenBook={onOpenBook}
                                 />
                             )}
                         </motion.div>
@@ -524,7 +524,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                 ) : (
                     /* --- SEARCH/CATEGORY VIEW: GRID --- */
                     <AnimatePresence mode="wait">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
@@ -554,7 +554,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                                             <div className="relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
                                                 <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
                                                 <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
-                                                
+
                                                 {book.cover_url ? (
                                                     <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
                                                 ) : (
@@ -562,10 +562,10 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                                                         No Cover
                                                     </div>
                                                 )}
-                                                
+
                                                 <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/20" />
                                                 <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-10 transition-opacity" />
-                                                
+
                                                 {book.rating_average !== undefined && book.rating_average > 0 && (
                                                     <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 shadow-sm z-20">
                                                         <Star size={10} className="fill-[#E86C46] text-[#E86C46]" />
@@ -637,10 +637,11 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
     const { user } = useAuthStore();
     const { showToast } = useToast();
     const [isAdding, setIsAdding] = useState(false);
-    
+
     const [addingStatus, setAddingStatus] = useState<string>('');
-    
+
     const handleAddSeriesToLibrary = async () => {
+
         if (!user) {
             showToast('Please login to add books', 'error');
             return;
@@ -658,7 +659,7 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
             const { saveCollection, saveBook, getAllBooks } = await import('../utils/db');
             const { generateUUID } = await import('../utils/uuid');
             const { supabase } = await import('../lib/supabase');
-            
+
             const collectionId = generateUUID();
             const newCollection = {
                 id: collectionId,
@@ -674,10 +675,10 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
             for (let i = 0; i < books.length; i++) {
                 const book = books[i];
                 setAddingStatus(`Processing volume ${i + 1}/${books.length}...`);
-                
+
                 try {
                     const { error, data } = await addPublicBookToLibrary(book.id, user.id);
-                    
+
                     if (!error && data) {
                         // New book added successfully
                         const appBook = data as Book;
@@ -692,7 +693,7 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                             .ilike('title', book.title)
                             .ilike('author', book.author)
                             .maybeSingle();
-                        
+
                         if (existing) {
                             const appBook: Book = {
                                 id: existing.id,
@@ -717,12 +718,12 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                             const localBooks = await getAllBooks();
                             const localBook = localBooks.find(lb => lb.id === existing.id);
                             const existingCollections = localBook?.collectionIds || appBook.collectionIds || [];
-                            
+
                             // Check if collectionId is already there
-                            const finalCollectionIds = existingCollections.includes(collectionId) 
-                                ? existingCollections 
+                            const finalCollectionIds = existingCollections.includes(collectionId)
+                                ? existingCollections
                                 : [...existingCollections, collectionId];
-                                
+
                             booksToUpdate.push({ ...appBook, collectionIds: finalCollectionIds });
                         }
                         successCount++;
@@ -731,25 +732,25 @@ const SeriesDetailModal = ({ series, books, isLoading, onClose, onOpenBook, onBo
                     console.warn(`Failed to process book: ${book.title}`, e);
                 }
             }
-            
+
             // Always create collection if we have books
             if (booksToUpdate.length > 0) {
                 setAddingStatus('Syncing collection...');
                 await saveCollection(newCollection);
-                
+
                 // Also sync collection to Supabase
                 const { saveCollectionToSupabase, syncBookCollectionIds } = await import('../lib/supabaseDb');
-                await saveCollectionToSupabase(newCollection).catch(() => {});
-                
+                await saveCollectionToSupabase(newCollection).catch(() => { });
+
                 for (const b of booksToUpdate) {
                     await saveBook(b);
                     // Sync each book's collection_ids to Supabase
-                    await syncBookCollectionIds(b.id, b.collectionIds || []).catch(() => {});
+                    await syncBookCollectionIds(b.id, b.collectionIds || []).catch(() => { });
                 }
-                
+
                 // Small delay to ensure DB operations complete
                 await new Promise(resolve => setTimeout(resolve, 500));
-                
+
                 if (onBooksAdded) onBooksAdded(booksToUpdate);
             }
 
