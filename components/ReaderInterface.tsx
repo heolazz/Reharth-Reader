@@ -325,7 +325,25 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
 
       let epubDataToUse = book.epubData;
 
-      // If no epubData in memory but we have a fileUrl, download it
+      // Step 1: If no epubData in memory, try loading from local IndexedDB cache first (instant, works offline)
+      if (!epubDataToUse && book.id) {
+        console.log('🔍 Checking local IndexedDB cache for EPUB...');
+        setLoadingStatus('Loading from cache...');
+        try {
+          const { initDB } = await import('../utils/db');
+          const db = await initDB();
+          const cachedBook = await db.get('books', book.id);
+          if (cachedBook?.epubData) {
+            epubDataToUse = cachedBook.epubData;
+            book.epubData = epubDataToUse; // Update in-memory reference
+            console.log('⚡ EPUB loaded from local cache! Size:', epubDataToUse.byteLength, 'bytes');
+          }
+        } catch (cacheErr) {
+          console.warn('⚠️ Could not read from IndexedDB cache:', cacheErr);
+        }
+      }
+
+      // Step 2: If still no data, download from server (requires internet)
       if (!epubDataToUse && book.fileUrl) {
         console.log('⬇️ Downloading EPUB from:', book.fileUrl);
         setLoadingStatus('Downloading book...');
@@ -342,7 +360,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
             await saveBook(updatedBook);
             console.log('💾 EPUB cached to local IndexedDB for offline use');
 
-            // Also update the in-memory book object so it doesn't re-download if modal is closed and reopened in the same session
+            // Also update the in-memory book object
             book.epubData = epubDataToUse;
           }
         } catch (error) {
