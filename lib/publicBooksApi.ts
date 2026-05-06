@@ -374,6 +374,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                         file_url: publicBook.epub_url || '',
                         cover_url: publicBook.cover_url || '',
                         summary: publicBook.description || '',
+                        volume_number: publicBook.volume_number || null,
                         collection_ids: [],
                     })
                     .eq('id', existing.id);
@@ -441,7 +442,8 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             time_read_seconds: 0,
             last_read_at: new Date().toISOString(),
             is_favorite: false,
-            is_archived: false
+            is_archived: false,
+            volume_number: publicBook.volume_number || null
         };
 
         let data: any;
@@ -461,6 +463,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                 user_id: userId,
                 title: publicBook.title || 'Unknown Title',
                 author: publicBook.author || 'Unknown Author',
+                volume_number: publicBook.volume_number || null,
                 cover_url: publicBook.cover_url || '',
                 file_url: publicBook.epub_url || '',
                 file_type: publicBook.epub_url ? 'epub' : 'text',

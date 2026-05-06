@@ -52,6 +52,7 @@ const mapBookToSupabaseRecord = (book: Book, userId: string) => {
         is_favorite: book.isFavorite || false,
         is_archived: book.isArchived || false,
         collection_ids: book.collectionIds || [],
+        volume_number: book.volumeNumber !== undefined ? book.volumeNumber : null,
     };
 };
 
