@@ -361,6 +361,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             .eq('user_id', userId)
             .ilike('title', titleToSearch)
             .ilike('author', authorToSearch)
+            .limit(1)
             .maybeSingle();
 
         if (existing) {
@@ -373,7 +374,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                         file_url: publicBook.epub_url || '',
                         cover_url: publicBook.cover_url || '',
                         summary: publicBook.description || '',
-                        volume_number: publicBook.volume_number || null,
+                        collection_ids: [],
                     })
                     .eq('id', existing.id);
 
@@ -412,6 +413,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                         isFavorite: restoredData.is_favorite || false,
                         isArchived: false,
                         volumeNumber: restoredData.volume_number || null,
+                        collectionIds: restoredData.collection_ids || [],
                     };
                     return { data: appBook, error: null };
                 }
@@ -439,8 +441,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             time_read_seconds: 0,
             last_read_at: new Date().toISOString(),
             is_favorite: false,
-            is_archived: false,
-            volume_number: publicBook.volume_number || null
+            is_archived: false
         };
 
         let data: any;
@@ -460,7 +461,6 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                 user_id: userId,
                 title: publicBook.title || 'Unknown Title',
                 author: publicBook.author || 'Unknown Author',
-                volume_number: publicBook.volume_number || null,
                 cover_url: publicBook.cover_url || '',
                 file_url: publicBook.epub_url || '',
                 file_type: publicBook.epub_url ? 'epub' : 'text',
@@ -509,6 +509,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             isFavorite: data.is_favorite || false,
             isArchived: data.is_archived || false,
             volumeNumber: data.volume_number || publicBook.volume_number || null,
+            collectionIds: data.collection_ids || [],
         };
 
         return { data: appBook, error: null };
