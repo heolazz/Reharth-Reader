@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book, AppState } from '../types';
-import { SlidersHorizontal, ArrowUpDown, Tag, X, LayoutGrid, List, Search, Check } from 'lucide-react';
+import { SlidersHorizontal, ArrowUpDown, Tag, X, LayoutGrid, List, Search, Check, Trash2 } from 'lucide-react';
 
 interface LibrarySceneProps {
   books: Book[];
@@ -35,6 +36,7 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
   // Selection state
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedBookIds, setSelectedBookIds] = useState<Set<string>>(new Set());
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   // Fetch collection name if needed
   useEffect(() => {
@@ -160,6 +162,7 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
         else next.add(bookId);
         return next;
       });
+      setIsConfirmingDelete(false);
     } else {
       onSelectBook(bookId);
     }
@@ -167,11 +170,10 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
 
   const handleBulkDelete = () => {
     if (selectedBookIds.size === 0) return;
-    if (confirm(`Are you sure you want to delete ${selectedBookIds.size} books?`)) {
-      onBulkDelete?.(Array.from(selectedBookIds));
-      setSelectionMode(false);
-      setSelectedBookIds(new Set());
-    }
+    onBulkDelete?.(Array.from(selectedBookIds));
+    setSelectionMode(false);
+    setSelectedBookIds(new Set());
+    setIsConfirmingDelete(false);
   };
 
   return (
@@ -284,7 +286,10 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
           <button
             onClick={() => {
               setSelectionMode(!selectionMode);
-              if (selectionMode) setSelectedBookIds(new Set());
+              if (selectionMode) {
+                setSelectedBookIds(new Set());
+                setIsConfirmingDelete(false);
+              }
             }}
             className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 justify-center ml-auto ${selectionMode
               ? 'bg-[#3E2723] text-[#F3F0EB] shadow-md'
@@ -530,28 +535,57 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
 
       </div>
 
-      {/* Floating Action Bar for Selection Mode */}
-      <AnimatePresence>
-        {selectionMode && selectedBookIds.size > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-white px-6 py-4 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[#3E2723]/10"
-          >
-            <span className="text-sm font-medium text-[#3E2723] whitespace-nowrap">
-              {selectedBookIds.size} selected
-            </span>
-            <div className="w-[1px] h-6 bg-[#3E2723]/10" />
-            <button
-              onClick={handleBulkDelete}
-              className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+      {/* Floating Action Bar for Selection Mode - Portaled to body to escape transform stacking context */}
+      {ReactDOM.createPortal(
+        <AnimatePresence>
+          {selectionMode && selectedBookIds.size > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-4 bg-white/95 backdrop-blur-xl px-6 py-4 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-[#3E2723]/10"
             >
-              Delete
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {isConfirmingDelete ? (
+                <>
+                  <span className="text-sm font-bold text-red-600 whitespace-nowrap">
+                    Delete {selectedBookIds.size} books?
+                  </span>
+                  <div className="w-[1px] h-6 bg-[#3E2723]/10" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsConfirmingDelete(false)}
+                      className="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleBulkDelete}
+                      className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap shadow-md"
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-medium text-[#3E2723] whitespace-nowrap">
+                    {selectedBookIds.size} selected
+                  </span>
+                  <div className="w-[1px] h-6 bg-[#3E2723]/10" />
+                  <button
+                    onClick={() => setIsConfirmingDelete(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </button>
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
     </div>
   );

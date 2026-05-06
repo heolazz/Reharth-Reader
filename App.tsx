@@ -379,13 +379,21 @@ const App: React.FC = () => {
       // Push URL for deep-linking
       const book = books.find(b => b.id === id);
       if (book) {
-        navigate(`/library/${slugify(book.title)}`, { replace: false });
+        if (currentPage === 'library') {
+          navigate(`/library/${slugify(book.title)}`, { replace: false });
+        } else if (currentPage === 'collections') {
+          navigate(`/collections?book=${slugify(book.title)}`, { replace: false });
+        }
       }
     } else {
       setIsDetailOpen(false);
-      // Revert URL
-      if (location.pathname.startsWith('/library/')) {
+      // Revert URL based on current page
+      if (currentPage === 'library' && location.pathname.startsWith('/library/')) {
         navigate('/library', { replace: true });
+      } else if (currentPage === 'collections' && location.search.includes('book=')) {
+        navigate('/collections', { replace: true });
+      } else if (currentPage === 'home' && location.pathname !== '/') {
+        navigate('/', { replace: true });
       }
       setTimeout(() => setSelectedBookId(null), 300);
     }
@@ -431,13 +439,13 @@ const App: React.FC = () => {
     setSelectedBookId(null);
 
     try {
+      const { deleteBook } = await import('./utils/db');
       if (isAuthenticated) {
         const { deleteBookFromSupabase } = await import('./lib/supabaseDb');
         await deleteBookFromSupabase(id);
-      } else {
-        const { deleteBook } = await import('./utils/db');
-        await deleteBook(id);
       }
+      await deleteBook(id);
+      
       // Update state only if deletion was successful
       setBooks(prev => prev.filter(b => b.id !== id));
       showToast('Book deleted successfully', 'success');
@@ -451,13 +459,13 @@ const App: React.FC = () => {
     setIsDetailOpen(false);
     setSelectedBookId(null);
     try {
+      const { deleteBook } = await import('./utils/db');
       if (isAuthenticated) {
         const { deleteBookFromSupabase } = await import('./lib/supabaseDb');
         await Promise.all(ids.map(id => deleteBookFromSupabase(id).catch(e => console.warn(e))));
-      } else {
-        const { deleteBook } = await import('./utils/db');
-        await Promise.all(ids.map(id => deleteBook(id).catch(e => console.warn(e))));
       }
+      await Promise.all(ids.map(id => deleteBook(id).catch(e => console.warn(e))));
+      
       setBooks(prev => prev.filter(b => !ids.includes(b.id)));
       showToast(`${ids.length} books deleted successfully`, 'success');
     } catch (error: any) {

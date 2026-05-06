@@ -159,7 +159,7 @@ export async function fetchPublicBooks(options: FetchBooksOptions = {}) {
 /**
  * Fetch ALL books for Admin (Includes Drafts)
  */
-export async function fetchAdminBooks(search?: string, limit = 50, offset = 0) {
+export async function fetchAdminBooks(search?: string, limit = 50, offset = 0, seriesId?: string | null) {
     try {
         let query = supabase
             .from('public_books')
@@ -170,8 +170,15 @@ export async function fetchAdminBooks(search?: string, limit = 50, offset = 0) {
             query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
         }
 
-        // Default sort by updated_at descending
-        query = query.order('updated_at', { ascending: false });
+        // Filter by series
+        if (seriesId) {
+            query = query.eq('series_id', seriesId);
+            // Sort by volume number for series
+            query = query.order('volume_number', { ascending: true, nullsFirst: false });
+        } else {
+            // Default sort by updated_at descending
+            query = query.order('updated_at', { ascending: false });
+        }
 
         query = query.range(offset, offset + limit - 1);
 
@@ -470,22 +477,23 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             console.warn('Could not increment download count:', e);
         }
 
-        // Map to App Book interface
+        // Map to App Book interface — use publicBook as fallback source
+        // since minimal insert may not return all fields
         const appBook = {
             id: data.id,
-            title: data.title,
-            author: data.author,
+            title: data.title || publicBook.title,
+            author: data.author || publicBook.author,
             color: data.color || '#8B7355',
             icon: 'feather',
-            genre: data.genre || [],
-            tags: data.tags || [],
-            year: data.year || new Date().getFullYear().toString(),
-            summary: data.summary || '',
+            genre: data.genre || publicBook.genre || [],
+            tags: data.tags || publicBook.tags || [],
+            year: data.year || (publicBook.published_year ? publicBook.published_year.toString() : new Date().getFullYear().toString()),
+            summary: data.summary || publicBook.description || '',
             content: '',
-            fileType: data.file_type || 'epub',
-            coverImage: data.cover_url || '',
-            coverUrl: data.cover_url || '',
-            fileUrl: data.file_url || '',
+            fileType: data.file_type || (publicBook.epub_url ? 'epub' : 'text'),
+            coverImage: data.cover_url || publicBook.cover_url || '',
+            coverUrl: data.cover_url || publicBook.cover_url || '',
+            fileUrl: data.file_url || publicBook.epub_url || '',
             progressPercent: data.progress_percent || 0,
             lastLocation: data.last_location || '',
             timeRead: data.time_read_seconds || 0,

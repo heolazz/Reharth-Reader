@@ -11,6 +11,7 @@ import { useToast } from './Toast';
 
 export const AdminDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'overview' | 'books' | 'series' | 'users'>('books');
+    const [seriesFilter, setSeriesFilter] = useState<string | null>(null);
 
     return (
         <div className="min-h-screen bg-white text-[#3D3028] font-sans pt-20 pb-24 px-6 md:px-12">
@@ -56,8 +57,8 @@ export const AdminDashboard: React.FC = () => {
 
                     {/* Main Content */}
                     <div className="flex-1 bg-[#FAFAFA] rounded-2xl shadow-sm border border-black/5 p-6 md:p-8 min-h-[600px] overflow-hidden">
-                        {activeTab === 'books' && <BooksManager />}
-                        {activeTab === 'series' && <SeriesManager />}
+                        {activeTab === 'books' && <BooksManager seriesFilter={seriesFilter} onClearFilter={() => setSeriesFilter(null)} />}
+                        {activeTab === 'series' && <SeriesManager onViewBooks={(id) => { setSeriesFilter(id); setActiveTab('books'); }} />}
                         {activeTab === 'overview' && <OverviewManager />}
                         {activeTab === 'users' && <UsersManager />}
                     </div>
@@ -84,11 +85,12 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }: any) => (
 // BOOKS MANAGER COMPONENT
 // ------------------------------------------------------------------
 
-const BooksManager = () => {
+const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string | null, onClearFilter?: () => void }) => {
     const { showToast } = useToast();
     const [books, setBooks] = useState<PublicBook[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedBookIds, setSelectedBookIds] = useState<Set<string>>(new Set());
     const [showModal, setShowModal] = useState(false);
     const [editingBook, setEditingBook] = useState<PublicBook | null>(null);
     const [seriesList, setSeriesList] = useState<PublicSeries[]>([]);
@@ -97,7 +99,7 @@ const BooksManager = () => {
     const loadBooks = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await fetchAdminBooks(searchQuery, 50);
+            const { data, error } = await fetchAdminBooks(searchQuery, 50, 0, seriesFilter);
             if (error) throw error;
             if (data) setBooks(data);
 
@@ -117,7 +119,7 @@ const BooksManager = () => {
             loadBooks();
         }, 300);
         return () => clearTimeout(timeoutId);
-    }, [searchQuery]);
+    }, [searchQuery, seriesFilter]);
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('Are you sure you want to delete this book? This action cannot be undone.')) return;
@@ -201,9 +203,80 @@ const BooksManager = () => {
             }
 
             setBooks(books.filter(b => b.id !== id));
+            setSelectedBookIds(prev => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+            });
         } catch (error: any) {
             console.error('Error deleting book:', error);
             showToast(error?.message || 'Failed to delete book', 'error');
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedBookIds.size === 0) return;
+        if (!window.confirm(`Are you sure you want to delete ${selectedBookIds.size} selected books? This action cannot be undone.`)) return;
+
+        const idsToDelete = Array.from(selectedBookIds);
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const id of idsToDelete) {
+            try {
+                // ... same logic as single delete ...
+                const bookToDelete = books.find(b => b.id === id);
+                if (bookToDelete) {
+                    if (bookToDelete.cover_url) {
+                        const coverInfo = extractStoragePath(bookToDelete.cover_url, ['covers', 'book-covers']);
+                        if (coverInfo) await supabase.storage.from(coverInfo.bucket).remove([coverInfo.path]).catch(() => {});
+                    }
+                    if (bookToDelete.epub_url) {
+                        const epubInfo = extractStoragePath(bookToDelete.epub_url, ['books', 'book-files']);
+                        if (epubInfo) await supabase.storage.from(epubInfo.bucket).remove([epubInfo.path]).catch(() => {});
+                    }
+                }
+
+                const { data, error } = await supabase.from('public_books').delete().eq('id', id).select();
+                
+                if (error) {
+                    const { error: archiveError } = await supabase.from('public_books').update({ status: 'archived' }).eq('id', id).select();
+                    if (!archiveError) successCount++;
+                    else failCount++;
+                } else if (!data || data.length === 0) {
+                    failCount++;
+                } else {
+                    successCount++;
+                }
+            } catch (e) {
+                failCount++;
+            }
+        }
+
+        if (successCount > 0) {
+            setBooks(books.filter(b => !selectedBookIds.has(b.id)));
+            setSelectedBookIds(new Set());
+            showToast(`Successfully deleted ${successCount} books`, 'success');
+        }
+        if (failCount > 0) {
+            showToast(`Failed to delete ${failCount} books`, 'error');
+        }
+    };
+
+    const toggleSelection = (id: string) => {
+        setSelectedBookIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
+    const toggleAll = () => {
+        if (selectedBookIds.size === books.length && books.length > 0) {
+            setSelectedBookIds(new Set());
+        } else {
+            setSelectedBookIds(new Set(books.map(b => b.id)));
         }
     };
 
@@ -211,25 +284,47 @@ const BooksManager = () => {
         <div className="space-y-6">
             {/* Header Actions */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="relative w-full md:w-96 group">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#3D3028]/40 group-focus-within:text-[#3D3028]">
-                        <Search size={18} />
+                <div className="relative w-full md:w-96 group flex flex-col gap-2">
+                    <div className="relative w-full">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#3D3028]/40 group-focus-within:text-[#3D3028]">
+                            <Search size={18} />
+                        </div>
+                        <input
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search system library..."
+                            className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-all"
+                        />
                     </div>
-                    <input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search system library..."
-                        className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-all"
-                    />
+                    {seriesFilter && (
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold uppercase tracking-widest text-[#3D3028]/60">Filtered by Series</span>
+                            <button onClick={onClearFilter} className="flex items-center gap-1 px-2 py-1 bg-[#3D3028]/5 hover:bg-[#3D3028]/10 rounded-md transition-colors text-[#3D3028]">
+                                <X size={12} />
+                                <span className="text-[10px] font-bold">Clear</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
-                <button
-                    onClick={() => { setEditingBook(null); setShowModal(true); }}
-                    className="flex items-center gap-2 bg-[#3D3028] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#2C1810] transition-colors shadow-sm hover:shadow-md"
-                >
-                    <Plus size={18} />
-                    Add New Book
-                </button>
+                <div className="flex items-center gap-2">
+                    {selectedBookIds.size > 0 && (
+                        <button
+                            onClick={handleBulkDelete}
+                            className="flex items-center gap-2 bg-red-50 text-red-600 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors shadow-sm"
+                        >
+                            <Trash2 size={18} />
+                            Delete ({selectedBookIds.size})
+                        </button>
+                    )}
+                    <button
+                        onClick={() => { setEditingBook(null); setShowModal(true); }}
+                        className="flex items-center gap-2 bg-[#3D3028] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#2C1810] transition-colors shadow-sm hover:shadow-md"
+                    >
+                        <Plus size={18} />
+                        Add New Book
+                    </button>
+                </div>
             </div>
 
             {/* Content Table */}
@@ -242,6 +337,14 @@ const BooksManager = () => {
                     <table className="w-full text-left text-sm">
                         <thead className="bg-[#FAFAFA] text-[#3D3028]/60 border-b border-[#3D3028]/10">
                             <tr>
+                                <th className="px-6 py-4 font-medium w-10">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={books.length > 0 && selectedBookIds.size === books.length}
+                                        onChange={toggleAll}
+                                        className="rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
+                                    />
+                                </th>
                                 <th className="px-6 py-4 font-medium">Book</th>
                                 <th className="px-6 py-4 font-medium">Author</th>
                                 <th className="px-6 py-4 font-medium">Genre</th>
@@ -252,7 +355,15 @@ const BooksManager = () => {
                         </thead>
                         <tbody className="divide-y divide-[#3D3028]/5">
                             {books.map((book) => (
-                                <tr key={book.id} className="hover:bg-[#FAFAFA]/50 transition-colors group">
+                                <tr key={book.id} className={`hover:bg-[#FAFAFA]/50 transition-colors group ${selectedBookIds.has(book.id) ? 'bg-[#3D3028]/5' : ''}`}>
+                                    <td className="px-6 py-4">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedBookIds.has(book.id)}
+                                            onChange={() => toggleSelection(book.id)}
+                                            className="rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
+                                        />
+                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-14 bg-[#EAE5DD] rounded overflow-hidden shrink-0 border border-[#3D3028]/10">
@@ -262,7 +373,10 @@ const BooksManager = () => {
                                             </div>
                                             <div>
                                                 <p className="font-medium text-[#3D3028]">{book.title}</p>
-                                                <p className="text-xs text-[#3D3028]/40 mt-0.5 max-w-[200px] truncate">{book.id}</p>
+                                                {book.volume_number && (
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/60 mt-0.5">Vol. {book.volume_number}</p>
+                                                )}
+                                                <p className="text-[10px] text-[#3D3028]/30 mt-0.5 max-w-[200px] truncate">{book.id}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -1195,7 +1309,7 @@ const UsersManager = () => {
 // SERIES MANAGER COMPONENT
 // ------------------------------------------------------------------
 
-const SeriesManager = () => {
+const SeriesManager = ({ onViewBooks }: { onViewBooks?: (seriesId: string) => void }) => {
     const { showToast } = useToast();
     const [seriesList, setSeriesList] = useState<PublicSeries[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -1304,6 +1418,15 @@ const SeriesManager = () => {
                                 >
                                     <Edit2 size={16} />
                                 </button>
+                                {onViewBooks && (
+                                    <button
+                                        onClick={() => onViewBooks(series.id)}
+                                        className="p-2 text-[#6B8E6D] hover:text-[#4A6B4C] hover:bg-[#9CAF88]/10 rounded-lg transition-colors"
+                                        title="Manage Books"
+                                    >
+                                        <Library size={16} />
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => handleDelete(series.id)}
                                     className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"

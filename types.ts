@@ -24,6 +24,7 @@ export interface Book {
   lastReadDate?: number; // Timestamp
   dateAdded?: number; // Timestamp when book was added to library
   collectionIds?: string[]; // IDs of collections this book belongs to
+  volumeNumber?: number; // Volume or book number in a series
   isFavorite?: boolean; // Mark as favorite
   isArchived?: boolean; // Archive book
 }

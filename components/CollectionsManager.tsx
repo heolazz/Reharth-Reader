@@ -6,6 +6,20 @@ import { generateUUID } from '../utils/uuid';
 import { getAllCollections, saveCollection, deleteCollection } from '../utils/db';
 import { getAllCollectionsFromSupabase, saveCollectionToSupabase, deleteCollectionFromSupabase, syncBookCollectionIds } from '../lib/supabaseDb';
 
+const extractVolumeNumber = (title: string) => {
+    // 1. Try explicit Volume/Book formats
+    let match = title.match(/(?:Volume|Vol\.?|Book|Part)\s*(\d+(?:\.\d+)?)/i);
+    if (match) return parseFloat(match[1]);
+
+    // 2. Fallback: Grab the last number appearing at the very end of the title
+    match = title.match(/(?:\s|-|#)(\d+(?:\.\d+)?)\s*$/);
+    if (match) return parseFloat(match[1]);
+
+    // 3. Last resort: Just find any standalone number
+    match = title.match(/(?:\s|^)(\d+(?:\.\d+)?)(?:\s|$)/);
+    return match ? parseFloat(match[1]) : null;
+};
+
 interface CollectionsManagerProps {
     isOpen: boolean;
     onClose: () => void;
@@ -51,14 +65,10 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
         '#C6A87C'  // Sand
     ];
 
-    // Load collections
-    useEffect(() => {
-        if (isOpen) {
-            loadCollections();
-        }
-    }, [isOpen, books]);
+    const [baseCollections, setBaseCollections] = useState<Collection[]>([]);
 
-    const loadCollections = async () => {
+    // Fetch and sync collections from databases
+    const fetchAndSyncCollections = async () => {
         try {
             // Load from both sources
             const [localCols, supabaseCols] = await Promise.all([
@@ -82,16 +92,48 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
             }
 
             const allCols = Array.from(merged.values());
-            const withCounts = allCols.map(col => ({
-                ...col,
-                bookCount: books.filter(b => b.collectionIds?.includes(col.id)).length,
-                previewBooks: books.filter(b => b.collectionIds?.includes(col.id)).slice(0, 3)
-            }));
-            setCollections(withCounts);
+            setBaseCollections(allCols);
         } catch (e) {
-            console.error("Failed to load collections", e);
+            console.error("Failed to sync collections", e);
         }
     };
+
+    // Derived state for collections with book counts
+    useEffect(() => {
+        const withCounts = baseCollections.map(col => {
+            const colBooks = books
+                .filter(b => b.collectionIds?.includes(col.id))
+                .sort((a, b) => {
+                    // 1. Try explicit database volume number first
+                    if (a.volumeNumber !== undefined && b.volumeNumber !== undefined && a.volumeNumber !== b.volumeNumber) {
+                        return a.volumeNumber - b.volumeNumber;
+                    }
+                    
+                    // 2. Fallback to guessing from title string
+                    const volA = extractVolumeNumber(a.title);
+                    const volB = extractVolumeNumber(b.title);
+                    if (volA !== null && volB !== null && volA !== volB) {
+                        return volA - volB;
+                    }
+                    
+                    // 3. Fallback to natural alphabetical sorting
+                    return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
+                });
+            
+            return {
+                ...col,
+                bookCount: colBooks.length,
+                previewBooks: colBooks.slice(0, 3)
+            };
+        });
+        setCollections(withCounts);
+    }, [baseCollections, books]);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchAndSyncCollections();
+        }
+    }, [isOpen]);
 
     const handleCreateCollection = async () => {
         if (!newCollectionName.trim()) return;
@@ -107,7 +149,8 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
         // Save to both local and Supabase
         await saveCollection(newCollection);
         saveCollectionToSupabase(newCollection).catch(e => console.warn('Supabase sync failed:', e));
-        loadCollections();
+        
+        setBaseCollections(prev => [...prev, newCollection]);
         setNewCollectionName('');
         setNewCollectionDescription('');
         setShowCreateForm(false);
@@ -128,7 +171,7 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
             deleteCollectionFromSupabase(id).catch(e => console.warn('Supabase delete failed:', e))
         ]);
         
-        setCollections(prev => prev.filter(c => c.id !== id));
+        setBaseCollections(prev => prev.filter(c => c.id !== id));
 
         books.forEach(book => {
             if (book.collectionIds?.includes(id)) {
@@ -163,7 +206,25 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
     };
 
     const activeCollection = selectedCollectionId ? collections.find(c => c.id === selectedCollectionId) : null;
-    const collectionBooks = selectedCollectionId ? books.filter(b => b.collectionIds?.includes(selectedCollectionId)) : [];
+    const collectionBooks = selectedCollectionId ? books
+        .filter(b => b.collectionIds?.includes(selectedCollectionId))
+        .sort((a, b) => {
+            // 1. Try explicit database volume number first
+            if (a.volumeNumber !== undefined && b.volumeNumber !== undefined && a.volumeNumber !== b.volumeNumber) {
+                return a.volumeNumber - b.volumeNumber;
+            }
+            
+            // 2. Fallback to guessing from title string
+            const volA = extractVolumeNumber(a.title);
+            const volB = extractVolumeNumber(b.title);
+            if (volA !== null && volB !== null && volA !== volB) {
+                return volA - volB;
+            }
+            
+            // 3. Fallback to natural alphabetical sorting
+            return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
+        }) 
+    : [];
 
     const handleBookClick = (bookId: string) => {
         if (selectionMode) {
@@ -267,6 +328,21 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                                         </div>
                                     )}
                                     <div className={`relative aspect-[2/3] w-full bg-[#FAFAFA] rounded-xl overflow-hidden shadow-sm group-hover:shadow-xl transition-all duration-500 border border-black/5 ${!selectionMode && 'group-hover:-translate-y-2'} ${selectionMode && selectedBookIds.has(book.id) ? 'ring-4 ring-[#9CAF88] ring-offset-2' : ''}`}>
+                                        {/* Smart Badge for Volume */}
+                                        {(() => {
+                                            const match = book.title.match(/(?:Volume|Vol\.?|Book|Part)\s*(\d+(?:\.\d+)?)/i);
+                                            if (match && match[1]) {
+                                                return (
+                                                    <div className="absolute top-2 left-2 z-20 bg-black/70 backdrop-blur-md text-white px-2 py-1 rounded border border-white/20 shadow-sm pointer-events-none">
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest leading-none block">
+                                                            Vol {match[1]}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
+
                                         {book.coverImage || book.coverUrl ? (
                                             <img src={book.coverImage || book.coverUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={book.title} />
                                         ) : (

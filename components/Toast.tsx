@@ -1,9 +1,5 @@
 import React, { useEffect } from 'react';
-
-
-
-
-
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, AlertCircle, Loader } from 'lucide-react';
 
@@ -36,58 +32,63 @@ export const Toast: React.FC<ToastProps> = ({
     const getIcon = () => {
         switch (type) {
             case 'success':
-                return <CheckCircle className="w-5 h-5 text-green-500" />;
+                return <CheckCircle className="w-[18px] h-[18px] text-emerald-500 shrink-0" />;
             case 'error':
-                return <XCircle className="w-5 h-5 text-red-500" />;
+                return <XCircle className="w-[18px] h-[18px] text-red-500 shrink-0" />;
             case 'info':
-                return <AlertCircle className="w-5 h-5 text-blue-500" />;
+                return <AlertCircle className="w-[18px] h-[18px] text-sky-500 shrink-0" />;
             case 'loading':
-                return <Loader className="w-5 h-5 text-[#8B7355] animate-spin" />;
+                return <Loader className="w-[18px] h-[18px] text-[#8B7355] animate-spin shrink-0" />;
         }
     };
 
-    const getBgColor = () => {
+    const getStyle = () => {
         switch (type) {
             case 'success':
-                return 'bg-green-50 border-green-200';
+                return 'bg-white border-emerald-200/60 shadow-emerald-100/40';
             case 'error':
-                return 'bg-red-50 border-red-200';
+                return 'bg-white border-red-200/60 shadow-red-100/40';
             case 'info':
-                return 'bg-blue-50 border-blue-200';
+                return 'bg-white border-sky-200/60 shadow-sky-100/40';
             case 'loading':
-                return 'bg-[#F8F5F1] border-[#8B7355]/20';
+                return 'bg-white border-[#8B7355]/10 shadow-[#8B7355]/10';
         }
     };
 
-    const getTextColor = () => {
-        switch (type) {
-            case 'success':
-                return 'text-green-800';
-            case 'error':
-                return 'text-red-800';
-            case 'info':
-                return 'text-blue-800';
-            case 'loading':
-                return 'text-[#3D3028]';
-        }
-    };
-
-    return (
+    // Render via portal to document.body to escape all stacking contexts
+    return ReactDOM.createPortal(
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                    initial={{ opacity: 0, y: -20, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] w-full max-w-[90vw] md:max-w-md px-4"
+                    exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                    transition={{ type: 'spring', damping: 24, stiffness: 300 }}
+                    className="fixed top-14 md:top-[72px] left-1/2 -translate-x-1/2 z-[99999] w-auto max-w-[92vw] md:max-w-md pointer-events-auto"
                 >
-                    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg ${getBgColor()}`}>
+                    <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-xl shadow-lg ${getStyle()}`}>
                         {getIcon()}
-                        <span className={`font-medium ${getTextColor()}`}>{message}</span>
+                        <span className="text-sm font-medium text-[#3D3028] leading-snug">{message}</span>
                     </div>
+
+                    {/* Auto-dismiss progress bar */}
+                    {type !== 'loading' && (
+                        <div className="absolute bottom-0 left-4 right-4 h-[2px] rounded-full overflow-hidden opacity-30">
+                            <motion.div
+                                initial={{ width: '100%' }}
+                                animate={{ width: '0%' }}
+                                transition={{ duration: duration / 1000, ease: 'linear' }}
+                                className={`h-full rounded-full ${
+                                    type === 'success' ? 'bg-emerald-500' :
+                                    type === 'error' ? 'bg-red-500' : 'bg-sky-500'
+                                }`}
+                            />
+                        </div>
+                    )}
                 </motion.div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 };
 

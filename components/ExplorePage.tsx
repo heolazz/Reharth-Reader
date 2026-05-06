@@ -660,43 +660,120 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
         setAddingStatus(`Adding ${books.length} volumes...`);
 
         try {
-            const { saveCollection, saveBook, getAllBooks } = await import('../utils/db');
+            const { saveCollection, saveBook, getAllBooks, getAllCollections } = await import('../utils/db');
             const { generateUUID } = await import('../utils/uuid');
             const { supabase } = await import('../lib/supabase');
+            const { getAllCollectionsFromSupabase, saveCollectionToSupabase, syncBookCollectionIds } = await import('../lib/supabaseDb');
 
-            const collectionId = generateUUID();
-            const newCollection = {
-                id: collectionId,
-                name: series.title,
-                description: series.author ? `${series.title} by ${series.author}` : `${series.title} collection`,
-                color: '#3E2723',
-                createdAt: Date.now()
-            };
+            // --- Step 1: Find existing collection by series name or create new one ---
+            const normaliseStr = (s: string) => s.trim().toLowerCase();
+            
+            // Check both local and Supabase for existing collection
+            const [localCollections, supabaseCollections] = await Promise.all([
+                getAllCollections().catch(() => [] as any[]),
+                getAllCollectionsFromSupabase().catch(() => [] as any[])
+            ]);
+            
+            const allExistingCollections = [...supabaseCollections, ...localCollections];
+            const existingCollection = allExistingCollections.find(
+                c => normaliseStr(c.name) === normaliseStr(series.title)
+            );
+
+            let collectionId: string;
+            let collectionObj: any;
+
+            if (existingCollection) {
+                // Reuse existing collection — don't create duplicate
+                collectionId = existingCollection.id;
+                collectionObj = existingCollection;
+                console.log(`📂 Reusing existing collection "${series.title}" (${collectionId})`);
+            } else {
+                // Create new collection
+                collectionId = generateUUID();
+                collectionObj = {
+                    id: collectionId,
+                    name: series.title,
+                    description: series.author ? `${series.title} by ${series.author}` : `${series.title} collection`,
+                    color: '#3E2723',
+                    createdAt: Date.now()
+                };
+                console.log(`📂 Creating new collection "${series.title}" (${collectionId})`);
+            }
+
+            // --- Step 2: Get current library books to know what's already owned ---
+            const currentLocalBooks = userBooks || [];
 
             let successCount = 0;
+            let skippedCount = 0;
             const booksToUpdate: Book[] = [];
 
             for (let i = 0; i < books.length; i++) {
-                const book = books[i];
+                const publicBook = books[i];
                 setProgress(Math.round(((i) / (books.length + 1)) * 100));
-                setAddingStatus(`Processing volume ${i + 1}/${books.length}...`);
+                setAddingStatus(`Processing volume ${i + 1}/${books.length}: ${publicBook.title}`);
 
                 try {
-                    const { error, data } = await addPublicBookToLibrary(book.id, user.id);
+                    // Check if user already has this book in library
+                    const existingLocalBook = currentLocalBooks.find(lb =>
+                        normaliseStr(lb.title) === normaliseStr(publicBook.title) &&
+                        normaliseStr(lb.author) === normaliseStr(publicBook.author)
+                    );
+
+                    if (existingLocalBook) {
+                        // Book already in library — check if it's a corrupted/empty shell and repair it
+                        const needsRepair = !existingLocalBook.fileUrl || !existingLocalBook.coverUrl;
+                        
+                        const currentCollIds = existingLocalBook.collectionIds || [];
+                        const isAlreadyInCollection = currentCollIds.includes(collectionId);
+
+                        if (isAlreadyInCollection && !needsRepair) {
+                            // Fully complete and already in collection, skip
+                            skippedCount++;
+                        } else {
+                            const updatedBook: Book = {
+                                ...existingLocalBook,
+                                coverImage: existingLocalBook.coverImage || existingLocalBook.coverUrl || publicBook.cover_url || '',
+                                coverUrl: existingLocalBook.coverUrl || existingLocalBook.coverImage || publicBook.cover_url || '',
+                                fileUrl: existingLocalBook.fileUrl || publicBook.epub_url || '',
+                                summary: existingLocalBook.summary || publicBook.description || '',
+                                fileType: existingLocalBook.fileType || (publicBook.epub_url ? 'epub' : 'text'),
+                                volumeNumber: existingLocalBook.volumeNumber || publicBook.volume_number,
+                                collectionIds: isAlreadyInCollection ? currentCollIds : [...currentCollIds, collectionId]
+                            };
+                            booksToUpdate.push(updatedBook);
+                            successCount++; // Increment success for repaired books so it shows success message
+                        }
+                        continue;
+                    }
+
+                    // Book not in library — add it
+                    const { error, data } = await addPublicBookToLibrary(publicBook.id, user.id);
 
                     if (!error && data) {
-                        // New book added successfully
-                        const appBook = data as Book;
-                        booksToUpdate.push({ ...appBook, collectionIds: [...(appBook.collectionIds || []), collectionId] });
+                        // New book added successfully — ensure full data is preserved
+                        const appBook: Book = {
+                            ...(data as Book),
+                            // Ensure critical fields from public book are carried over
+                            coverImage: (data as any).coverImage || (data as any).coverUrl || publicBook.cover_url || '',
+                            coverUrl: (data as any).coverUrl || (data as any).coverImage || publicBook.cover_url || '',
+                            fileUrl: (data as any).fileUrl || publicBook.epub_url || '',
+                            summary: (data as any).summary || publicBook.description || '',
+                            fileType: (data as any).fileType || (publicBook.epub_url ? 'epub' : 'text'),
+                            volumeNumber: (data as any).volumeNumber || publicBook.volume_number,
+                            tags: (data as any).tags || publicBook.tags || [],
+                            collectionIds: [...((data as any).collectionIds || []), collectionId]
+                        };
+                        booksToUpdate.push(appBook);
                         successCount++;
                     } else if (error && error.message && error.message.includes('already')) {
-                        // Book already in library - fetch it from Supabase
+                        // Race condition: book was added between our check and actual insert
+                        // Fetch it from Supabase with full data
                         const { data: existing } = await supabase
                             .from('books')
                             .select('*')
                             .eq('user_id', user.id)
-                            .ilike('title', book.title)
-                            .ilike('author', book.author)
+                            .ilike('title', publicBook.title)
+                            .ilike('author', publicBook.author)
                             .maybeSingle();
 
                         if (existing) {
@@ -706,12 +783,13 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                                 author: existing.author || 'Unknown',
                                 color: existing.color || '#8B7355',
                                 fileType: existing.file_type || 'epub',
-                                coverImage: existing.cover_url || '',
-                                coverUrl: existing.cover_url || '',
-                                fileUrl: existing.file_url || '',
-                                tags: existing.tags || [],
-                                year: existing.year || '',
-                                summary: existing.summary || '',
+                                coverImage: existing.cover_url || publicBook.cover_url || '',
+                                coverUrl: existing.cover_url || publicBook.cover_url || '',
+                                fileUrl: existing.file_url || publicBook.epub_url || '',
+                                tags: existing.tags || publicBook.tags || [],
+                                year: existing.year || (publicBook.published_year ? String(publicBook.published_year) : ''),
+                                summary: existing.summary || publicBook.description || '',
+                                volumeNumber: existing.volume_number || publicBook.volume_number,
                                 progressPercent: existing.progress_percent || 0,
                                 lastLocation: existing.last_location || '',
                                 timeRead: existing.time_read_seconds || 0,
@@ -719,35 +797,38 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                                 isArchived: false,
                                 collectionIds: existing.collection_ids || []
                             };
-                            // Merge with local collectionIds
-                            const localBooks = await getAllBooks();
-                            const localBook = localBooks.find(lb => lb.id === existing.id);
-                            const existingCollections = localBook?.collectionIds || appBook.collectionIds || [];
 
-                            // Check if collectionId is already there
-                            const finalCollectionIds = existingCollections.includes(collectionId)
-                                ? existingCollections
-                                : [...existingCollections, collectionId];
+                            // Add collection ID if not already there
+                            const finalCollectionIds = appBook.collectionIds!.includes(collectionId)
+                                ? appBook.collectionIds!
+                                : [...appBook.collectionIds!, collectionId];
 
                             booksToUpdate.push({ ...appBook, collectionIds: finalCollectionIds });
                         }
                         successCount++;
+                    } else {
+                        // Some other error — log and continue
+                        console.warn(`Failed to add book "${publicBook.title}":`, error);
                     }
                 } catch (e) {
-                    console.warn(`Failed to process book: ${book.title}`, e);
+                    console.warn(`Failed to process book: ${publicBook.title}`, e);
                 }
             }
 
-            // Always create collection if we have books
-            if (booksToUpdate.length > 0) {
+            // --- Step 3: Save collection and update all books ---
+            if (booksToUpdate.length > 0 || existingCollection) {
                 setProgress(90);
                 setAddingStatus('Syncing collection...');
-                await saveCollection(newCollection);
 
-                // Also sync collection to Supabase
-                const { saveCollectionToSupabase, syncBookCollectionIds } = await import('../lib/supabaseDb');
-                await saveCollectionToSupabase(newCollection).catch(() => { });
+                // Save collection unconditionally locally
+                await saveCollection(collectionObj);
+                
+                // If new collection, save to Supabase
+                if (!existingCollection) {
+                    await saveCollectionToSupabase(collectionObj).catch(() => { });
+                }
 
+                // Save all books with updated collectionIds
                 for (const b of booksToUpdate) {
                     await saveBook(b);
                     // Sync each book's collection_ids to Supabase
@@ -757,13 +838,20 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                 // Small delay to ensure DB operations complete
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                if (onBooksAdded) onBooksAdded(booksToUpdate);
+                if (onBooksAdded && booksToUpdate.length > 0) onBooksAdded(booksToUpdate);
             }
 
             if (successCount > 0) {
                 setProgress(100);
                 setAddingStatus('Completed!');
-                showToast(`Saved ${successCount} volume${successCount > 1 ? 's' : ''} to "${series.title}" collection!`, 'success');
+                const msg = skippedCount > 0
+                    ? `Saved ${successCount} volume${successCount > 1 ? 's' : ''} to "${series.title}" (${skippedCount} already in collection)`
+                    : `Saved ${successCount} volume${successCount > 1 ? 's' : ''} to "${series.title}" collection!`;
+                showToast(msg, 'success');
+            } else if (skippedCount > 0) {
+                setProgress(100);
+                setAddingStatus('Already saved!');
+                showToast(`All ${skippedCount} volumes are already in "${series.title}" collection`, 'info');
             } else {
                 showToast('Could not save books. Please try again.', 'error');
             }
