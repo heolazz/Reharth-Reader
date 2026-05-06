@@ -258,7 +258,8 @@ const App: React.FC = () => {
             const supabaseCollIds = sb.collectionIds || [];
             const localCollIds = local?.collectionIds || [];
             const mergedCollIds = supabaseCollIds.length > 0 ? supabaseCollIds : localCollIds;
-            return { ...sb, collectionIds: mergedCollIds };
+            const mergedVolumeNumber = sb.volumeNumber !== undefined ? sb.volumeNumber : local?.volumeNumber;
+            return { ...sb, collectionIds: mergedCollIds, volumeNumber: mergedVolumeNumber };
           });
           setBooks(mergedBooks);
         } catch (e) {
