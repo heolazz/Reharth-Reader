@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LibraryScene } from './components/LibraryScene';
 import { ReaderInterface } from './components/ReaderInterface';
@@ -22,6 +23,7 @@ import { PublicBook, fetchPublicBookBySlug } from './lib/publicBooksApi';
 import { INITIAL_BOOKS } from './constants';
 import { saveBook, getAllBooks, deleteBook } from './utils/db';
 import { useAuthStore } from './stores/useAuthStore';
+import { useNetworkStatus } from './hooks/useNetworkStatus';
 
 // URL Helper
 const slugify = (text: string) => {
@@ -54,6 +56,8 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { isAuthenticated, user, signIn, signOut, checkSession, loading } = useAuthStore();
   const { toast, showToast, hideToast } = useToast();
+  const { isOnline, registerOnReconnect } = useNetworkStatus();
+  const [showOnlineBanner, setShowOnlineBanner] = useState(false);
 
   // PWA install prompt — must listen globally before NavBar mounts
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -279,6 +283,36 @@ const App: React.FC = () => {
     };
     loadBooks();
   }, [isAuthenticated]);
+
+  // Auto-refresh data when coming back online
+  useEffect(() => {
+    const unregister = registerOnReconnect(async () => {
+      console.log('🌐 Connection restored — refreshing library data...');
+      setShowOnlineBanner(true);
+      setTimeout(() => setShowOnlineBanner(false), 3000);
+
+      if (!isAuthenticated) return;
+      try {
+        const { getAllBooksFromSupabase } = await import('./lib/supabaseDb');
+        const supabaseBooks = await getAllBooksFromSupabase();
+        const { getAllBooks } = await import('./utils/db');
+        const localBooks = await getAllBooks();
+        const mergedBooks = supabaseBooks.map(sb => {
+          const local = localBooks.find(lb => lb.id === sb.id);
+          const supabaseCollIds = sb.collectionIds || [];
+          const localCollIds = local?.collectionIds || [];
+          const mergedCollIds = supabaseCollIds.length > 0 ? supabaseCollIds : localCollIds;
+          const mergedVolumeNumber = sb.volumeNumber !== undefined ? sb.volumeNumber : local?.volumeNumber;
+          return { ...sb, collectionIds: mergedCollIds, volumeNumber: mergedVolumeNumber };
+        });
+        setBooks(mergedBooks);
+        console.log('✅ Library data refreshed after reconnection');
+      } catch (err) {
+        console.warn('Could not refresh after reconnection:', err);
+      }
+    });
+    return unregister;
+  }, [isAuthenticated, registerOnReconnect]);
 
   // Load Reading Goal from Supabase when authenticated
   useEffect(() => {
@@ -577,6 +611,34 @@ const App: React.FC = () => {
         isVisible={toast.isVisible}
         onClose={hideToast}
       />
+
+      {/* Network Status Banner */}
+      <AnimatePresence>
+        {!isOnline && (
+          <motion.div
+            initial={{ y: -60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -60, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20 }}
+            className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-[#3D3028] to-[#5C463A] text-white text-xs font-medium shadow-lg"
+          >
+            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+            You're offline — reading from local cache
+          </motion.div>
+        )}
+        {showOnlineBanner && isOnline && (
+          <motion.div
+            initial={{ y: -60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -60, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20 }}
+            className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-[#4A7C59] to-[#6B9E7A] text-white text-xs font-medium shadow-lg"
+          >
+            <span className="w-2 h-2 rounded-full bg-green-300 animate-pulse" />
+            Back online — refreshing your library...
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 2D Library View - Fade out when reading */}
       <div
