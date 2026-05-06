@@ -25,6 +25,7 @@ const mapSupabaseBookToBook = (record: any): Book => {
         isFavorite: record.is_favorite || false,
         isArchived: record.is_archived || false,
         collectionIds: record.collection_ids || [],
+        volumeNumber: record.volume_number || undefined,
     };
 };
 
@@ -51,6 +52,7 @@ const mapBookToSupabaseRecord = (book: Book, userId: string) => {
         is_favorite: book.isFavorite || false,
         is_archived: book.isArchived || false,
         collection_ids: book.collectionIds || [],
+        volume_number: book.volumeNumber !== undefined ? book.volumeNumber : null,
     };
 };
 

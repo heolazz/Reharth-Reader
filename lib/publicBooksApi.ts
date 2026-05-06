@@ -373,6 +373,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                         file_url: publicBook.epub_url || '',
                         cover_url: publicBook.cover_url || '',
                         summary: publicBook.description || '',
+                        volume_number: publicBook.volume_number || null,
                     })
                     .eq('id', existing.id);
 
@@ -410,6 +411,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                         dateAdded: restoredData.created_at ? new Date(restoredData.created_at).getTime() : Date.now(),
                         isFavorite: restoredData.is_favorite || false,
                         isArchived: false,
+                        volumeNumber: restoredData.volume_number || null,
                     };
                     return { data: appBook, error: null };
                 }
@@ -426,7 +428,6 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             title: publicBook.title,
             author: publicBook.author,
             color: '#8B7355',
-            genre: publicBook.genre || [],
             tags: publicBook.tags || [],
             year: publicBook.published_year ? publicBook.published_year.toString() : new Date().getFullYear().toString(),
             summary: publicBook.description || '',
@@ -438,7 +439,8 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             time_read_seconds: 0,
             last_read_at: new Date().toISOString(),
             is_favorite: false,
-            is_archived: false
+            is_archived: false,
+            volume_number: publicBook.volume_number || null
         };
 
         let data: any;
@@ -457,7 +459,12 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
                 id: newId,
                 user_id: userId,
                 title: publicBook.title || 'Unknown Title',
-                author: publicBook.author || 'Unknown Author'
+                author: publicBook.author || 'Unknown Author',
+                volume_number: publicBook.volume_number || null,
+                cover_url: publicBook.cover_url || '',
+                file_url: publicBook.epub_url || '',
+                file_type: publicBook.epub_url ? 'epub' : 'text',
+                summary: publicBook.description || '',
             };
 
             const minRes = await supabase.from('books').insert(minimalRecord).select().single();
@@ -501,6 +508,7 @@ export async function addPublicBookToLibrary(publicBookId: string, userId: strin
             dateAdded: data.created_at ? new Date(data.created_at).getTime() : Date.now(),
             isFavorite: data.is_favorite || false,
             isArchived: data.is_archived || false,
+            volumeNumber: data.volume_number || publicBook.volume_number || null,
         };
 
         return { data: appBook, error: null };
