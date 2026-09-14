@@ -200,7 +200,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-[#3D3028]/40 backdrop-blur-sm"
+                        className="absolute inset-0 bg-[#3D3028]/40 dark:bg-black/60 backdrop-blur-sm"
                     />
 
                     {/* Modal Card */}
@@ -208,18 +208,18 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full md:max-w-4xl h-full md:h-auto md:max-h-[90vh] bg-white md:rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row ring-1 ring-[#3D3028]/5"
+                        className="relative w-full md:max-w-4xl h-full md:h-auto md:max-h-[90vh] bg-white dark:bg-[#111111] md:rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row ring-1 ring-[#3D3028]/5 dark:ring-zinc-800"
                     >
                         {/* Close Button */}
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 z-20 p-2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full transition-all text-[#3D3028]/60 hover:text-[#3D3028] shadow-sm"
+                            className="absolute top-4 right-4 z-20 p-2 bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 backdrop-blur-sm rounded-full transition-all text-[#3D3028]/60 dark:text-stone-300 hover:text-[#3D3028] dark:hover:text-stone-100 shadow-sm"
                         >
                             <X size={20} />
                         </button>
 
                         {/* Left Side: Cover Area */}
-                        <div className="w-full md:w-5/12 bg-[#F3F0EB] border-r border-[#3D3028]/5 flex items-center justify-center p-8 md:p-12 relative overflow-hidden min-h-[300px] shrink-0">
+                        <div className="w-full md:w-5/12 bg-[#F3F0EB] dark:bg-[#0A0A0A] border-r border-[#3D3028]/5 dark:border-zinc-800 flex items-center justify-center p-8 md:p-12 relative overflow-hidden min-h-[300px] shrink-0">
                             {/* Background Texture */}
                             <div className="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] z-0" />
 
@@ -248,7 +248,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                         </div>
 
                         {/* Right Side: Details */}
-                        <div className="flex-1 p-8 md:p-12 flex flex-col overflow-y-auto custom-scrollbar bg-white">
+                        <div className="flex-1 p-8 md:p-12 flex flex-col overflow-y-auto custom-scrollbar bg-white dark:bg-[#111111] text-[#3D3028] dark:text-stone-100">
                             <div className="flex-1">
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}

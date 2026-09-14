@@ -58,7 +58,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="absolute inset-0 bg-[#3E2723]/30 backdrop-blur-md"
+              className="absolute inset-0 bg-[#3E2723]/30 dark:bg-black/60 backdrop-blur-md"
             />
 
             {/* Modal Card */}
@@ -66,7 +66,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
               initial={{ opacity: 0, scale: 0.95, y: 50 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 50 }}
-              className="relative w-full md:max-w-4xl h-full md:h-auto md:max-h-[90vh] bg-white md:rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row ring-1 ring-[#3E2723]/5"
+              className="relative w-full md:max-w-4xl h-full md:h-auto md:max-h-[90vh] bg-white dark:bg-[#111111] md:rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row ring-1 ring-[#3E2723]/5 dark:ring-zinc-800"
             >
               {/* Action Buttons (Top Right) */}
               <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
@@ -74,7 +74,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                 {onEdit && (
                   <button
                     onClick={() => onEdit(book)}
-                    className="p-2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full transition-all text-[#3E2723]/60 hover:text-[#3E2723] shadow-sm ring-1 ring-[#3E2723]/5"
+                    className="p-2 bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 backdrop-blur-sm rounded-full transition-all text-[#3E2723]/60 dark:text-stone-300 hover:text-[#3E2723] dark:hover:text-stone-100 shadow-sm ring-1 ring-[#3E2723]/5 dark:ring-zinc-700"
                     title="Edit Book"
                   >
                     <PenLine size={18} />
@@ -85,7 +85,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                 {onUpdateBook && (
                   <button
                     onClick={() => setShowCollections(true)}
-                    className="p-2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full transition-all text-[#3E2723]/60 hover:text-[#3E2723] shadow-sm ring-1 ring-[#3E2723]/5"
+                    className="p-2 bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 backdrop-blur-sm rounded-full transition-all text-[#3E2723]/60 dark:text-stone-300 hover:text-[#3E2723] dark:hover:text-stone-100 shadow-sm ring-1 ring-[#3E2723]/5 dark:ring-zinc-700"
                     title="Manage Collections"
                   >
                     <Library size={18} />
@@ -96,7 +96,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                 {onDelete && !isDeleting && (
                   <button
                     onClick={() => setIsDeleting(true)}
-                    className="p-2 bg-white/80 hover:bg-red-50 backdrop-blur-sm rounded-full transition-all text-[#3E2723]/40 hover:text-red-500 shadow-sm ring-1 ring-[#3E2723]/5"
+                    className="p-2 bg-white/80 dark:bg-zinc-800/80 hover:bg-red-50 dark:hover:bg-red-950/40 backdrop-blur-sm rounded-full transition-all text-[#3E2723]/40 dark:text-stone-400 hover:text-red-500 shadow-sm ring-1 ring-[#3E2723]/5 dark:ring-zinc-700"
                     title="Delete Book"
                   >
                     <Trash2 size={18} />
@@ -106,7 +106,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                 {/* Close Button */}
                 <button
                   onClick={onClose}
-                  className="p-2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full transition-all text-[#3E2723]/60 hover:text-[#3E2723] shadow-sm ring-1 ring-[#3E2723]/5"
+                  className="p-2 bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 backdrop-blur-sm rounded-full transition-all text-[#3E2723]/60 dark:text-stone-300 hover:text-[#3E2723] dark:hover:text-stone-100 shadow-sm ring-1 ring-[#3E2723]/5 dark:ring-zinc-700"
                 >
                   <X size={20} />
                 </button>
@@ -123,7 +123,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                       initial={{ scale: 0.9, y: 20 }}
                       animate={{ scale: 1, y: 0 }}
                       exit={{ scale: 0.9, y: 20 }}
-                      className="bg-white rounded-2xl p-6 md:p-8 shadow-2xl max-w-sm w-full border border-[#3E2723]/10"
+                      className="bg-white dark:bg-zinc-900 rounded-2xl p-6 md:p-8 shadow-2xl max-w-sm w-full border border-[#3E2723]/10 dark:border-zinc-800"
                     >
                       <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertTriangle size={24} />
@@ -152,7 +152,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
               </AnimatePresence>
 
               {/* Left Side: Visual/Cover Area (Adjusted for mobile) */}
-              <div className="w-full md:w-5/12 bg-[#F3F0EB] border-r border-[#3E2723]/10 flex items-center justify-center p-8 md:p-12 relative overflow-hidden min-h-[300px] md:min-h-0 flex-shrink-0">
+              <div className="w-full md:w-5/12 bg-[#F3F0EB] dark:bg-[#0A0A0A] border-r border-[#3E2723]/10 dark:border-zinc-800 flex items-center justify-center p-8 md:p-12 relative overflow-hidden min-h-[300px] md:min-h-0 flex-shrink-0">
                 {/* Background blob for atmosphere */}
                 <div
                   className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] opacity-10 blur-3xl rounded-full pointer-events-none"
@@ -211,7 +211,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
               </div>
 
               {/* Right Side: Details */}
-              <div className="flex-1 p-6 md:p-12 flex flex-col min-h-0 bg-white overflow-y-auto custom-scrollbar text-[#3E2723]">
+              <div className="flex-1 p-6 md:p-12 flex flex-col min-h-0 bg-white dark:bg-[#111111] overflow-y-auto custom-scrollbar text-[#3E2723] dark:text-stone-100">
 
                 <div className="space-y-6">
                   <div>
@@ -272,7 +272,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                     </p>
 
                     {description.length > 300 && (
-                      <div className={`mt-2 ${!isExpanded ? 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/80 to-transparent pt-8 flex justify-center' : ''}`}>
+                      <div className={`mt-2 ${!isExpanded ? 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white dark:from-[#111111] via-white/80 dark:via-[#111111]/80 to-transparent pt-8 flex justify-center' : ''}`}>
                         <button
                           onClick={() => setIsExpanded(!isExpanded)}
                           className="text-xs md:text-sm font-sans font-bold uppercase tracking-widest text-[#3E2723] border-b border-[#3E2723]/20 hover:border-[#3E2723] transition-colors pb-0.5"

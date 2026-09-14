@@ -177,7 +177,7 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
   };
 
   return (
-    <div className="w-full h-full min-h-screen bg-white overflow-y-auto overflow-x-hidden pt-32 pb-32 px-4 md:px-12">
+    <div className="w-full h-full min-h-screen bg-white dark:bg-black overflow-y-auto overflow-x-hidden pt-32 pb-32 px-4 md:px-12">
       <div className="max-w-6xl mx-auto space-y-12">
 
         {/* Header */}
@@ -186,21 +186,21 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
             <div className="space-y-4 animate-in fade-in slide-in-from-top duration-500">
               <button
                 onClick={onClearCollection}
-                className="text-xs font-bold uppercase tracking-[0.2em] text-[#3E2723]/30 hover:text-[#C6A87C] transition-colors flex items-center gap-2 mx-auto"
+                className="text-xs font-bold uppercase tracking-[0.2em] text-[#3E2723]/30 dark:text-stone-500 hover:text-[#C6A87C] dark:hover:text-stone-300 transition-colors flex items-center gap-2 mx-auto"
               >
                 <span>← Back to Library</span>
               </button>
-              <h2 className="font-serif text-5xl md:text-6xl text-[#3E2723] tracking-tight">{collectionName}</h2>
+              <h2 className="font-serif text-5xl md:text-6xl text-[#3E2723] dark:text-stone-100 tracking-tight">{collectionName}</h2>
               <div className="flex items-center justify-center gap-3">
-                <div className="h-[1px] w-8 bg-[#3E2723]/10" />
-                <p className="text-sm font-serif italic text-[#3E2723]/40">Displaying curated selection from your archive</p>
-                <div className="h-[1px] w-8 bg-[#3E2723]/10" />
+                <div className="h-[1px] w-8 bg-[#3E2723]/10 dark:bg-zinc-800" />
+                <p className="text-sm font-serif italic text-[#3E2723]/40 dark:text-stone-500">Displaying curated selection from your archive</p>
+                <div className="h-[1px] w-8 bg-[#3E2723]/10 dark:bg-zinc-800" />
               </div>
             </div>
           ) : (
             <>
-              <h2 className="font-serif text-4xl md:text-5xl text-[#3E2723] tracking-tight">Your Library</h2>
-              <div className="w-12 h-1 bg-[#3E2723]/10 mx-auto rounded-full" />
+              <h2 className="font-serif text-4xl md:text-5xl text-[#3E2723] dark:text-stone-100 tracking-tight">Your Library</h2>
+              <div className="w-12 h-1 bg-[#3E2723]/10 dark:bg-zinc-800 mx-auto rounded-full" />
             </>
           )}
         </div>
@@ -209,14 +209,14 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
         {onSearch && (
           <div className="flex justify-center px-4">
             <div className="w-full max-w-md relative group">
-              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-[#3E2723]/40 group-focus-within:text-[#3E2723] transition-colors">
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-[#3E2723]/40 dark:text-stone-500 group-focus-within:text-[#3E2723] dark:group-focus-within:text-stone-300 transition-colors">
                 <Search size={20} />
               </div>
               <input
                 value={searchQuery || ''}
                 onChange={(e) => onSearch(e.target.value)}
                 placeholder="Search title, author, or tag..."
-                className="w-full bg-white/50 hover:bg-white/80 focus:bg-white border border-[#3E2723]/10 rounded-2xl py-3.5 pl-12 pr-4 text-lg text-[#3E2723] shadow-sm hover:shadow-md focus:shadow-xl transition-all outline-none placeholder-[#3E2723]/30"
+                className="w-full bg-white/50 dark:bg-zinc-900/50 hover:bg-white/80 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-900 border border-[#3E2723]/10 dark:border-zinc-800 rounded-2xl py-3.5 pl-12 pr-4 text-lg text-[#3E2723] dark:text-stone-100 shadow-sm hover:shadow-md focus:shadow-xl transition-all outline-none placeholder-[#3E2723]/30 dark:placeholder-stone-600"
               />
             </div>
           </div>
@@ -232,27 +232,27 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full md:w-auto px-4 py-2.5 pr-10 bg-white border border-[#3E2723]/10 rounded-xl text-sm font-medium text-[#3E2723] appearance-none cursor-pointer hover:border-[#3E2723]/20 transition-colors focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20"
+                className="w-full md:w-auto px-4 py-2.5 pr-10 bg-white dark:bg-zinc-900 border border-[#3E2723]/10 dark:border-zinc-800 rounded-xl text-sm font-medium text-[#3E2723] dark:text-stone-200 appearance-none cursor-pointer hover:border-[#3E2723]/20 dark:hover:border-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20"
               >
                 {sortOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-              <ArrowUpDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3E2723]/40 pointer-events-none" />
+              <ArrowUpDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3E2723]/40 dark:text-stone-500 pointer-events-none" />
             </div>
 
             {/* View Toggle */}
-            <div className="flex items-center gap-1 bg-[#F3F0EB] p-1 rounded-xl shrink-0">
+            <div className="flex items-center gap-1 bg-[#F3F0EB] dark:bg-zinc-900 p-1 rounded-xl shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-[#3E2723]' : 'text-[#3E2723]/40 hover:text-[#3E2723]/60'}`}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-zinc-800 shadow-sm text-[#3E2723] dark:text-stone-100' : 'text-[#3E2723]/40 dark:text-stone-500 hover:text-[#3E2723]/60 dark:hover:text-stone-300'}`}
                 title="Grid View"
               >
                 <LayoutGrid size={18} />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-[#3E2723]' : 'text-[#3E2723]/40 hover:text-[#3E2723]/60'}`}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-zinc-800 shadow-sm text-[#3E2723] dark:text-stone-100' : 'text-[#3E2723]/40 dark:text-stone-500 hover:text-[#3E2723]/60 dark:hover:text-stone-300'}`}
                 title="List View"
               >
                 <List size={18} />
@@ -268,8 +268,8 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 justify-center ${showFilters || selectedTags.length > 0
-                ? 'bg-[#3E2723] text-[#F3F0EB] shadow-md'
-                : 'bg-white border border-[#3E2723]/10 text-[#3E2723] hover:border-[#3E2723]/20'
+                ? 'bg-[#3E2723] dark:bg-amber-700 text-[#F3F0EB] dark:text-stone-100 shadow-md'
+                : 'bg-white dark:bg-zinc-900 border border-[#3E2723]/10 dark:border-zinc-800 text-[#3E2723] dark:text-stone-300 hover:border-[#3E2723]/20 dark:hover:border-zinc-700'
                 }`}
             >
               <Tag size={16} />
@@ -292,15 +292,15 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
               }
             }}
             className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 justify-center ml-auto ${selectionMode
-              ? 'bg-[#3E2723] text-[#F3F0EB] shadow-md'
-              : 'bg-white border border-[#3E2723]/10 text-[#3E2723] hover:border-[#3E2723]/20'
+              ? 'bg-[#3E2723] dark:bg-amber-700 text-[#F3F0EB] dark:text-stone-100 shadow-md'
+              : 'bg-white dark:bg-zinc-900 border border-[#3E2723]/10 dark:border-zinc-800 text-[#3E2723] dark:text-stone-300 hover:border-[#3E2723]/20 dark:hover:border-zinc-700'
               }`}
           >
             {selectionMode ? 'Cancel Selection' : 'Select'}
           </button>
 
           {/* Results Count */}
-          <div className="hidden lg:flex items-center gap-2 text-sm text-[#3E2723]/60">
+          <div className="hidden lg:flex items-center gap-2 text-sm text-[#3E2723]/60 dark:text-stone-400">
             <span className="font-medium">{processedBooks.length}</span>
             <span>book{processedBooks.length !== 1 ? 's' : ''}</span>
           </div>
@@ -316,13 +316,13 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="bg-white border border-[#3E2723]/10 rounded-2xl p-6 mx-4">
+              <div className="bg-white dark:bg-[#111111] border border-[#3E2723]/10 dark:border-zinc-800 rounded-2xl p-6 mx-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-serif text-lg text-[#3E2723] font-medium">Filter by Tags</h3>
+                  <h3 className="font-serif text-lg text-[#3E2723] dark:text-stone-200 font-medium">Filter by Tags</h3>
                   {selectedTags.length > 0 && (
                     <button
                       onClick={() => setSelectedTags([])}
-                      className="text-xs text-[#3E2723]/60 hover:text-[#3E2723] transition-colors flex items-center gap-1"
+                      className="text-xs text-[#3E2723]/60 dark:text-stone-400 hover:text-[#3E2723] dark:hover:text-stone-200 transition-colors flex items-center gap-1"
                     >
                       <X size={14} />
                       Clear All
@@ -335,8 +335,8 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                       key={tag}
                       onClick={() => toggleTag(tag)}
                       className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition-all ${selectedTags.includes(tag)
-                        ? 'bg-[#3E2723] text-[#F3F0EB] shadow-sm'
-                        : 'bg-[#3E2723]/5 text-[#3E2723]/70 hover:bg-[#3E2723]/10'
+                        ? 'bg-[#3E2723] dark:bg-amber-700 text-[#F3F0EB] dark:text-stone-100 shadow-sm'
+                        : 'bg-[#3E2723]/5 dark:bg-zinc-800 text-[#3E2723]/70 dark:text-stone-300 hover:bg-[#3E2723]/10 dark:hover:bg-zinc-700'
                         }`}
                     >
                       {tag}
@@ -379,7 +379,7 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                       )}
                       {/* Book Body - Max Width Constraint */}
                       <div
-                        className={`relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-all ${!selectionMode && 'group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)]'} ${selectionMode && selectedBookIds.has(book.id) ? 'ring-4 ring-[#9CAF88] ring-offset-2' : ''}`}
+                        className={`relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white dark:bg-zinc-900 overflow-hidden transition-all ${!selectionMode && 'group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)]'} ${selectionMode && selectedBookIds.has(book.id) ? 'ring-4 ring-[#9CAF88] ring-offset-2' : ''}`}
                         style={{ backgroundColor: book.color }}
                       >
                         {/* Spine Hinge Detail */}
@@ -429,8 +429,8 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                 </div>
 
                 {/* The Shelf Plank */}
-                <div className="absolute bottom-[-20px] left-0 right-0 h-[18px] bg-[#EAE5DD] rounded-full shadow-[0_4px_10px_rgba(61,48,40,0.06)] z-0 transform scale-x-[1.02]">
-                  <div className="absolute inset-0 bg-white/30 rounded-full" />
+                <div className="absolute bottom-[-20px] left-0 right-0 h-[18px] bg-[#EAE5DD] dark:bg-zinc-800 rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.3)] z-0 transform scale-x-[1.02]">
+                  <div className="absolute inset-0 bg-white/30 dark:bg-white/5 rounded-full" />
                 </div>
 
               </div>
@@ -446,11 +446,11 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={() => handleBookClick(book.id)}
-                className={`group flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-4 rounded-2xl bg-white transition-all cursor-pointer ${selectionMode && selectedBookIds.has(book.id) ? 'border-2 border-[#9CAF88] shadow-md' : 'border border-[#3E2723]/10 hover:border-[#3E2723]/30 hover:shadow-md'}`}
+                className={`group flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-4 rounded-2xl bg-white dark:bg-[#111111] transition-all cursor-pointer ${selectionMode && selectedBookIds.has(book.id) ? 'border-2 border-[#9CAF88] shadow-md' : 'border border-[#3E2723]/10 dark:border-zinc-800 hover:border-[#3E2723]/30 dark:hover:border-zinc-700 hover:shadow-md'}`}
               >
                 {selectionMode && (
                   <div className="flex-shrink-0 mr-2">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedBookIds.has(book.id) ? 'bg-[#9CAF88] border-[#9CAF88]' : 'bg-white border-[#3E2723]/20'}`}>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedBookIds.has(book.id) ? 'bg-[#9CAF88] border-[#9CAF88]' : 'bg-white dark:bg-zinc-800 border-[#3E2723]/20 dark:border-zinc-700'}`}>
                       {selectedBookIds.has(book.id) && <Check size={14} className="text-white" strokeWidth={3} />}
                     </div>
                   </div>
@@ -471,16 +471,16 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
 
                 {/* Info */}
                 <div className="flex-1 min-w-0 w-full md:w-auto">
-                  <h3 className="font-serif text-lg font-bold text-[#3E2723] truncate md:line-clamp-2 md:whitespace-normal">
+                  <h3 className="font-serif text-lg font-bold text-[#3E2723] dark:text-stone-100 truncate md:line-clamp-2 md:whitespace-normal">
                     {book.title}
                   </h3>
-                  <p className="text-sm text-[#3E2723]/60 truncate">{book.author}</p>
+                  <p className="text-sm text-[#3E2723]/60 dark:text-stone-400 truncate">{book.author}</p>
 
                   {/* Tags */}
                   {book.tags && book.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {book.tags.map(tag => (
-                        <span key={tag} className="text-[10px] px-2 py-0.5 bg-[#3E2723]/5 rounded-full text-[#3E2723]/60 uppercase tracking-wide shrink-0">
+                        <span key={tag} className="text-[10px] px-2 py-0.5 bg-[#3E2723]/5 dark:bg-zinc-800 rounded-full text-[#3E2723]/60 dark:text-stone-400 uppercase tracking-wide shrink-0">
                           {tag}
                         </span>
                       ))}
@@ -489,18 +489,18 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                 </div>
 
                 {/* Desktop Meta (Date Added) */}
-                <div className="hidden md:block w-32 text-right text-xs text-[#3E2723]/40">
+                <div className="hidden md:block w-32 text-right text-xs text-[#3E2723]/40 dark:text-stone-500">
                   {book.dateAdded ? new Date(book.dateAdded).toLocaleDateString() : ''}
                 </div>
 
                 {/* Progress */}
                 <div className="w-full md:w-48 flex-shrink-0">
-                  <div className="flex justify-between text-xs text-[#3E2723]/60 mb-1">
+                  <div className="flex justify-between text-xs text-[#3E2723]/60 dark:text-stone-400 mb-1">
                     <span>{Math.round((book.progressPercent || 0) * 100)}% Complete</span>
                   </div>
-                  <div className="h-2 bg-[#3E2723]/5 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[#3E2723]/5 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#3E2723] rounded-full"
+                      className="h-full bg-[#3E2723] dark:bg-amber-600 rounded-full"
                       style={{ width: `${(book.progressPercent || 0) * 100}%` }}
                     />
                   </div>
@@ -513,10 +513,10 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
         {/* Empty State */}
         {processedBooks.length === 0 && books.length > 0 && (
           <div className="text-center py-12 opacity-60">
-            <p className="font-serif italic text-lg text-[#3E2723]">No books match your filters.</p>
+            <p className="font-serif italic text-lg text-[#3E2723] dark:text-stone-300">No books match your filters.</p>
             <button
               onClick={() => setSelectedTags([])}
-              className="mt-4 text-sm text-[#3E2723] underline hover:no-underline"
+              className="mt-4 text-sm text-[#3E2723] dark:text-stone-300 underline hover:no-underline"
             >
               Clear filters
             </button>
@@ -526,9 +526,9 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
         {books.length === 0 && (
           <div className="text-center py-12 opacity-40">
             {searchQuery ? (
-              <p className="font-serif italic text-lg text-[#3E2723]">No books match "{searchQuery}"</p>
+              <p className="font-serif italic text-lg text-[#3E2723] dark:text-stone-300">No books match "{searchQuery}"</p>
             ) : (
-              <p className="font-serif italic text-lg text-[#3E2723]">Your shelves are waiting for stories.</p>
+              <p className="font-serif italic text-lg text-[#3E2723] dark:text-stone-300">Your shelves are waiting for stories.</p>
             )}
           </div>
         )}
@@ -543,18 +543,18 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
-              className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-4 bg-white/95 backdrop-blur-xl px-6 py-4 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-[#3E2723]/10"
+              className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl px-6 py-4 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-[#3E2723]/10 dark:border-zinc-800"
             >
               {isConfirmingDelete ? (
                 <>
-                  <span className="text-sm font-bold text-red-600 whitespace-nowrap">
+                  <span className="text-sm font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
                     Delete {selectedBookIds.size} books?
                   </span>
-                  <div className="w-[1px] h-6 bg-[#3E2723]/10" />
+                  <div className="w-[1px] h-6 bg-[#3E2723]/10 dark:bg-zinc-700" />
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setIsConfirmingDelete(false)}
-                      className="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+                      className="px-4 py-2 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-stone-300 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
                     >
                       Cancel
                     </button>
@@ -568,13 +568,13 @@ export const LibraryScene: React.FC<LibrarySceneProps> = ({
                 </>
               ) : (
                 <>
-                  <span className="text-sm font-medium text-[#3E2723] whitespace-nowrap">
+                  <span className="text-sm font-medium text-[#3E2723] dark:text-stone-200 whitespace-nowrap">
                     {selectedBookIds.size} selected
                   </span>
-                  <div className="w-[1px] h-6 bg-[#3E2723]/10" />
+                  <div className="w-[1px] h-6 bg-[#3E2723]/10 dark:bg-zinc-700" />
                   <button
                     onClick={() => setIsConfirmingDelete(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+                    className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
                   >
                     <Trash2 size={14} />
                     Delete
