@@ -85,6 +85,25 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }: any) => (
 // BOOKS MANAGER COMPONENT
 // ------------------------------------------------------------------
 
+// Helper to extract storage path from URL
+const extractStoragePath = (url: string, bucketNames: string[]): { bucket: string, path: string } | null => {
+    // Skip relative paths like /books/sample.epub (local files, not in Supabase storage)
+    if (!url || url.startsWith('/') || !url.startsWith('http')) return null;
+    try {
+        const parsed = new URL(url);
+        for (const bucket of bucketNames) {
+            const marker = `/${bucket}/`;
+            const idx = parsed.pathname.indexOf(marker);
+            if (idx !== -1) {
+                return { bucket, path: decodeURIComponent(parsed.pathname.substring(idx + marker.length)) };
+            }
+        }
+    } catch (e) {
+        // Invalid URL, skip
+    }
+    return null;
+};
+
 const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string | null, onClearFilter?: () => void }) => {
     const { showToast } = useToast();
     const [books, setBooks] = useState<PublicBook[]>([]);
@@ -129,25 +148,6 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
 
             // Try to delete associated storage files (best-effort, don't block on failure)
             if (bookToDelete) {
-                // Helper to extract storage path from URL
-                const extractStoragePath = (url: string, bucketNames: string[]): { bucket: string, path: string } | null => {
-                    // Skip relative paths like /books/sample.epub (local files, not in Supabase storage)
-                    if (!url || url.startsWith('/') || !url.startsWith('http')) return null;
-                    try {
-                        const parsed = new URL(url);
-                        for (const bucket of bucketNames) {
-                            const marker = `/${bucket}/`;
-                            const idx = parsed.pathname.indexOf(marker);
-                            if (idx !== -1) {
-                                return { bucket, path: decodeURIComponent(parsed.pathname.substring(idx + marker.length)) };
-                            }
-                        }
-                    } catch (e) {
-                        // Invalid URL, skip
-                    }
-                    return null;
-                };
-
                 // Delete cover from storage
                 if (bookToDelete.cover_url) {
                     const coverInfo = extractStoragePath(bookToDelete.cover_url, ['covers', 'book-covers']);
@@ -229,16 +229,16 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                 if (bookToDelete) {
                     if (bookToDelete.cover_url) {
                         const coverInfo = extractStoragePath(bookToDelete.cover_url, ['covers', 'book-covers']);
-                        if (coverInfo) await supabase.storage.from(coverInfo.bucket).remove([coverInfo.path]).catch(() => {});
+                        if (coverInfo) await supabase.storage.from(coverInfo.bucket).remove([coverInfo.path]).catch(() => { });
                     }
                     if (bookToDelete.epub_url) {
                         const epubInfo = extractStoragePath(bookToDelete.epub_url, ['books', 'book-files']);
-                        if (epubInfo) await supabase.storage.from(epubInfo.bucket).remove([epubInfo.path]).catch(() => {});
+                        if (epubInfo) await supabase.storage.from(epubInfo.bucket).remove([epubInfo.path]).catch(() => { });
                     }
                 }
 
                 const { data, error } = await supabase.from('public_books').delete().eq('id', id).select();
-                
+
                 if (error) {
                     const { error: archiveError } = await supabase.from('public_books').update({ status: 'archived' }).eq('id', id).select();
                     if (!archiveError) successCount++;
@@ -334,109 +334,174 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                 </div>
             ) : books.length > 0 ? (
                 <div className="border border-[#3D3028]/10 rounded-xl overflow-hidden">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-[#FAFAFA] text-[#3D3028]/60 border-b border-[#3D3028]/10">
-                            <tr>
-                                <th className="px-6 py-4 font-medium w-10">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={books.length > 0 && selectedBookIds.size === books.length}
-                                        onChange={toggleAll}
-                                        className="rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
-                                    />
-                                </th>
-                                <th className="px-6 py-4 font-medium">Book</th>
-                                <th className="px-6 py-4 font-medium">Author</th>
-                                <th className="px-6 py-4 font-medium">Genre</th>
-                                <th className="px-6 py-4 font-medium text-center">Stats</th>
-                                <th className="px-6 py-4 font-medium text-center">Status</th>
-                                <th className="px-6 py-4 font-medium text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#3D3028]/5">
-                            {books.map((book) => (
-                                <tr key={book.id} className={`hover:bg-[#FAFAFA]/50 transition-colors group ${selectedBookIds.has(book.id) ? 'bg-[#3D3028]/5' : ''}`}>
-                                    <td className="px-6 py-4">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={selectedBookIds.has(book.id)}
-                                            onChange={() => toggleSelection(book.id)}
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-[#FAFAFA] text-[#3D3028]/60 border-b border-[#3D3028]/10">
+                                <tr>
+                                    <th className="px-6 py-4 font-medium w-10">
+                                        <input
+                                            type="checkbox"
+                                            checked={books.length > 0 && selectedBookIds.size === books.length}
+                                            onChange={toggleAll}
                                             className="rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
                                         />
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-14 bg-[#EAE5DD] rounded overflow-hidden shrink-0 border border-[#3D3028]/10">
-                                                {book.cover_url && (
-                                                    <img src={book.cover_url} className="w-full h-full object-cover" />
+                                    </th>
+                                    <th className="px-6 py-4 font-medium">Book</th>
+                                    <th className="px-6 py-4 font-medium">Author</th>
+                                    <th className="px-6 py-4 font-medium">Genre</th>
+                                    <th className="px-6 py-4 font-medium text-center">Stats</th>
+                                    <th className="px-6 py-4 font-medium text-center">Status</th>
+                                    <th className="px-6 py-4 font-medium text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[#3D3028]/5">
+                                {books.map((book) => (
+                                    <tr key={book.id} className={`hover:bg-[#FAFAFA]/50 transition-colors group ${selectedBookIds.has(book.id) ? 'bg-[#3D3028]/5' : ''}`}>
+                                        <td className="px-6 py-4">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedBookIds.has(book.id)}
+                                                onChange={() => toggleSelection(book.id)}
+                                                className="rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
+                                            />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-14 bg-[#EAE5DD] rounded overflow-hidden shrink-0 border border-[#3D3028]/10">
+                                                    {book.cover_url && (
+                                                        <img src={book.cover_url} className="w-full h-full object-cover" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-[#3D3028]">{book.title}</p>
+                                                    {book.volume_number && (
+                                                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/60 mt-0.5">Vol. {book.volume_number}</p>
+                                                    )}
+                                                    <p className="text-[10px] text-[#3D3028]/30 mt-0.5 max-w-[200px] truncate">{book.id}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-[#3D3028]/80">{book.author}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-wrap gap-1 max-w-[150px]">
+                                                {book.genre && book.genre.length > 0 ? (
+                                                    book.genre.map((g, idx) => (
+                                                        <span key={idx} className="text-[10px] bg-[#3D3028]/5 px-1.5 py-0.5 rounded text-[#3D3028]/60 whitespace-nowrap">
+                                                            {g}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-[10px] text-[#3D3028]/30">-</span>
                                                 )}
                                             </div>
-                                            <div>
-                                                <p className="font-medium text-[#3D3028]">{book.title}</p>
-                                                {book.volume_number && (
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/60 mt-0.5">Vol. {book.volume_number}</p>
-                                                )}
-                                                <p className="text-[10px] text-[#3D3028]/30 mt-0.5 max-w-[200px] truncate">{book.id}</p>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="text-xs font-medium bg-[#3D3028]/5 px-2 py-0.5 rounded-full text-[#3D3028]/60">
+                                                    ★ {book.rating_average?.toFixed(1) || '0.0'}
+                                                </span>
+                                                <span className="text-[10px] text-[#3D3028]/40">
+                                                    {book.view_count || 0} views
+                                                </span>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-[#3D3028]/80">{book.author}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-wrap gap-1 max-w-[150px]">
-                                            {book.genre && book.genre.length > 0 ? (
-                                                book.genre.map((g, idx) => (
-                                                    <span key={idx} className="text-[10px] bg-[#3D3028]/5 px-1.5 py-0.5 rounded text-[#3D3028]/60 whitespace-nowrap">
-                                                        {g}
-                                                    </span>
-                                                ))
-                                            ) : (
-                                                <span className="text-[10px] text-[#3D3028]/30">-</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${book.status === 'published'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                {book.status}
+                                            </span>
+                                            {book.is_trending && (
+                                                <span className="ml-2 text-xs text-[#E86C46] font-bold" title="Trending">🔥</span>
                                             )}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => { setEditingBook(book); setShowModal(true); }}
+                                                    className="p-2 hover:bg-[#3D3028]/5 rounded-lg text-[#3D3028]/60 hover:text-[#3D3028] transition-colors"
+                                                    title="Edit"
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(book.id)}
+                                                    className="p-2 hover:bg-red-50 rounded-lg text-[#3D3028]/40 hover:text-red-600 transition-colors"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden divide-y divide-[#3D3028]/10 bg-white">
+                        {/* Mobile Select All */}
+                        <div className="p-4 bg-[#FAFAFA] flex items-center justify-between border-b border-[#3D3028]/10">
+                            <label className="flex items-center gap-3 text-sm font-medium text-[#3D3028]/60 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={books.length > 0 && selectedBookIds.size === books.length}
+                                    onChange={toggleAll}
+                                    className="rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
+                                />
+                                Select All ({selectedBookIds.size})
+                            </label>
+                        </div>
+                        {books.map((book) => (
+                            <div key={book.id} className={`p-4 flex gap-4 relative transition-colors ${selectedBookIds.has(book.id) ? 'bg-[#3D3028]/5' : ''}`}>
+                                <div className="absolute top-4 left-4 z-10">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedBookIds.has(book.id)}
+                                        onChange={() => toggleSelection(book.id)}
+                                        className="rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
+                                    />
+                                </div>
+                                <div className="w-16 h-24 bg-[#EAE5DD] rounded overflow-hidden shrink-0 border border-[#3D3028]/10 mt-1 ml-6">
+                                    {book.cover_url && (
+                                        <img src={book.cover_url} className="w-full h-full object-cover" />
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex justify-between items-start">
+                                            <p className="font-medium text-[#3D3028] line-clamp-2 pr-2">{book.title}</p>
+                                            <div className="flex gap-1 shrink-0 bg-white/50 backdrop-blur rounded-lg shadow-sm border border-black/5 p-0.5">
+                                                <button onClick={() => { setEditingBook(book); setShowModal(true); }} className="p-1.5 hover:bg-[#3D3028]/5 rounded-md text-[#3D3028]/60 transition-colors">
+                                                    <Edit2 size={14} />
+                                                </button>
+                                                <button onClick={() => handleDelete(book.id)} className="p-1.5 hover:bg-red-50 rounded-md text-red-400 transition-colors">
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex flex-col items-center gap-1">
-                                            <span className="text-xs font-medium bg-[#3D3028]/5 px-2 py-0.5 rounded-full text-[#3D3028]/60">
-                                                ★ {book.rating_average?.toFixed(1) || '0.0'}
-                                            </span>
-                                            <span className="text-[10px] text-[#3D3028]/40">
-                                                {book.view_count || 0} views
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${book.status === 'published'
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
+                                        <p className="text-xs text-[#3D3028]/60 mt-0.5 line-clamp-1">{book.author}</p>
+                                        <p className="text-[10px] text-[#3D3028]/40 mt-0.5">{book.view_count || 0} views</p>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                        <span className="bg-[#3D3028]/5 px-1.5 py-0.5 rounded text-[10px] text-[#3D3028]/60 font-medium">
+                                            ★ {book.rating_average?.toFixed(1) || '0.0'}
+                                        </span>
+                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${book.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                                             {book.status}
                                         </span>
                                         {book.is_trending && (
-                                            <span className="ml-2 text-xs text-[#E86C46] font-bold" title="Trending">🔥</span>
+                                            <span className="text-[10px] text-[#E86C46] font-bold flex items-center gap-0.5"><TrendingUp size={10} /> Trending</span>
                                         )}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button
-                                                onClick={() => { setEditingBook(book); setShowModal(true); }}
-                                                className="p-2 hover:bg-[#3D3028]/5 rounded-lg text-[#3D3028]/60 hover:text-[#3D3028] transition-colors"
-                                                title="Edit"
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(book.id)}
-                                                className="p-2 hover:bg-red-50 rounded-lg text-[#3D3028]/40 hover:text-red-600 transition-colors"
-                                                title="Delete"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             ) : (
                 <div className="text-center py-20 border-2 border-dashed border-[#3D3028]/10 rounded-xl">
@@ -599,9 +664,9 @@ const BookModal = ({
                     let detectedSeriesId = undefined;
                     let nextVol = undefined;
                     const bookTitle = metadata.title || '';
-                    
+
                     // Try to find a series that matches the title (e.g. "Series Name" is part of "Series Name - Vol 1")
-                    const matchingSeries = seriesList.find(s => 
+                    const matchingSeries = seriesList.find(s =>
                         bookTitle.toLowerCase().includes(s.title.toLowerCase()) ||
                         s.title.toLowerCase().includes(bookTitle.toLowerCase())
                     );
@@ -615,7 +680,7 @@ const BookModal = ({
                                 .eq('series_id', detectedSeriesId)
                                 .order('volume_number', { ascending: false })
                                 .limit(1);
-                            
+
                             nextVol = (volData && volData.length > 0) ? (volData[0].volume_number || 0) + 1 : 1;
                             showToast(`Series detected: ${matchingSeries.title}`, 'info');
                         } catch (e) {
@@ -808,7 +873,7 @@ const BookModal = ({
                                     onChange={async (e) => {
                                         const seriesId = e.target.value || undefined;
                                         const selectedSeries = seriesList.find(s => s.id === seriesId);
-                                        
+
                                         let nextVolume = undefined;
                                         if (seriesId) {
                                             try {
@@ -819,7 +884,7 @@ const BookModal = ({
                                                     .eq('series_id', seriesId)
                                                     .order('volume_number', { ascending: false })
                                                     .limit(1);
-                                                
+
                                                 if (volData && volData.length > 0) {
                                                     nextVolume = (volData[0].volume_number || 0) + 1;
                                                 } else {
@@ -830,8 +895,8 @@ const BookModal = ({
                                             }
                                         }
 
-                                        setFormData(prev => ({ 
-                                            ...prev, 
+                                        setFormData(prev => ({
+                                            ...prev,
                                             series_id: seriesId,
                                             // Auto-fill from series if values are empty or if it's a new book
                                             author: selectedSeries?.author || prev.author || '',
@@ -951,12 +1016,12 @@ const BookModal = ({
                                         className="peer appearance-none w-5 h-5 border-2 border-[#3D3028]/20 rounded transition-colors checked:bg-[#3D3028] checked:border-[#3D3028] cursor-pointer"
                                     />
                                     <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
                                 <span className="text-sm font-medium text-[#3D3028]/70 group-hover:text-[#3D3028] transition-colors">Feature this book</span>
                             </label>
-                            
+
                             <label className="flex items-center gap-3 cursor-pointer group">
                                 <div className="relative flex items-center justify-center w-5 h-5">
                                     <input
@@ -966,7 +1031,7 @@ const BookModal = ({
                                         className="peer appearance-none w-5 h-5 border-2 border-[#3D3028]/20 rounded transition-colors checked:bg-[#E86C46] checked:border-[#E86C46] cursor-pointer"
                                     />
                                     <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
                                 <span className="text-sm font-medium text-[#3D3028]/70 group-hover:text-[#3D3028] transition-colors">Mark as Trending</span>
@@ -1535,7 +1600,7 @@ const SeriesModal = ({
                             )}
                         </div>
                     </div>
-                    
+
                     {/* Form Fields Side */}
                     <div className="flex-1 space-y-5">
                         <div>
