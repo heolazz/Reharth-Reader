@@ -256,20 +256,20 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                     transition={{ delay: 0.1 }}
                                 >
                                     <div className="flex items-start justify-between gap-4 mb-2">
-                                        <h2 className="font-serif text-3xl md:text-5xl text-[#3D3028] leading-tight">
+                                        <h2 className="font-serif text-3xl md:text-5xl text-[#3D3028] dark:text-stone-100 leading-tight">
                                             {book.title}
                                         </h2>
                                     </div>
-                                    <p className="font-serif text-xl italic text-[#3D3028]/60 mb-6">
+                                    <p className="font-serif text-xl italic text-[#3D3028]/60 dark:text-stone-400 mb-6">
                                         by {book.author}
                                     </p>
 
                                     {/* Stats / Metadata */}
-                                    <div className="flex flex-wrap gap-4 md:gap-8 py-6 border-t border-b border-[#3D3028]/5 mb-8">
+                                    <div className="flex flex-wrap gap-4 md:gap-8 py-6 border-t border-b border-[#3D3028]/5 dark:border-zinc-800 mb-8">
                                         {book.rating_average !== undefined && book.rating_average > 0 ? (
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 mb-1">Rating</span>
-                                                <div className="flex items-center gap-1.5 text-lg font-serif text-[#3D3028]">
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 dark:text-stone-500 mb-1">Rating</span>
+                                                <div className="flex items-center gap-1.5 text-lg font-serif text-[#3D3028] dark:text-stone-100">
                                                     <Star size={16} className="fill-[#E86C46] text-[#E86C46]" />
                                                     {book.rating_average.toFixed(1)}
                                                 </div>
@@ -277,27 +277,27 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                         ) : null}
                                         {book.published_year !== undefined && book.published_year > 0 ? (
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 mb-1">Year</span>
-                                                <span className="text-lg font-serif text-[#3D3028]">{book.published_year}</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 dark:text-stone-500 mb-1">Year</span>
+                                                <span className="text-lg font-serif text-[#3D3028] dark:text-stone-100">{book.published_year}</span>
                                             </div>
                                         ) : null}
                                         {book.page_count !== undefined && book.page_count > 0 ? (
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 mb-1">Pages</span>
-                                                <span className="text-lg font-serif text-[#3D3028]">{book.page_count}</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 dark:text-stone-500 mb-1">Pages</span>
+                                                <span className="text-lg font-serif text-[#3D3028] dark:text-stone-100">{book.page_count}</span>
                                             </div>
                                         ) : null}
                                         {book.genre && book.genre.length > 0 ? (
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 mb-1">Genre</span>
-                                                <span className="text-lg font-serif text-[#3D3028]">{book.genre[0]}</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 dark:text-stone-500 mb-1">Genre</span>
+                                                <span className="text-lg font-serif text-[#3D3028] dark:text-stone-100">{book.genre[0]}</span>
                                             </div>
                                         ) : null}
                                     </div>
 
                                     {/* Description */}
                                     <div className="prose prose-stone max-w-none mb-6">
-                                        <p className="text-[#3D3028]/80 text-lg leading-relaxed font-serif">
+                                        <p className="text-[#3D3028]/80 dark:text-stone-300 text-lg leading-relaxed font-serif">
                                             {book.description || "No description available for this book."}
                                         </p>
                                     </div>
@@ -306,7 +306,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                     {book.tags && book.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-2 mb-10">
                                             {book.tags.map(tag => (
-                                                <span key={tag} className="px-3 py-1 bg-[#3D3028]/5 text-[#3D3028]/60 text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#3D3028]/10">
+                                                <span key={tag} className="px-3 py-1 bg-[#3D3028]/5 dark:bg-zinc-800 text-[#3D3028]/60 dark:text-stone-300 text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#3D3028]/10 dark:border-zinc-700">
                                                     {tag}
                                                 </span>
                                             ))}
@@ -338,7 +338,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                                 <BookOpen size={18} />
                                                 <span>Read Now</span>
                                             </button>
-                                            <div className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#6B8E6D]/10 text-[#6B8E6D] text-sm font-medium">
+                                            <div className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#6B8E6D]/10 dark:bg-emerald-950/40 text-[#6B8E6D] dark:text-emerald-400 text-sm font-medium">
                                                 <Check size={16} />
                                                 <span>In Library</span>
                                             </div>
@@ -358,7 +358,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                         <button
                                             onClick={handleAddToLibrary}
                                             disabled={isAdding}
-                                            className="flex-1 py-4 rounded-xl font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] bg-[#3D3028] text-white hover:bg-[#2C1810]"
+                                            className="flex-1 py-4 rounded-xl font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] bg-[#3D3028] dark:bg-amber-700 text-white hover:bg-[#2C1810] dark:hover:bg-amber-600"
                                         >
                                             {isAdding ? (
                                                 <>
@@ -378,7 +378,7 @@ export const PublicBookDetailModal: React.FC<PublicBookDetailModalProps> = ({ bo
                                 {/* Share button row */}
                                 <button
                                     onClick={handleShare}
-                                    className="w-full px-6 py-3 rounded-xl border border-[#3D3028]/10 text-[#3D3028]/60 hover:text-[#3D3028] hover:bg-[#3D3028]/5 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
+                                    className="w-full px-6 py-3 rounded-xl border border-[#3D3028]/10 dark:border-zinc-800 text-[#3D3028]/60 dark:text-stone-300 hover:text-[#3D3028] dark:hover:text-white hover:bg-[#3D3028]/5 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
                                 >
                                     <Share2 size={16} />
                                     <span>Share</span>

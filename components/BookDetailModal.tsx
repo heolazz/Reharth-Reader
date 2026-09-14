@@ -219,7 +219,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
-                      className={`font-serif font-medium leading-[1.1] mb-3 break-words text-[#3E2723]
+                      className={`font-serif font-medium leading-[1.1] mb-3 break-words text-[#3E2723] dark:text-stone-100
                       ${book.title.length < 20 ? 'text-3xl md:text-5xl' :
                           book.title.length < 50 ? 'text-2xl md:text-4xl' :
                             'text-xl md:text-3xl'}
@@ -232,13 +232,13 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.2 }}
-                      className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-base md:text-lg text-[#3E2723]/60 font-serif italic"
+                      className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-base md:text-lg text-[#3E2723]/60 dark:text-stone-400 font-serif italic"
                     >
                       <span>by {book.author}</span>
                       {book.year && (
                         <>
-                          <span className="hidden md:inline text-[#3E2723]/30">•</span>
-                          <span className="flex items-center gap-1 text-xs md:text-sm not-italic opacity-80 font-sans">
+                          <span className="hidden md:inline text-[#3E2723]/30 dark:text-stone-600">•</span>
+                          <span className="flex items-center gap-1 text-xs md:text-sm not-italic opacity-80 font-sans dark:text-stone-400">
                             <Calendar size={14} /> {book.year}
                           </span>
                         </>
@@ -254,7 +254,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                     className="flex flex-wrap gap-2"
                   >
                     {book.tags?.map((tag, i) => (
-                      <span key={i} className="px-3 py-1 border border-[#3E2723]/10 rounded-full text-xs uppercase tracking-wider font-medium text-[#3E2723]/60">
+                      <span key={i} className="px-3 py-1 border border-[#3E2723]/10 dark:border-zinc-800 bg-[#3E2723]/5 dark:bg-zinc-800/60 rounded-full text-xs uppercase tracking-wider font-medium text-[#3E2723]/70 dark:text-stone-300">
                         {tag}
                       </span>
                     ))}
@@ -267,7 +267,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                     transition={{ delay: 0.4 }}
                     className="prose prose-stone max-w-none relative"
                   >
-                    <p className={`text-base md:text-lg text-[#3E2723]/80 leading-relaxed font-serif text-justify md:text-left transition-all duration-300 ${!isExpanded ? 'line-clamp-[8] md:line-clamp-6' : ''}`}>
+                    <p className={`text-base md:text-lg text-[#3E2723]/80 dark:text-stone-300 leading-relaxed font-serif text-justify md:text-left transition-all duration-300 ${!isExpanded ? 'line-clamp-[8] md:line-clamp-6' : ''}`}>
                       {description}
                     </p>
 
@@ -275,7 +275,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                       <div className={`mt-2 ${!isExpanded ? 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white dark:from-[#111111] via-white/80 dark:via-[#111111]/80 to-transparent pt-8 flex justify-center' : ''}`}>
                         <button
                           onClick={() => setIsExpanded(!isExpanded)}
-                          className="text-xs md:text-sm font-sans font-bold uppercase tracking-widest text-[#3E2723] border-b border-[#3E2723]/20 hover:border-[#3E2723] transition-colors pb-0.5"
+                          className="text-xs md:text-sm font-sans font-bold uppercase tracking-widest text-[#3E2723] dark:text-amber-500 border-b border-[#3E2723]/20 dark:border-amber-500/40 hover:border-[#3E2723] dark:hover:border-amber-500 transition-colors pb-0.5"
                         >
                           {isExpanded ? "Show Less" : "Read More"}
                         </button>
@@ -289,20 +289,20 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, isOpen, 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.45 }}
-                      className="flex items-center gap-6 py-4 border-t border-b border-[#3E2723]/5 my-2"
+                      className="flex items-center gap-6 py-4 border-t border-b border-[#3E2723]/5 dark:border-zinc-800 my-2"
                     >
                       {book.timeRead && (
                         <div className="flex flex-col">
-                          <span className="text-[10px] uppercase tracking-widest text-[#3E2723]/40 font-sans font-bold">Time Read</span>
-                          <span className="text-xl font-serif text-[#3E2723] mt-0.5">
+                          <span className="text-[10px] uppercase tracking-widest text-[#3E2723]/40 dark:text-stone-500 font-sans font-bold">Time Read</span>
+                          <span className="text-xl font-serif text-[#3E2723] dark:text-stone-100 mt-0.5">
                             {book.timeRead < 60 ? '1m' : `${Math.floor(book.timeRead / 60)}m`}
                           </span>
                         </div>
                       )}
                       {book.lastReadDate && (
                         <div className="flex flex-col">
-                          <span className="text-[10px] uppercase tracking-widest text-[#3E2723]/40 font-sans font-bold">Last Read</span>
-                          <span className="text-xl font-serif text-[#3E2723] mt-0.5">
+                          <span className="text-[10px] uppercase tracking-widest text-[#3E2723]/40 dark:text-stone-500 font-sans font-bold">Last Read</span>
+                          <span className="text-xl font-serif text-[#3E2723] dark:text-stone-100 mt-0.5">
                             {new Date(book.lastReadDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                           </span>
                         </div>
