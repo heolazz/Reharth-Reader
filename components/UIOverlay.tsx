@@ -224,7 +224,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowModal(true)}
-                className="group flex items-center gap-3 bg-[#3E2723] text-[#F3F0EB] px-5 py-3 md:px-6 md:py-4 rounded-full shadow-xl hover:shadow-2xl transition-all"
+                className="group flex items-center gap-3 bg-[#3E2723] dark:bg-amber-700 text-[#F3F0EB] dark:text-stone-100 px-5 py-3 md:px-6 md:py-4 rounded-full shadow-xl hover:shadow-2xl transition-all"
               >
                 <Plus size={20} className="text-[#F3F0EB]" />
                 <span className="font-medium font-serif text-lg tracking-wide hidden md:inline">Craft Book</span>
@@ -244,7 +244,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={resetForm}
-              className="absolute inset-0 bg-[#3E2723]/60 backdrop-blur-md"
+              className="absolute inset-0 bg-[#3E2723]/60 dark:bg-black/60 backdrop-blur-md"
             />
 
             <motion.div
@@ -252,16 +252,16 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: '100%' }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-full md:max-w-5xl h-[85dvh] md:h-[85vh] bg-[#F3F0EB] rounded-t-[2rem] md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+              className="relative w-full md:max-w-5xl h-[85dvh] md:h-[85vh] bg-[#F3F0EB] dark:bg-[#111111] rounded-t-[2rem] md:rounded-3xl shadow-2xl dark:shadow-black overflow-hidden flex flex-col md:flex-row"
             >
 
               {/* LEFT PANE: Live Preview */}
-              <div className="w-full md:w-5/12 bg-[#EAE5DD]/50 px-6 py-6 md:p-8 flex flex-row md:flex-col items-center justify-between md:justify-center gap-4 border-b md:border-b-0 md:border-r border-[#3E2723]/5 relative flex-shrink-0">
+              <div className="w-full md:w-5/12 bg-[#EAE5DD]/50 dark:bg-[#0A0A0A] px-6 py-6 md:p-8 flex flex-row md:flex-col items-center justify-between md:justify-center gap-4 border-b md:border-b-0 md:border-r border-[#3E2723]/5 dark:border-zinc-800 relative flex-shrink-0">
 
                 {/* Mobile-only Close Button */}
                 <button
                   onClick={resetForm}
-                  className="absolute top-4 right-4 p-2 bg-white/50 rounded-full text-[#3E2723] md:hidden z-20 hover:bg-white transition-colors"
+                  className="absolute top-4 right-4 p-2 bg-white/50 dark:bg-zinc-800/50 rounded-full text-[#3E2723] dark:text-stone-400 md:hidden z-20 hover:bg-white dark:hover:bg-zinc-700 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -282,7 +282,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                   }}
                 >
                   {/* Spine Hinge - Always on top */}
-                  <div className="absolute left-0 top-0 bottom-0 w-[4px] md:w-[8px] bg-gradient-to-r from-black/40 via-black/10 to-transparent z-30" />
+                  <div className="absolute left-0 top-0 bottom-0 w-[4px] md:w-[8px] bg-gradient-to-r from-black/40 dark:from-black/80 via-black/10 dark:via-black/20 to-transparent z-30" />
 
                   {/* Texture Overlay - Always on top */}
                   <div className="absolute inset-0 opacity-[0.1] bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-20 pointer-events-none" />
@@ -297,7 +297,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                         </h3>
                       </div>
                       <div className="hidden md:flex w-full flex-col items-center gap-1 md:gap-2">
-                        <div className="w-6 md:w-8 h-px bg-white/40" />
+                        <div className="w-6 md:w-8 h-px bg-white/40 dark:bg-stone-500/40" />
                         <p className="font-sans text-[10px] md:text-xs uppercase tracking-widest opacity-90 text-center line-clamp-1 drop-shadow-sm">
                           {author || "Author"}
                         </p>
@@ -333,10 +333,10 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
               </div>
 
               {/* RIGHT PANE: Inputs */}
-              <div className="flex-1 flex flex-col bg-[#F3F0EB] overflow-hidden">
+              <div className="flex-1 flex flex-col bg-[#F3F0EB] dark:bg-[#111111] overflow-hidden">
                 {/* Desktop Close Button */}
                 <div className="hidden md:flex justify-end p-6">
-                  <button onClick={resetForm} className="p-2 hover:bg-[#3E2723]/5 rounded-full text-[#3E2723]/60 hover:text-[#3E2723] transition-colors">
+                  <button onClick={resetForm} className="p-2 hover:bg-[#3E2723]/5 dark:hover:bg-white/5 rounded-full text-[#3E2723]/60 dark:text-stone-500 hover:text-[#3E2723] dark:hover:text-stone-300 transition-colors">
                     <X size={24} strokeWidth={1.5} />
                   </button>
                 </div>
@@ -352,13 +352,13 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                         className="space-y-6 md:space-y-8 max-w-lg mx-auto pb-8"
                       >
                         <div className="space-y-1 md:space-y-2 block">
-                          <h2 className="text-2xl md:text-3xl font-serif text-[#3E2723]">{editingBook ? 'Edit Book' : 'Book Details'}</h2>
+                          <h2 className="text-2xl md:text-3xl font-serif text-[#3E2723] dark:text-stone-100">{editingBook ? 'Edit Book' : 'Book Details'}</h2>
                           <div className="flex items-center justify-between">
-                            <p className="text-[#3E2723]/50 text-sm">Step 1 of 2</p>
+                            <p className="text-[#3E2723]/50 dark:text-stone-500 text-sm">Step 1 of 2</p>
                             {/* QUICK IMPORT BUTTON */}
                             <div
                               onClick={() => fileInputRef.current?.click()}
-                              className="cursor-pointer flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#3E2723] bg-[#3E2723]/10 hover:bg-[#3E2723]/20 px-3 py-2 rounded-lg transition-colors"
+                              className="cursor-pointer flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#3E2723] dark:text-stone-300 bg-[#3E2723]/10 dark:bg-zinc-800 hover:bg-[#3E2723]/20 dark:hover:bg-zinc-700 px-3 py-2 rounded-lg transition-colors"
                             >
                               <Upload size={14} /> Import EPUB
                             </div>
@@ -375,13 +375,13 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
 
                         {/* File Indicator if Uploaded */}
                         {uploadedFileName && (
-                          <div className="bg-[#3E2723]/5 border border-[#3E2723]/10 rounded-xl p-3 flex items-center gap-3">
-                            <div className="bg-[#3E2723] text-white p-2 rounded-lg">
+                          <div className="bg-[#3E2723]/5 dark:bg-zinc-900 border border-[#3E2723]/10 dark:border-zinc-800 rounded-xl p-3 flex items-center gap-3">
+                            <div className="bg-[#3E2723] dark:bg-zinc-800 text-white dark:text-stone-400 p-2 rounded-lg">
                               <Check size={16} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-bold uppercase tracking-widest text-[#3E2723]/60">File Ready</p>
-                              <p className="text-sm font-medium text-[#3E2723] truncate">{uploadedFileName}</p>
+                              <p className="text-xs font-bold uppercase tracking-widest text-[#3E2723]/60 dark:text-stone-400">File Ready</p>
+                              <p className="text-sm font-medium text-[#3E2723] dark:text-stone-200 truncate">{uploadedFileName}</p>
                             </div>
                             <button
                               onClick={() => {
@@ -389,7 +389,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                                 setEpubData(undefined);
                                 setFileType('text');
                               }}
-                              className="p-2 hover:bg-[#3E2723]/10 rounded-full text-[#3E2723]/40 hover:text-[#3E2723] transition-colors"
+                              className="p-2 hover:bg-[#3E2723]/10 dark:hover:bg-zinc-800 rounded-full text-[#3E2723]/40 dark:text-stone-500 hover:text-[#3E2723] dark:hover:text-stone-300 transition-colors"
                             >
                               <X size={16} />
                             </button>
@@ -398,54 +398,54 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
 
                         <div className="space-y-5 md:space-y-6">
                           <div className="group">
-                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 mb-1 md:mb-2 group-focus-within:text-[#3E2723] transition-colors">Title</label>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 dark:text-stone-500 mb-1 md:mb-2 group-focus-within:text-[#3E2723] dark:group-focus-within:text-stone-300 transition-colors">Title</label>
                             <input
                               value={title}
                               onChange={(e) => setTitle(e.target.value)}
-                              className="w-full bg-transparent border-b-2 border-[#3E2723]/10 py-2 text-xl md:text-2xl font-serif text-[#3E2723] placeholder-[#3E2723]/20 focus:outline-none focus:border-[#3E2723] transition-colors"
+                              className="w-full bg-transparent border-b-2 border-[#3E2723]/10 dark:border-zinc-800 py-2 text-xl md:text-2xl font-serif text-[#3E2723] dark:text-stone-100 placeholder-[#3E2723]/20 dark:placeholder-stone-600 focus:outline-none focus:border-[#3E2723] dark:focus:border-amber-600 transition-colors"
                               placeholder="The Great Gatsby"
                             />
                           </div>
 
                           <div className="grid grid-cols-2 gap-4 md:gap-6">
                             <div className="group">
-                              <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 mb-1 md:mb-2 group-focus-within:text-[#3E2723] transition-colors">Author</label>
+                              <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 dark:text-stone-500 mb-1 md:mb-2 group-focus-within:text-[#3E2723] dark:group-focus-within:text-stone-300 transition-colors">Author</label>
                               <input
                                 value={author}
                                 onChange={(e) => setAuthor(e.target.value)}
-                                className="w-full bg-transparent border-b border-[#3E2723]/10 py-2 text-base md:text-lg font-sans text-[#3E2723] placeholder-[#3E2723]/20 focus:outline-none focus:border-[#3E2723] transition-colors"
+                                className="w-full bg-transparent border-b border-[#3E2723]/10 dark:border-zinc-800 py-2 text-base md:text-lg font-sans text-[#3E2723] dark:text-stone-200 placeholder-[#3E2723]/20 dark:placeholder-stone-600 focus:outline-none focus:border-[#3E2723] dark:focus:border-amber-600 transition-colors"
                                 placeholder="Fitzgerald"
                               />
                             </div>
                             <div className="group">
-                              <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 mb-1 md:mb-2 group-focus-within:text-[#3E2723] transition-colors">Year</label>
+                              <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 dark:text-stone-500 mb-1 md:mb-2 group-focus-within:text-[#3E2723] dark:group-focus-within:text-stone-300 transition-colors">Year</label>
                               <input
                                 value={year}
                                 onChange={(e) => setYear(e.target.value)}
-                                className="w-full bg-transparent border-b border-[#3E2723]/10 py-2 text-base md:text-lg font-sans text-[#3E2723] placeholder-[#3E2723]/20 focus:outline-none focus:border-[#3E2723] transition-colors"
+                                className="w-full bg-transparent border-b border-[#3E2723]/10 dark:border-zinc-800 py-2 text-base md:text-lg font-sans text-[#3E2723] dark:text-stone-200 placeholder-[#3E2723]/20 dark:placeholder-stone-600 focus:outline-none focus:border-[#3E2723] dark:focus:border-amber-600 transition-colors"
                                 placeholder="1925"
                               />
                             </div>
                           </div>
 
                           <div className="group">
-                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 mb-1 md:mb-2 group-focus-within:text-[#3E2723] transition-colors">Summary (Optional)</label>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 dark:text-stone-500 mb-1 md:mb-2 group-focus-within:text-[#3E2723] dark:group-focus-within:text-stone-300 transition-colors">Summary (Optional)</label>
                             <textarea
                               value={summary}
                               onChange={(e) => setSummary(e.target.value)}
-                              className="w-full bg-[#EAE5DD]/30 rounded-xl p-3 md:p-4 text-sm font-sans text-[#3E2723] placeholder-[#3E2723]/20 focus:outline-none focus:ring-1 focus:ring-[#3E2723] transition-all resize-none h-20 md:h-24"
+                              className="w-full bg-[#EAE5DD]/30 dark:bg-zinc-900 rounded-xl p-3 md:p-4 text-sm font-sans text-[#3E2723] dark:text-stone-300 placeholder-[#3E2723]/20 dark:placeholder-stone-600 focus:outline-none focus:ring-1 focus:ring-[#3E2723] dark:focus:ring-amber-600 transition-all resize-none h-20 md:h-24"
                               placeholder="A brief overview..."
                             />
                           </div>
 
                           <div className="group">
-                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 mb-1 md:mb-2 group-focus-within:text-[#3E2723] transition-colors">Tags</label>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3E2723]/40 dark:text-stone-500 mb-1 md:mb-2 group-focus-within:text-[#3E2723] dark:group-focus-within:text-stone-300 transition-colors">Tags</label>
 
                             <div className="flex flex-wrap gap-2 mb-2">
                               {tags.map(tag => (
-                                <span key={tag} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#3E2723]/10 text-[#3E2723]">
+                                <span key={tag} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#3E2723]/10 dark:bg-zinc-800 text-[#3E2723] dark:text-stone-300">
                                   {tag}
-                                  <button onClick={() => removeTag(tag)} className="ml-2 hover:text-red-500">
+                                  <button type="button" onClick={() => removeTag(tag)} className="ml-2 hover:text-red-500">
                                     <X size={12} />
                                   </button>
                                 </span>
@@ -456,7 +456,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                               value={tagInput}
                               onChange={(e) => setTagInput(e.target.value)}
                               onKeyDown={handleAddTag}
-                              className="w-full bg-transparent border-b border-[#3E2723]/10 py-2 text-base md:text-lg font-sans text-[#3E2723] placeholder-[#3E2723]/20 focus:outline-none focus:border-[#3E2723] transition-colors"
+                              className="w-full bg-transparent border-b border-[#3E2723]/10 dark:border-zinc-800 py-2 text-base md:text-lg font-sans text-[#3E2723] dark:text-stone-200 placeholder-[#3E2723]/20 dark:placeholder-stone-600 focus:outline-none focus:border-[#3E2723] dark:focus:border-amber-600 transition-colors"
                               placeholder="Type and press Enter to add tags..."
                             />
                           </div>
@@ -471,22 +471,22 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                         className="space-y-6 h-full flex flex-col pb-8"
                       >
                         <div className="space-y-2 block">
-                          <h2 className="text-2xl md:text-3xl font-serif text-[#3E2723]">Add Content</h2>
-                          <p className="text-[#3E2723]/50 text-sm">Step 2 of 2</p>
+                          <h2 className="text-2xl md:text-3xl font-serif text-[#3E2723] dark:text-stone-100">Add Content</h2>
+                          <p className="text-[#3E2723]/50 dark:text-stone-500 text-sm">Step 2 of 2</p>
                         </div>
 
                         <div className="flex-1 flex flex-col gap-4 min-h-0">
                           <div
                             onClick={() => !uploadedFileName && fileInputRef.current?.click()}
                             className={`border-2 border-dashed rounded-xl p-4 flex items-center justify-center gap-4 transition-all ${uploadedFileName
-                              ? 'border-[#3E2723] bg-[#3E2723]/5 cursor-default'
-                              : 'border-[#3E2723]/10 text-[#3E2723]/60 hover:bg-[#3E2723]/5 hover:text-[#3E2723] hover:border-[#3E2723]/30 cursor-pointer'
+                              ? 'border-[#3E2723] dark:border-amber-700 bg-[#3E2723]/5 dark:bg-amber-900/20 cursor-default'
+                              : 'border-[#3E2723]/10 dark:border-zinc-700 text-[#3E2723]/60 dark:text-stone-400 hover:bg-[#3E2723]/5 dark:hover:bg-zinc-800 hover:text-[#3E2723] dark:hover:text-stone-200 hover:border-[#3E2723]/30 dark:hover:border-zinc-500 cursor-pointer'
                               }`}
                           >
                             {uploadedFileName ? (
                               <>
-                                <Check size={20} className="text-[#3E2723]" />
-                                <span className="text-sm font-medium text-[#3E2723]">
+                                <Check size={20} className="text-[#3E2723] dark:text-amber-500" />
+                                <span className="text-sm font-medium text-[#3E2723] dark:text-stone-200">
                                   Using: {uploadedFileName}
                                 </span>
                               </>
@@ -509,7 +509,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                             value={textContent}
                             onChange={(e) => setTextContent(e.target.value)}
                             placeholder="Or paste your text here..."
-                            className="flex-1 w-full bg-[#fff] border border-[#3E2723]/10 rounded-xl p-4 md:p-6 text-sm md:text-base font-serif text-[#3E2723] placeholder-[#3E2723]/20 focus:outline-none focus:border-[#3E2723]/30 focus:shadow-inner transition-all resize-none leading-relaxed"
+                            className="flex-1 w-full bg-[#fff] dark:bg-black border border-[#3E2723]/10 dark:border-zinc-800 rounded-xl p-4 md:p-6 text-sm md:text-base font-serif text-[#3E2723] dark:text-stone-300 placeholder-[#3E2723]/20 dark:placeholder-stone-700 focus:outline-none focus:border-[#3E2723]/30 dark:focus:border-zinc-600 focus:shadow-inner transition-all resize-none leading-relaxed"
                           />
                         </div>
                       </motion.div>
@@ -518,11 +518,11 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                 </div>
 
                 {/* Footer Navigation - Fixed at bottom on mobile */}
-                <div className="p-4 md:p-8 border-t border-[#3E2723]/5 flex justify-between items-center bg-[#F3F0EB] absolute bottom-0 left-0 right-0 z-30 md:static safe-area-pb">
+                <div className="p-4 md:p-8 border-t border-[#3E2723]/5 dark:border-zinc-800 flex justify-between items-center bg-[#F3F0EB] dark:bg-black absolute bottom-0 left-0 right-0 z-30 md:static safe-area-pb">
                   {step === 2 ? (
                     <button
                       onClick={() => setStep(1)}
-                      className="flex items-center gap-2 text-[#3E2723]/60 hover:text-[#3E2723] font-medium text-sm transition-colors px-2"
+                      className="flex items-center gap-2 text-[#3E2723]/60 dark:text-stone-400 hover:text-[#3E2723] dark:hover:text-stone-200 font-medium text-sm transition-colors px-2"
                     >
                       <ArrowLeft size={16} /> Back
                     </button>
@@ -534,14 +534,14 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ isVisible, onAddBook, edit
                     <button
                       onClick={() => title && setStep(2)}
                       disabled={!title}
-                      className="bg-[#3E2723] text-[#F3F0EB] px-6 py-3 md:px-8 md:py-3 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-[#2C1B17] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-95"
+                      className="bg-[#3E2723] dark:bg-amber-700 text-[#F3F0EB] dark:text-stone-100 px-6 py-3 md:px-8 md:py-3 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-[#2C1B17] dark:hover:bg-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-95"
                     >
                       Next <ArrowRight size={16} />
                     </button>
                   ) : (
                     <button
                       onClick={handleSave}
-                      className="bg-[#3E2723] text-[#F3F0EB] px-6 py-3 md:px-8 md:py-3 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-[#2C1B17] transition-all shadow-lg hover:shadow-xl active:scale-95"
+                      className="bg-[#3E2723] dark:bg-amber-700 text-[#F3F0EB] dark:text-stone-100 px-6 py-3 md:px-8 md:py-3 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-[#2C1B17] dark:hover:bg-amber-600 transition-all shadow-lg hover:shadow-xl active:scale-95"
                     >
                       <Check size={16} /> {editingBook ? 'Save Changes' : 'Finish'}
                     </button>

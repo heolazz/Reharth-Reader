@@ -13,6 +13,22 @@
   <link rel="icon" type="image/png" href="/logo.png" />
   <title>Reharth Reader</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+    (function () {
+      try {
+        const storedTheme = localStorage.getItem('reharth-theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (storedTheme === 'dark' || (!storedTheme && systemDark)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <!-- Import Google Fonts: EB Garamond (Serif) and Instrument Sans (Sans) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,6 +48,13 @@
       background-color: #F8F5F1;
       /* Warm Off-White from reference */
       font-family: 'Instrument Sans', sans-serif;
+    }
+
+    html.dark body,
+    html.dark html,
+    html.dark #root {
+      background-color: #121110;
+      color: #F5F5F4;
     }
 
     h1,

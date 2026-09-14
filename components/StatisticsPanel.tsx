@@ -110,16 +110,16 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="absolute inset-0 z-10 bg-[#FAFAFA] overflow-y-auto pt-24 pb-32 md:pb-12 px-4 sm:px-6"
+            className="absolute inset-0 z-10 bg-[#FAFAFA] dark:bg-black overflow-y-auto pt-24 pb-32 md:pb-12 px-4 sm:px-6"
         >
             <div className="max-w-[1200px] mx-auto space-y-8">
                 {/* 1. Header & Context */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 px-2">
                     <div>
-                        <h1 className="font-serif text-4xl md:text-5xl text-black font-medium tracking-tight leading-tight">
+                        <h1 className="font-serif text-4xl md:text-5xl text-black dark:text-stone-100 font-medium tracking-tight leading-tight">
                             Reading Now
                         </h1>
-                        <p className="text-black/60 text-base mt-2 font-sans">
+                        <p className="text-black/60 dark:text-stone-400 text-base mt-2 font-sans">
                             Welcome back. You're on a <span className="font-semibold text-[#E86C46]">{readingGoal?.currentStreak || 0} day</span> streak.
                         </p>
                     </div>
@@ -137,14 +137,14 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                                 onClick={() => onOpenBook?.(stats.bookToContinue!.id)}
-                                className="relative rounded-[2rem] overflow-hidden cursor-pointer shadow-sm group bg-[#3E2723]"
+                                className="relative rounded-[2rem] overflow-hidden cursor-pointer shadow-sm group bg-[#3E2723] dark:bg-zinc-900"
                             >
                                 {/* Blurred Background Cover */}
-                                <div className="absolute inset-0 overflow-hidden bg-[#2D1B16]">
+                                <div className="absolute inset-0 overflow-hidden bg-[#2D1B16] dark:bg-black/50">
                                     {stats.bookToContinue.coverImage && (
                                         <img src={stats.bookToContinue.coverImage} className="w-full h-full object-cover blur-3xl opacity-30 scale-125 group-hover:scale-110 transition-transform duration-[1.5s] ease-out" alt="" />
                                     )}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#1F120F]/90 via-[#3E2723]/40 to-[#3E2723]/10" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#1F120F]/90 dark:from-black/90 via-[#3E2723]/40 dark:via-zinc-900/40 to-[#3E2723]/10 dark:to-transparent" />
                                 </div>
 
                                 <div className="relative z-10 p-8 sm:p-12 flex flex-col sm:flex-row gap-8 items-center sm:items-end min-h-[340px]">
@@ -188,26 +188,26 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
                                 </div>
                             </motion.div>
                         ) : (
-                            <div className="bg-white rounded-[2rem] p-12 border border-[#3E2723]/5 shadow-sm text-center flex flex-col items-center justify-center min-h-[340px]">
-                                <Library size={48} strokeWidth={1} className="text-black/20 mb-4" />
-                                <h3 className="font-serif text-2xl text-black mb-2">No books yet</h3>
-                                <p className="text-black/50 text-sm">Add a book to your library to start building your reading habits.</p>
+                            <div className="bg-white dark:bg-[#111111] rounded-[2rem] p-12 border border-[#3E2723]/5 dark:border-zinc-800 shadow-sm text-center flex flex-col items-center justify-center min-h-[340px]">
+                                <Library size={48} strokeWidth={1} className="text-black/20 dark:text-stone-600 mb-4" />
+                                <h3 className="font-serif text-2xl text-black dark:text-stone-100 mb-2">No books yet</h3>
+                                <p className="text-black/50 dark:text-stone-400 text-sm">Add a book to your library to start building your reading habits.</p>
                             </div>
                         )}
 
                         {/* Highlights Grid */}
-                        <div className="bg-white rounded-[2rem] p-8 border border-[#3E2723]/5 shadow-sm flex-1">
+                        <div className="bg-white dark:bg-[#111111] rounded-[2rem] p-8 border border-[#3E2723]/5 dark:border-zinc-800 shadow-sm flex-1">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-                                <h3 className="font-serif text-2xl text-black flex items-center gap-2">
-                                    <Highlighter size={20} className="text-black/30" />
+                                <h3 className="font-serif text-2xl text-black dark:text-stone-100 flex items-center gap-2">
+                                    <Highlighter size={20} className="text-black/30 dark:text-stone-500" />
                                     Recent Highlights
                                 </h3>
                                 {highlights.length > 2 && (
                                     <div className="flex gap-2 self-end sm:self-auto">
-                                        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="w-9 h-9 rounded-full border border-black/10 flex items-center justify-center text-black/50 hover:bg-[#F9F7F5] disabled:opacity-30 transition-colors">
+                                        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="w-9 h-9 rounded-full border border-black/10 dark:border-zinc-700 flex items-center justify-center text-black/50 dark:text-stone-400 hover:bg-[#F9F7F5] dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors">
                                             <span className="text-lg leading-none mb-1">‹</span>
                                         </button>
-                                        <button onClick={() => setPage(p => (p + 1) * 2 < highlights.length ? p + 1 : p)} disabled={(page + 1) * 2 >= highlights.length} className="w-9 h-9 rounded-full border border-black/10 flex items-center justify-center text-black/50 hover:bg-[#F9F7F5] disabled:opacity-30 transition-colors">
+                                        <button onClick={() => setPage(p => (p + 1) * 2 < highlights.length ? p + 1 : p)} disabled={(page + 1) * 2 >= highlights.length} className="w-9 h-9 rounded-full border border-black/10 dark:border-zinc-700 flex items-center justify-center text-black/50 dark:text-stone-400 hover:bg-[#F9F7F5] dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors">
                                             <span className="text-lg leading-none mb-1">›</span>
                                         </button>
                                     </div>
@@ -224,11 +224,11 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
                                             <div
                                                 key={h.id}
                                                 onClick={() => onOpenBook?.(h.bookId, h.cfiRange)}
-                                                className="group cursor-pointer flex flex-col gap-4 p-6 rounded-2xl bg-[#FAFAFA] hover:bg-white inset-ring-1 border border-[#3E2723]/5 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                                                className="group cursor-pointer flex flex-col gap-4 p-6 rounded-2xl bg-[#FAFAFA] dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-800 inset-ring-1 border border-[#3E2723]/5 dark:border-zinc-800 hover:shadow-md hover:-translate-y-0.5 transition-all"
                                             >
                                                 <div className="flex items-start gap-4">
                                                     <div className="w-1.5 h-1.5 rounded-full mt-2.5 flex-shrink-0" style={{ backgroundColor: hlColor, boxShadow: `0 0 8px ${hlColor}` }} />
-                                                    <p className="font-serif text-lg text-black italic leading-relaxed line-clamp-4">
+                                                    <p className="font-serif text-lg text-black dark:text-stone-200 italic leading-relaxed line-clamp-4">
                                                         "{h.text}"
                                                     </p>
                                                 </div>
@@ -236,9 +236,9 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
                                                     {book?.coverImage ? (
                                                         <img src={book.coverImage} className="w-6 h-9 object-cover rounded shadow-sm" alt="" />
                                                     ) : (
-                                                        <div className="w-6 h-9 rounded shadow-sm bg-[#3E2723]/10" />
+                                                        <div className="w-6 h-9 rounded shadow-sm bg-[#3E2723]/10 dark:bg-zinc-800" />
                                                     )}
-                                                    <span className="text-[10px] uppercase tracking-widest text-black/50 font-bold truncate">
+                                                    <span className="text-[10px] uppercase tracking-widest text-black/50 dark:text-stone-400 font-bold truncate">
                                                         {book?.title || "Unknown Book"}
                                                     </span>
                                                 </div>
@@ -247,9 +247,9 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
                                     })}
                                 </div>
                             ) : (
-                                <div className="text-center text-black/30 text-sm py-12 flex flex-col items-center justify-center">
-                                    <div className="w-12 h-12 rounded-full bg-[#f0f0f0] flex items-center justify-center mb-4">
-                                        <Highlighter size={20} className="opacity-50" />
+                                <div className="text-center text-black/30 dark:text-stone-500 text-sm py-12 flex flex-col items-center justify-center">
+                                    <div className="w-12 h-12 rounded-full bg-[#f0f0f0] dark:bg-zinc-800 flex items-center justify-center mb-4">
+                                        <Highlighter size={20} className="opacity-50 text-black/50 dark:text-stone-400" />
                                     </div>
                                     No highlights found.<br />Your favorite quotes will appear here.
                                 </div>
@@ -262,16 +262,16 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
 
                         {/* Daily Goal Ring */}
                         {readingGoal && (
-                            <div className="bg-white rounded-[2rem] p-8 border border-black/5 shadow-sm relative overflow-hidden group">
-                                <div className="absolute top-6 right-6 cursor-pointer p-2 bg-[#F9F7F5] rounded-full text-black/40 hover:text-black hover:bg-[#F0EEEC] transition-colors" onClick={onEditGoal}>
+                            <div className="bg-white dark:bg-[#111111] rounded-[2rem] p-8 border border-black/5 dark:border-zinc-800 shadow-sm relative overflow-hidden group">
+                                <div className="absolute top-6 right-6 cursor-pointer p-2 bg-[#F9F7F5] dark:bg-zinc-800 rounded-full text-black/40 dark:text-stone-400 hover:text-black dark:hover:text-stone-200 hover:bg-[#F0EEEC] dark:hover:bg-zinc-700 transition-colors" onClick={onEditGoal}>
                                     <Settings2 size={16} />
                                 </div>
-                                <h3 className="font-serif text-2xl text-black mb-8 text-center">Daily Goal</h3>
+                                <h3 className="font-serif text-2xl text-black dark:text-stone-100 mb-8 text-center">Daily Goal</h3>
 
                                 <div className="relative w-48 h-48 mx-auto flex items-center justify-center">
                                     {/* SVG Ring */}
                                     <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 drop-shadow-sm">
-                                        <circle cx="50" cy="50" r="42" fill="none" stroke="#F5F5F5" strokeWidth="8" />
+                                        <circle cx="50" cy="50" r="42" fill="none" stroke="#F5F5F5" strokeWidth="8" className="dark:stroke-zinc-800" />
                                         <motion.circle
                                             cx="50" cy="50" r="42"
                                             fill="none"
@@ -284,8 +284,8 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
                                         />
                                     </svg>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="font-serif text-3xl sm:text-4xl text-black">{timeDisplay}</span>
-                                        <span className="text-[10px] uppercase tracking-widest text-black/40 font-bold mt-1">/ {readingGoal.dailyTargetMinutes} MIN</span>
+                                        <span className="font-serif text-3xl sm:text-4xl text-black dark:text-stone-100">{timeDisplay}</span>
+                                        <span className="text-[10px] uppercase tracking-widest text-black/40 dark:text-stone-400 font-bold mt-1">/ {readingGoal.dailyTargetMinutes} MIN</span>
                                     </div>
                                 </div>
 
@@ -294,7 +294,7 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
                                         const isToday = idx === new Date().getDay();
                                         const isPast = idx < new Date().getDay();
                                         return (
-                                            <div key={idx} className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${isToday ? 'bg-black text-white shadow-md transform -translate-y-1' : isPast ? 'bg-[#F5F5F5] text-black/60' : 'text-black/30 bg-transparent'}`}>
+                                            <div key={idx} className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${isToday ? 'bg-black text-white dark:bg-white dark:text-black shadow-md transform -translate-y-1' : isPast ? 'bg-[#F5F5F5] dark:bg-zinc-800 text-black/60 dark:text-stone-400' : 'text-black/30 dark:text-stone-600 bg-transparent'}`}>
                                                 {day}
                                             </div>
                                         )
@@ -305,38 +305,38 @@ export const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ books, reading
 
                         {/* Quick Stats Compact */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white rounded-[2rem] p-6 border border-black/5 shadow-sm text-center flex flex-col items-center hover:bg-[#FAFAFA] transition-colors">
-                                <div className="w-12 h-12 rounded-full bg-[#F5F5F5] flex items-center justify-center mb-4">
-                                    <BookOpen size={18} className="text-black/20" />
+                            <div className="bg-white dark:bg-[#111111] rounded-[2rem] p-6 border border-black/5 dark:border-zinc-800 shadow-sm text-center flex flex-col items-center hover:bg-[#FAFAFA] dark:hover:bg-zinc-900 transition-colors">
+                                <div className="w-12 h-12 rounded-full bg-[#F5F5F5] dark:bg-zinc-800 flex items-center justify-center mb-4">
+                                    <BookOpen size={18} className="text-black/20 dark:text-stone-400" />
                                 </div>
-                                <div className="font-serif text-3xl text-black mb-1">{stats.booksInProgress}</div>
-                                <div className="text-[10px] uppercase tracking-widest text-black/40 font-bold">Reading</div>
+                                <div className="font-serif text-3xl text-black dark:text-stone-100 mb-1">{stats.booksInProgress}</div>
+                                <div className="text-[10px] uppercase tracking-widest text-black/40 dark:text-stone-400 font-bold">Reading</div>
                             </div>
-                            <div className="bg-white rounded-[2rem] p-6 border border-black/5 shadow-sm text-center flex flex-col items-center hover:bg-[#FAFAFA] transition-colors">
-                                <div className="w-12 h-12 rounded-full bg-[#F5F5F5] flex items-center justify-center mb-4">
-                                    <CheckCircle size={18} className="text-black/80" />
+                            <div className="bg-white dark:bg-[#111111] rounded-[2rem] p-6 border border-black/5 dark:border-zinc-800 shadow-sm text-center flex flex-col items-center hover:bg-[#FAFAFA] dark:hover:bg-zinc-900 transition-colors">
+                                <div className="w-12 h-12 rounded-full bg-[#F5F5F5] dark:bg-zinc-800 flex items-center justify-center mb-4">
+                                    <CheckCircle size={18} className="text-black/80 dark:text-stone-200" />
                                 </div>
-                                <div className="font-serif text-3xl text-black mb-1">{stats.booksCompleted}</div>
-                                <div className="text-[10px] uppercase tracking-widest text-black/40 font-bold">Finished</div>
+                                <div className="font-serif text-3xl text-black dark:text-stone-100 mb-1">{stats.booksCompleted}</div>
+                                <div className="text-[10px] uppercase tracking-widest text-black/40 dark:text-stone-400 font-bold">Finished</div>
                             </div>
                         </div>
 
                         {/* Top Reads List */}
-                        <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-black/5 shadow-sm flex-1">
-                            <h3 className="font-serif text-xl text-black mb-6">Top Books</h3>
+                        <div className="bg-white dark:bg-[#111111] rounded-[2rem] p-6 md:p-8 border border-black/5 dark:border-zinc-800 shadow-sm flex-1">
+                            <h3 className="font-serif text-xl text-black dark:text-stone-100 mb-6">Top Books</h3>
                             <div className="space-y-5">
                                 {books
                                     .filter(b => b.timeRead && b.timeRead > 0)
                                     .sort((a, b) => (b.timeRead || 0) - (a.timeRead || 0))
                                     .slice(0, 4)
                                     .map((book, idx) => (
-                                        <div key={book.id} onClick={() => onOpenBook?.(book.id)} className="flex items-center gap-4 cursor-pointer group">
-                                            <div className="w-12 h-16 rounded overflow-hidden shadow-sm flex-shrink-0 bg-[#F5F5F5]">
+                                        <div key={book.id} onClick={() => onOpenBook?.(book.id)} className="flex items-center gap-4 cursor-pointer group p-2 -mx-2 rounded-xl hover:bg-[#FAFAFA] dark:hover:bg-zinc-900 transition-colors">
+                                            <div className="w-12 h-16 rounded overflow-hidden shadow-sm flex-shrink-0 bg-[#F5F5F5] dark:bg-zinc-800">
                                                 {book.coverImage ? <img src={book.coverImage} className="w-full h-full object-cover group-hover:scale-105 transition-transform" /> : null}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-sm font-semibold text-black truncate group-hover:text-emerald-500 transition-colors mb-0.5">{book.title}</div>
-                                                <div className="text-xs text-black/50 mt-1 flex items-center gap-1.5">
+                                                <div className="text-sm font-semibold text-black dark:text-stone-200 truncate group-hover:text-emerald-500 transition-colors mb-0.5">{book.title}</div>
+                                                <div className="text-xs text-black/50 dark:text-stone-400 mt-1 flex items-center gap-1.5">
                                                     <Clock size={12} className="opacity-70" />
                                                     {formatTime(book.timeRead || 0)}
                                                 </div>

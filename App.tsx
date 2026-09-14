@@ -23,6 +23,7 @@ import { PublicBook, fetchPublicBookBySlug } from './lib/publicBooksApi';
 import { INITIAL_BOOKS } from './constants';
 import { saveBook, getAllBooks, deleteBook } from './utils/db';
 import { useAuthStore } from './stores/useAuthStore';
+import { useThemeStore } from './stores/useThemeStore';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 
 // URL Helper
@@ -66,8 +67,9 @@ const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const wasAuthenticated = React.useRef(false);
 
-  // Show splash on initial page load (minimum 2.5s)
+  // Initialize Theme System & check session
   useEffect(() => {
+    useThemeStore.getState().initTheme();
     checkSession();
 
     // Listen for PWA install prompt globally
@@ -603,7 +605,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="relative w-full h-full bg-white overflow-hidden">
+    <div className="relative w-full h-full bg-[#F8F5F1] dark:bg-black text-stone-900 dark:text-stone-100 overflow-hidden">
       {/* Toast Notifications */}
       <Toast
         message={toast.message}
@@ -717,7 +719,7 @@ const App: React.FC = () => {
 
       {/* 4. Explore Page */}
       {currentPage === 'explore' && mode === 'library' && (
-        <div className="absolute inset-0 z-30 overflow-y-auto bg-[#F9F7F2]">
+        <div className="absolute inset-0 z-30 overflow-y-auto bg-[#F9F7F2] dark:bg-black">
           <ExplorePage 
             userBooks={books}
             onOpenBook={(book) => {
@@ -742,7 +744,7 @@ const App: React.FC = () => {
 
       {/* 5. Admin Dashboard (Protected - Admin Only) */}
       {currentPage === 'admin' && mode === 'library' && user?.role === 'admin' && (
-        <div className="absolute inset-0 z-30 overflow-y-auto bg-[#F9F7F2]">
+        <div className="absolute inset-0 z-30 overflow-y-auto bg-[#F9F7F2] dark:bg-black">
           <AdminDashboard />
         </div>
       )}

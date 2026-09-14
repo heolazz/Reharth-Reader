@@ -45,13 +45,13 @@ export const Toast: React.FC<ToastProps> = ({
     const getStyle = () => {
         switch (type) {
             case 'success':
-                return 'bg-white border-emerald-200/60 shadow-emerald-100/40';
+                return 'bg-white dark:bg-zinc-900 border-emerald-200/60 dark:border-emerald-500/30 shadow-emerald-100/40 dark:shadow-none text-emerald-900 dark:text-emerald-400';
             case 'error':
-                return 'bg-white border-red-200/60 shadow-red-100/40';
+                return 'bg-white dark:bg-zinc-900 border-red-200/60 dark:border-red-500/30 shadow-red-100/40 dark:shadow-none text-red-900 dark:text-red-400';
             case 'info':
-                return 'bg-white border-sky-200/60 shadow-sky-100/40';
+                return 'bg-white dark:bg-zinc-900 border-sky-200/60 dark:border-sky-500/30 shadow-sky-100/40 dark:shadow-none text-sky-900 dark:text-sky-400';
             case 'loading':
-                return 'bg-white border-[#8B7355]/10 shadow-[#8B7355]/10';
+                return 'bg-white dark:bg-zinc-900 border-[#8B7355]/10 dark:border-zinc-700 shadow-[#8B7355]/10 dark:shadow-none text-stone-900 dark:text-stone-300';
         }
     };
 
@@ -68,7 +68,7 @@ export const Toast: React.FC<ToastProps> = ({
                 >
                     <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-xl shadow-lg ${getStyle()}`}>
                         {getIcon()}
-                        <span className="text-sm font-medium text-[#3D3028] leading-snug">{message}</span>
+                        <span className="text-sm font-medium text-[#3D3028] dark:text-stone-200 leading-snug">{message}</span>
                     </div>
 
                     {/* Auto-dismiss progress bar */}

@@ -14,17 +14,17 @@ export const AdminDashboard: React.FC = () => {
     const [seriesFilter, setSeriesFilter] = useState<string | null>(null);
 
     return (
-        <div className="min-h-screen bg-white text-[#3D3028] font-sans pt-20 pb-24 px-6 md:px-12">
+        <div className="min-h-screen bg-white dark:bg-black text-[#3D3028] dark:text-stone-100 font-sans pt-20 pb-24 px-6 md:px-12 transition-colors">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row gap-8">
                     {/* Sidebar */}
                     <div className="w-full md:w-64 shrink-0 space-y-2">
                         <div className="mb-8 pl-4">
                             <div className="flex items-center gap-2 mb-1">
-                                <Shield size={18} className="text-[#9CAF88]" />
-                                <h1 className="font-serif text-2xl text-[#3D3028]">Admin</h1>
+                                <Shield size={18} className="text-[#9CAF88] dark:text-amber-500" />
+                                <h1 className="font-serif text-2xl text-[#3D3028] dark:text-stone-100">Admin</h1>
                             </div>
-                            <p className="text-xs font-bold uppercase tracking-widest text-black/30 pl-0.5">System Manager</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-black/30 dark:text-stone-400 pl-0.5">System Manager</p>
                         </div>
 
                         <nav className="space-y-1">
@@ -56,7 +56,7 @@ export const AdminDashboard: React.FC = () => {
                     </div>
 
                     {/* Main Content */}
-                    <div className="flex-1 bg-[#FAFAFA] rounded-2xl shadow-sm border border-black/5 p-6 md:p-8 min-h-[600px] overflow-hidden">
+                    <div className="flex-1 bg-[#FAFAFA] dark:bg-[#0A0A0A] rounded-2xl shadow-sm border border-black/5 dark:border-white/10 p-6 md:p-8 min-h-[600px] overflow-hidden">
                         {activeTab === 'books' && <BooksManager seriesFilter={seriesFilter} onClearFilter={() => setSeriesFilter(null)} />}
                         {activeTab === 'series' && <SeriesManager onViewBooks={(id) => { setSeriesFilter(id); setActiveTab('books'); }} />}
                         {activeTab === 'overview' && <OverviewManager />}
@@ -72,8 +72,8 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }: any) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active
-            ? 'bg-[#3D3028] text-white shadow-md'
-            : 'text-black/40 hover:bg-black/5 hover:text-[#3D3028]'
+            ? 'bg-[#3D3028] dark:bg-amber-600 text-white shadow-md'
+            : 'text-black/40 dark:text-stone-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-[#3D3028] dark:hover:text-stone-100'
             }`}
     >
         <Icon size={18} />
@@ -286,14 +286,14 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="relative w-full md:w-96 group flex flex-col gap-2">
                     <div className="relative w-full">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#3D3028]/40 group-focus-within:text-[#3D3028]">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#3D3028]/40 dark:text-stone-400 group-focus-within:text-[#3D3028] dark:group-focus-within:text-stone-100">
                             <Search size={18} />
                         </div>
                         <input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search system library..."
-                            className="w-full bg-[#FAFAFA] border border-[#3D3028]/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-[#3D3028]/30 transition-all"
+                            className="w-full bg-[#FAFAFA] dark:bg-[#111111] border border-[#3D3028]/10 dark:border-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-[#3D3028] dark:text-stone-100 focus:outline-none focus:border-[#3D3028]/30 dark:focus:border-amber-500 transition-all"
                         />
                     </div>
                     {seriesFilter && (
@@ -319,7 +319,7 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                     )}
                     <button
                         onClick={() => { setEditingBook(null); setShowModal(true); }}
-                        className="flex items-center gap-2 bg-[#3D3028] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#2C1810] transition-colors shadow-sm hover:shadow-md"
+                        className="flex items-center gap-2 bg-[#3D3028] dark:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#2C1810] dark:hover:bg-amber-700 transition-colors shadow-sm hover:shadow-md"
                     >
                         <Plus size={18} />
                         Add New Book
@@ -333,11 +333,11 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                     <Loader2 size={32} className="animate-spin text-[#3D3028]/20" />
                 </div>
             ) : books.length > 0 ? (
-                <div className="border border-[#3D3028]/10 rounded-xl overflow-hidden">
+                <div className="border border-[#3D3028]/10 dark:border-stone-800 rounded-xl overflow-hidden">
                     {/* Desktop Table View */}
                     <div className="hidden lg:block overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-[#FAFAFA] text-[#3D3028]/60 border-b border-[#3D3028]/10">
+                            <thead className="bg-[#FAFAFA] dark:bg-[#111111]/80 text-[#3D3028]/60 dark:text-stone-400 border-b border-[#3D3028]/10 dark:border-zinc-800">
                                 <tr>
                                     <th className="px-6 py-4 font-medium w-10">
                                         <input
@@ -355,9 +355,9 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                                     <th className="px-6 py-4 font-medium text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#3D3028]/5">
+                            <tbody className="divide-y divide-[#3D3028]/5 dark:divide-stone-800">
                                 {books.map((book) => (
-                                    <tr key={book.id} className={`hover:bg-[#FAFAFA]/50 transition-colors group ${selectedBookIds.has(book.id) ? 'bg-[#3D3028]/5' : ''}`}>
+                                    <tr key={book.id} className={`hover:bg-[#FAFAFA]/50 dark:hover:bg-zinc-800/40 transition-colors group ${selectedBookIds.has(book.id) ? 'bg-[#3D3028]/5 dark:bg-amber-950/20' : ''}`}>
                                         <td className="px-6 py-4">
                                             <input
                                                 type="checkbox"
@@ -374,11 +374,11 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-[#3D3028]">{book.title}</p>
+                                                    <p className="font-medium text-[#3D3028] dark:text-stone-100">{book.title}</p>
                                                     {book.volume_number && (
-                                                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/60 mt-0.5">Vol. {book.volume_number}</p>
+                                                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/60 dark:text-stone-400 mt-0.5">Vol. {book.volume_number}</p>
                                                     )}
-                                                    <p className="text-[10px] text-[#3D3028]/30 mt-0.5 max-w-[200px] truncate">{book.id}</p>
+                                                    <p className="text-[10px] text-[#3D3028]/30 dark:text-stone-500 mt-0.5 max-w-[200px] truncate">{book.id}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -442,10 +442,10 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                     </div>
 
                     {/* Mobile Card View */}
-                    <div className="lg:hidden divide-y divide-[#3D3028]/10 bg-white">
+                    <div className="lg:hidden divide-y divide-[#3D3028]/10 dark:divide-zinc-800 bg-white dark:bg-black">
                         {/* Mobile Select All */}
-                        <div className="p-4 bg-[#FAFAFA] flex items-center justify-between border-b border-[#3D3028]/10">
-                            <label className="flex items-center gap-3 text-sm font-medium text-[#3D3028]/60 cursor-pointer">
+                        <div className="p-4 bg-[#FAFAFA] dark:bg-[#111111] flex items-center justify-between border-b border-[#3D3028]/10 dark:border-zinc-800">
+                            <label className="flex items-center gap-3 text-sm font-medium text-[#3D3028]/60 dark:text-stone-300 cursor-pointer">
                                 <input
                                     type="checkbox"
                                     checked={books.length > 0 && selectedBookIds.size === books.length}
@@ -456,7 +456,7 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                             </label>
                         </div>
                         {books.map((book) => (
-                            <div key={book.id} className={`p-4 flex gap-4 relative transition-colors ${selectedBookIds.has(book.id) ? 'bg-[#3D3028]/5' : ''}`}>
+                            <div key={book.id} className={`p-4 flex gap-4 relative transition-colors ${selectedBookIds.has(book.id) ? 'bg-[#3D3028]/5 dark:bg-amber-950/20' : ''}`}>
                                 <div className="absolute top-4 left-4 z-10">
                                     <input
                                         type="checkbox"
@@ -465,7 +465,7 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                                         className="rounded border-[#3D3028]/20 text-[#3D3028] focus:ring-[#3D3028]"
                                     />
                                 </div>
-                                <div className="w-16 h-24 bg-[#EAE5DD] rounded overflow-hidden shrink-0 border border-[#3D3028]/10 mt-1 ml-6">
+                                <div className="w-16 h-24 bg-[#EAE5DD] dark:bg-[#1A1A1A] rounded overflow-hidden shrink-0 border border-[#3D3028]/10 dark:border-zinc-800 mt-1 ml-6">
                                     {book.cover_url && (
                                         <img src={book.cover_url} className="w-full h-full object-cover" />
                                     )}
@@ -473,8 +473,8 @@ const BooksManager = ({ seriesFilter, onClearFilter }: { seriesFilter?: string |
                                 <div className="flex-1 min-w-0 flex flex-col justify-between">
                                     <div>
                                         <div className="flex justify-between items-start">
-                                            <p className="font-medium text-[#3D3028] line-clamp-2 pr-2">{book.title}</p>
-                                            <div className="flex gap-1 shrink-0 bg-white/50 backdrop-blur rounded-lg shadow-sm border border-black/5 p-0.5">
+                                            <p className="font-medium text-[#3D3028] dark:text-stone-100 line-clamp-2 pr-2">{book.title}</p>
+                                            <div className="flex gap-1 shrink-0 bg-white/50 dark:bg-zinc-800/80 backdrop-blur rounded-lg shadow-sm border border-black/5 dark:border-white/10 p-0.5">
                                                 <button onClick={() => { setEditingBook(book); setShowModal(true); }} className="p-1.5 hover:bg-[#3D3028]/5 rounded-md text-[#3D3028]/60 transition-colors">
                                                     <Edit2 size={14} />
                                                 </button>
@@ -1176,13 +1176,13 @@ const OverviewManager = () => {
 };
 
 const StatCard = ({ icon: Icon, label, value, color }: any) => (
-    <div className="bg-white border border-black/5 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-[#111111] border border-black/5 dark:border-zinc-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between">
             <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-black/30 mb-2">{label}</p>
-                <p className="text-3xl font-serif text-[#3D3028]">{value}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-black/30 dark:text-stone-400 mb-2">{label}</p>
+                <p className="text-3xl font-serif text-[#3D3028] dark:text-stone-100">{value}</p>
             </div>
-            <div className="p-2.5 rounded-xl" style={{ backgroundColor: `${color}10` }}>
+            <div className="p-2.5 rounded-xl" style={{ backgroundColor: `${color}15` }}>
                 <Icon size={20} style={{ color }} />
             </div>
         </div>

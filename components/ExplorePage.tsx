@@ -32,7 +32,7 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
     const book = books[activeIndex];
 
     return (
-        <div className="relative w-full h-[240px] md:h-[400px] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl bg-[#3D3028]">
+        <div className="relative w-full h-[240px] md:h-[400px] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl bg-[#3D3028] dark:bg-zinc-900">
             {/* Background Image with heavy blur */}
             <div className="absolute inset-0">
                 {book.cover_url ? (
@@ -45,9 +45,9 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
                         className="w-full h-full object-cover blur-[40px] scale-125"
                     />
                 ) : (
-                    <div className="w-full h-full bg-[#3D3028]" />
+                    <div className="w-full h-full bg-[#3D3028] dark:bg-zinc-900" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1410] via-[#1A1410]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1410] dark:from-black via-[#1A1410]/40 dark:via-zinc-900/40 to-transparent" />
             </div>
 
             <div className="relative z-10 w-full h-full flex flex-row items-center p-4 md:p-12 gap-4 md:gap-12">
@@ -145,14 +145,14 @@ const HorizontalBookCarousel = ({ title, icon: Icon, books, onOpenBook }: { titl
                         className="group cursor-pointer w-[140px] md:w-[160px] shrink-0 snap-start flex flex-col items-center text-center"
                         onClick={() => onOpenBook?.(book)}
                     >
-                        <div className="relative w-full aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
+                        <div className="relative w-full aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white dark:bg-[#111111] overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
                             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
                             <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
 
                             {book.cover_url ? (
                                 <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
-                                <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-xs">
+                                <div className="w-full h-full bg-[#EAE5DD] dark:bg-zinc-800 flex items-center justify-center p-2 text-[#3D3028]/40 dark:text-stone-500 font-serif text-xs">
                                     No Cover
                                 </div>
                             )}
@@ -204,12 +204,12 @@ const TopBooksCarousel = ({ books, onOpenBook }: { books: PublicBook[], onOpenBo
                             {idx + 1}
                         </div>
 
-                        <div className="relative w-[80px] md:w-[100px] shrink-0 aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden z-10 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-shadow">
+                        <div className="relative w-[80px] md:w-[100px] shrink-0 aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white dark:bg-[#111111] overflow-hidden z-10 group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-shadow">
                             <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
                             {book.cover_url ? (
                                 <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
-                                <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-[10px] text-center">
+                                <div className="w-full h-full bg-[#EAE5DD] dark:bg-zinc-800 flex items-center justify-center p-2 text-[#3D3028]/40 dark:text-stone-500 font-serif text-[10px] text-center">
                                     No Cover
                                 </div>
                             )}
@@ -255,13 +255,13 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
                         className="group cursor-pointer w-[180px] md:w-[220px] shrink-0 snap-start flex flex-col"
                         onClick={() => onOpenSeries?.(series)}
                     >
-                        <div className="relative w-full aspect-[16/10] rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
+                        <div className="relative w-full aspect-[16/10] rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white dark:bg-[#111111] overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
                             <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
 
                             {series.cover_url ? (
                                 <img src={series.cover_url} alt={series.title} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-[#EAE5DD] to-[#D5CEC4] flex items-center justify-center p-4 text-[#3D3028]/40 font-serif text-xs text-center">
+                                <div className="w-full h-full bg-gradient-to-br from-[#EAE5DD] to-[#D5CEC4] dark:from-zinc-800 dark:to-zinc-900 flex items-center justify-center p-4 text-[#3D3028]/40 dark:text-stone-500 font-serif text-xs text-center">
                                     {series.title}
                                 </div>
                             )}
@@ -272,11 +272,11 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
                             </div>
                         </div>
 
-                        <h3 className="font-serif text-[15px] md:text-[16px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2">
+                        <h3 className="font-serif text-[15px] md:text-[16px] leading-tight text-[#3D3028] dark:text-stone-100 mb-1 group-hover:underline decoration-[#3D3028]/30 dark:decoration-stone-700 underline-offset-4 decoration-1 line-clamp-2">
                             {series.title}
                         </h3>
                         {series.author && (
-                            <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1">
+                            <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#3D3028]/40 dark:text-stone-400 line-clamp-1">
                                 {series.author}
                             </p>
                         )}
@@ -384,7 +384,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
     const isHomeView = activeCategory === 'All' && !searchQuery;
 
     return (
-        <div className="min-h-screen bg-white text-[#3D3028] font-sans pb-24 md:pb-12 pt-16 md:pt-24 px-4 md:px-12 overflow-x-hidden">
+        <div className="min-h-screen bg-white dark:bg-black text-[#3D3028] dark:text-stone-100 font-sans pb-24 md:pb-12 pt-16 md:pt-24 px-4 md:px-12 overflow-x-hidden">
 
             <div className="max-w-6xl mx-auto space-y-6 md:space-y-10">
 
@@ -394,7 +394,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-[#3D3028]/5 rounded-full text-[#3D3028]/60 text-xs font-bold uppercase tracking-widest mb-1"
+                        className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-[#3D3028]/5 dark:bg-zinc-800 rounded-full text-[#3D3028]/60 dark:text-stone-400 text-xs font-bold uppercase tracking-widest mb-1"
                     >
                         <Compass size={12} />
                         Explore Library
@@ -404,7 +404,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1, duration: 0.6 }}
-                        className="hidden md:block font-serif text-6xl text-[#3D3028] leading-tight"
+                        className="hidden md:block font-serif text-6xl text-[#3D3028] dark:text-stone-100 leading-tight"
                     >
                         Find your next <br />
                         great adventure.
@@ -417,14 +417,14 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                         className="max-w-xl mx-auto relative group pt-0 md:pt-2"
                     >
                         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                            <Search size={18} className="text-[#3D3028]/40" />
+                            <Search size={18} className="text-[#3D3028]/40 dark:text-stone-500" />
                         </div>
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search by title, author, or genre..."
-                            className="w-full bg-white border border-[#3D3028]/10 rounded-2xl py-3 md:py-4 pl-12 pr-4 text-sm md:text-lg text-[#3D3028] placeholder-[#3D3028]/30 focus:outline-none focus:border-[#3D3028]/30 focus:shadow-lg transition-all shadow-sm"
+                            className="w-full bg-white dark:bg-[#111111] border border-[#3D3028]/10 dark:border-zinc-800 rounded-2xl py-3 md:py-4 pl-12 pr-4 text-sm md:text-lg text-[#3D3028] dark:text-stone-100 placeholder-[#3D3028]/30 dark:placeholder-stone-500 focus:outline-none focus:border-[#3D3028]/30 dark:focus:border-amber-500 focus:shadow-lg transition-all shadow-sm"
                         />
                     </motion.div>
                 </div>
@@ -448,8 +448,8 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                                     key={cat}
                                     onClick={() => setActiveCategory(cat)}
                                     className={`px-3.5 md:px-5 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all ${activeCategory === cat
-                                        ? 'bg-[#3D3028] text-white shadow-md'
-                                        : 'bg-white text-[#3D3028]/60 hover:bg-[#3D3028]/5 border border-[#3D3028]/5'
+                                        ? 'bg-[#3D3028] dark:bg-stone-100 text-white dark:text-stone-900 shadow-md'
+                                        : 'bg-white dark:bg-[#1A1A1A] text-[#3D3028]/60 dark:text-stone-400 hover:bg-[#3D3028]/5 dark:hover:bg-zinc-800 border border-[#3D3028]/5 dark:border-zinc-800'
                                         }`}
                                 >
                                     {cat}
@@ -462,7 +462,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                 {/* 4. Main Content Area */}
                 {isLoading ? (
                     <div className="flex justify-center py-20">
-                        <Loader2 size={40} className="animate-spin text-[#3D3028]/20" />
+                        <Loader2 size={40} className="animate-spin text-[#3D3028]/20 dark:text-stone-600" />
                     </div>
                 ) : isHomeView ? (
                     /* --- HOME VIEW: TOP BOOKS & MACRO CATEGORIES --- */
@@ -531,13 +531,13 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                             exit={{ opacity: 0, y: -20 }}
                             className="space-y-6"
                         >
-                            <div className="flex items-end justify-between border-b border-[#3D3028]/5 pb-4">
+                            <div className="flex items-end justify-between border-b border-[#3D3028]/5 dark:border-zinc-800 pb-4">
                                 <div>
-                                    <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-2">
+                                    <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] dark:text-stone-100 flex items-center gap-2">
                                         <Search size={24} className="text-[#E86C46]" />
                                         {searchQuery ? `Results for "${searchQuery}"` : activeCategory}
                                     </h2>
-                                    <p className="text-[#3D3028]/50 text-sm mt-1">
+                                    <p className="text-[#3D3028]/50 dark:text-stone-400 text-sm mt-1">
                                         {isSearching ? 'Searching...' : `Showing ${books.length} books`}
                                     </p>
                                 </div>
@@ -552,14 +552,14 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                                             className="group cursor-pointer w-full flex justify-center flex-col items-center text-center"
                                             onClick={() => onOpenBook?.(book)}
                                         >
-                                            <div className="relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
+                                            <div className="relative w-full max-w-[150px] aspect-[2/3] rounded-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white dark:bg-[#111111] overflow-hidden transition-shadow group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.12)] mb-4">
                                                 <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-black/10 z-20" />
                                                 <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E')] mix-blend-overlay z-10 pointer-events-none" />
 
                                                 {book.cover_url ? (
                                                     <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
                                                 ) : (
-                                                    <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-xs">
+                                                    <div className="w-full h-full bg-[#EAE5DD] dark:bg-zinc-800 flex items-center justify-center p-2 text-[#3D3028]/40 dark:text-stone-500 font-serif text-xs">
                                                         No Cover
                                                     </div>
                                                 )}
@@ -575,17 +575,17 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                                                 )}
                                             </div>
 
-                                            <h3 className="font-serif text-[15px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2 w-full px-1">
+                                            <h3 className="font-serif text-[15px] leading-tight text-[#3D3028] dark:text-stone-100 mb-1 group-hover:underline decoration-[#3D3028]/30 dark:decoration-stone-700 underline-offset-4 decoration-1 line-clamp-2 w-full px-1">
                                                 {book.title}
                                             </h3>
-                                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1 w-full px-1">
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 dark:text-stone-400 line-clamp-1 w-full px-1">
                                                 {book.author}
                                             </p>
                                         </motion.div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-20 text-[#3D3028]/40">
+                                <div className="text-center py-20 text-[#3D3028]/40 dark:text-stone-500">
                                     <p className="font-serif text-lg">No books found.</p>
                                 </div>
                             )}
@@ -594,11 +594,11 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenBook, onBooksAdd
                 )}
 
                 {/* 5. Minimal Footer Quote */}
-                <div className="text-center pt-16 pb-8 border-t border-[#3D3028]/5">
-                    <p className="font-serif text-xl md:text-2xl text-[#3D3028]/40 italic">
+                <div className="text-center pt-16 pb-8 border-t border-[#3D3028]/5 dark:border-zinc-800">
+                    <p className="font-serif text-xl md:text-2xl text-[#3D3028]/40 dark:text-stone-400 italic">
                         "There is no friend as loyal as a book."
                     </p>
-                    <p className="text-xs font-bold uppercase tracking-widest text-[#3D3028]/20 mt-3">— Ernest Hemingway</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#3D3028]/20 dark:text-stone-600 mt-3">— Ernest Hemingway</p>
                 </div>
 
             </div>
@@ -878,7 +878,7 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 40 }}
-                className="relative w-full md:max-w-2xl h-[92vh] md:h-auto md:max-h-[85vh] bg-white rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+                className="relative w-full md:max-w-2xl h-[92vh] md:h-auto md:max-h-[85vh] bg-white dark:bg-[#0A0A0A] rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col"
             >
                 {/* Header with cover */}
                 <div className="relative h-36 md:h-48 bg-gradient-to-br from-[#3D3028] to-[#5a4a3a] overflow-hidden shrink-0">
@@ -888,7 +888,7 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <button
                         onClick={onClose}
-                        className="absolute top-3 right-3 md:top-4 md:right-4 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors z-10"
+                        className="absolute top-3 right-3 md:top-4 md:right-4 p-2 bg-white/15 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors z-10"
                     >
                         <X size={18} />
                     </button>
@@ -923,7 +923,7 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                 </div>
 
                 {/* Save Button - Always visible, sticky */}
-                <div className="px-4 md:px-6 py-3 border-b border-[#3D3028]/5 bg-[#FAFAF8] shrink-0">
+                <div className="px-4 md:px-6 py-3 border-b border-[#3D3028]/5 dark:border-zinc-800 bg-[#FAFAF8] dark:bg-[#111111] shrink-0">
                     <button
                         onClick={handleAddSeriesToLibrary}
                         disabled={isAdding || books.length === 0 || isLoading}
@@ -946,7 +946,7 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                 {/* Description */}
                 {series.description && (
                     <div className="px-4 md:px-6 pt-3 pb-1 shrink-0">
-                        <p className="text-xs md:text-sm text-[#3D3028]/60 leading-relaxed line-clamp-3">{series.description}</p>
+                        <p className="text-xs md:text-sm text-[#3D3028]/60 dark:text-stone-300 leading-relaxed line-clamp-3">{series.description}</p>
                     </div>
                 )}
 
@@ -954,7 +954,7 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                 <div className="flex-1 overflow-y-auto px-4 md:px-6 py-3">
                     {isLoading ? (
                         <div className="flex justify-center py-12">
-                            <Loader2 size={28} className="animate-spin text-[#3D3028]/20" />
+                            <Loader2 size={28} className="animate-spin text-[#3D3028]/20 dark:text-stone-600" />
                         </div>
                     ) : books.length > 0 ? (
                         <div className="space-y-2">
@@ -975,17 +975,17 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                                         className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                                             isOwned 
                                             ? 'bg-[#6B8E6D]/5 border-[#6B8E6D]/20 opacity-80' 
-                                            : 'bg-white border-[#3D3028]/5 hover:border-[#E86C46]/30'
+                                            : 'bg-white dark:bg-[#1A1A1A] border-[#3D3028]/5 dark:border-zinc-800 hover:border-[#E86C46]/30 dark:hover:border-[#E86C46]/50'
                                         }`}
                                     >
-                                        <div className="w-10 h-14 bg-[#F3F0EB] rounded-md overflow-hidden shrink-0 shadow-sm border border-[#3D3028]/5">
+                                        <div className="w-10 h-14 bg-[#F3F0EB] dark:bg-zinc-800 rounded-md overflow-hidden shrink-0 shadow-sm border border-[#3D3028]/5 dark:border-zinc-700">
                                             {book.cover_url && (
                                                 <img src={book.cover_url} alt="" className="w-full h-full object-cover" />
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-1.5">
-                                                <h4 className="font-serif text-sm text-[#3D3028] truncate">{book.title}</h4>
+                                                <h4 className="font-serif text-sm text-[#3D3028] dark:text-stone-100 truncate">{book.title}</h4>
                                                 {isOwned && (
                                                     <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#6B8E6D]/10 text-[#6B8E6D] text-[9px] font-bold uppercase">
                                                         <Check size={8} strokeWidth={3} />
@@ -993,7 +993,7 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                                                     </div>
                                                 )}
                                             </div>
-                                            <p className="text-[10px] text-[#3D3028]/40 truncate">{book.author}</p>
+                                            <p className="text-[10px] text-[#3D3028]/40 dark:text-stone-400 truncate">{book.author}</p>
                                         </div>
                                         <button
                                             onClick={() => !isOwned && onOpenBook(book)}
@@ -1013,9 +1013,9 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                         </div>
                     ) : (
                         <div className="text-center py-12">
-                            <BookOpen size={28} className="mx-auto text-[#3D3028]/15 mb-3" />
-                            <p className="text-sm text-[#3D3028]/40 font-serif italic">No volumes added yet</p>
-                            <p className="text-xs text-[#3D3028]/25 mt-1">Add books to this series from the Admin Panel.</p>
+                            <BookOpen size={28} className="mx-auto text-[#3D3028]/15 dark:text-stone-600 mb-3" />
+                            <p className="text-sm text-[#3D3028]/40 dark:text-stone-400 font-serif italic">No volumes added yet</p>
+                            <p className="text-xs text-[#3D3028]/25 dark:text-stone-500 mt-1">Add books to this series from the Admin Panel.</p>
                         </div>
                     )}
                 </div>
