@@ -63,7 +63,7 @@ const FeaturedBooksSlider = ({ books, onOpenBook }: { books: PublicBook[], onOpe
                     {book.cover_url ? (
                         <img src={book.cover_url} className="w-full h-full object-cover" />
                     ) : (
-                        <div className="w-full h-full bg-[#EAE5DD] flex items-center justify-center p-2 text-[#3D3028]/40 font-serif text-[10px] text-center">
+                        <div className="w-full h-full bg-[#EAE5DD] dark:bg-zinc-800 flex items-center justify-center p-2 text-[#3D3028]/40 dark:text-stone-500 font-serif text-[10px] text-center">
                             No Cover
                         </div>
                     )}
@@ -133,7 +133,7 @@ const HorizontalBookCarousel = ({ title, icon: Icon, books, onOpenBook }: { titl
     if (!books || books.length === 0) return null;
     return (
         <div className="space-y-4 pb-4">
-            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-3">
+            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] dark:text-stone-100 flex items-center gap-3">
                 {Icon && <Icon size={24} className="text-[#E86C46]" />}
                 {title}
             </h2>
@@ -167,10 +167,10 @@ const HorizontalBookCarousel = ({ title, icon: Icon, books, onOpenBook }: { titl
                                 </div>
                             )}
                         </div>
-                        <h3 className="font-serif text-[15px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2 w-full px-1">
+                        <h3 className="font-serif text-[15px] leading-tight text-[#3D3028] dark:text-stone-100 mb-1 group-hover:underline decoration-[#3D3028]/30 dark:decoration-stone-700 underline-offset-4 decoration-1 line-clamp-2 w-full px-1">
                             {book.title}
                         </h3>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1 w-full px-1">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3028]/40 dark:text-stone-400 line-clamp-1 w-full px-1">
                             {book.author}
                         </p>
                     </motion.div>
@@ -187,7 +187,7 @@ const TopBooksCarousel = ({ books, onOpenBook }: { books: PublicBook[], onOpenBo
     if (!books || books.length === 0) return null;
     return (
         <div className="space-y-4 pb-4">
-            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-3">
+            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] dark:text-stone-100 flex items-center gap-3">
                 <TrendingUp size={24} className="text-[#E86C46]" />
                 Top Books
             </h2>
@@ -216,14 +216,14 @@ const TopBooksCarousel = ({ books, onOpenBook }: { books: PublicBook[], onOpenBo
                         </div>
 
                         <div className="flex-1 z-10">
-                            <h3 className="font-serif text-[15px] md:text-[16px] leading-tight text-[#3D3028] mb-1 group-hover:underline decoration-[#3D3028]/30 underline-offset-4 decoration-1 line-clamp-2">
+                            <h3 className="font-serif text-[15px] md:text-[16px] leading-tight text-[#3D3028] dark:text-stone-100 mb-1 group-hover:underline decoration-[#3D3028]/30 dark:decoration-stone-700 underline-offset-4 decoration-1 line-clamp-2">
                                 {book.title}
                             </h3>
-                            <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#3D3028]/40 line-clamp-1">
+                            <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#3D3028]/40 dark:text-stone-400 line-clamp-1">
                                 {book.author}
                             </p>
                             {book.rating_average !== undefined && book.rating_average > 0 && (
-                                <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-[#3D3028]/60">
+                                <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-[#3D3028]/60 dark:text-stone-300">
                                     <Star size={12} className="fill-[#E86C46] text-[#E86C46]" />
                                     {book.rating_average.toFixed(1)}
                                 </div>
@@ -243,7 +243,7 @@ const HorizontalSeriesCarousel = ({ title, icon: Icon, seriesList, onOpenSeries 
     if (!seriesList || seriesList.length === 0) return null;
     return (
         <div className="space-y-4 pb-4">
-            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] flex items-center gap-3">
+            <h2 className="font-serif text-2xl md:text-3xl text-[#3D3028] dark:text-stone-100 flex items-center gap-3">
                 {Icon && <Icon size={24} className="text-[#E86C46]" />}
                 {title}
             </h2>
@@ -1001,7 +1001,7 @@ const SeriesDetailModal = ({ series, books, userBooks, isLoading, onClose, onOpe
                                             className={`p-2 rounded-lg transition-all ${
                                                 isOwned
                                                 ? 'text-[#6B8E6D] bg-[#6B8E6D]/10'
-                                                : 'text-[#3D3028]/40 hover:text-[#E86C46] hover:bg-[#E86C46]/10'
+                                                : 'text-[#3D3028]/40 dark:text-stone-400 hover:text-[#E86C46] dark:hover:text-[#E86C46] hover:bg-[#E86C46]/10'
                                             }`}
                                             title={isOwned ? "Already in library" : "View details"}
                                         >
