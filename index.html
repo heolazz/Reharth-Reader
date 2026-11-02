@@ -5,10 +5,11 @@
   <meta charset="utf-8" />
   <meta name="viewport"
     content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
-  <meta name="theme-color" content="#FAFAFA" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#F8F5F1" id="theme-color-meta" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" id="apple-status-bar-meta" />
   <link rel="apple-touch-icon" href="/logo.png" />
   <link rel="icon" type="image/png" href="/logo.png" />
   <title>Reharth Reader</title>
@@ -21,10 +22,25 @@
       try {
         const storedTheme = localStorage.getItem('reharth-theme');
         const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (storedTheme === 'dark' || (!storedTheme && systemDark)) {
-          document.documentElement.classList.add('dark');
+        const isDark = storedTheme === 'dark' || ((!storedTheme || storedTheme === 'system') && systemDark);
+        
+        const root = document.documentElement;
+        if (isDark) {
+          root.classList.add('dark');
+          root.style.colorScheme = 'dark';
         } else {
-          document.documentElement.classList.remove('dark');
+          root.classList.remove('dark');
+          root.style.colorScheme = 'light';
+        }
+
+        const themeColor = isDark ? '#000000' : '#F8F5F1';
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+          metaTheme.setAttribute('content', themeColor);
+        }
+        const appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (appleMeta) {
+          appleMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
         }
       } catch (e) {}
     })();
@@ -37,6 +53,14 @@
     rel="stylesheet">
 
   <style>
+    :root {
+      color-scheme: light;
+    }
+
+    html.dark {
+      color-scheme: dark;
+    }
+
     body,
     html,
     #root {
@@ -53,8 +77,25 @@
     html.dark body,
     html.dark html,
     html.dark #root {
-      background-color: #121110;
+      background-color: #000000;
       color: #F5F5F4;
+    }
+
+    /* Safe area utilities */
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .pt-safe {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    .safe-area-pb {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .safe-area-pt {
+      padding-top: env(safe-area-inset-top, 0px);
     }
 
     h1,

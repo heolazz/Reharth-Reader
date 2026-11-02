@@ -31,11 +31,39 @@ const resolveIsDark = (theme: ThemeMode): boolean => {
 const applyThemeToDOM = (isDark: boolean) => {
   if (typeof window === 'undefined') return;
   const root = document.documentElement;
+  
   if (isDark) {
     root.classList.add('dark');
+    root.style.colorScheme = 'dark';
   } else {
     root.classList.remove('dark');
+    root.style.colorScheme = 'light';
   }
+
+  const themeColor = isDark ? '#000000' : '#F8F5F1';
+
+  // Update or create meta[name="theme-color"]
+  const themeColorMetas = document.querySelectorAll('meta[name="theme-color"]');
+  if (themeColorMetas.length > 0) {
+    themeColorMetas.forEach((meta) => {
+      meta.removeAttribute('media');
+      meta.setAttribute('content', themeColor);
+    });
+  } else {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'theme-color');
+    meta.setAttribute('content', themeColor);
+    document.head.appendChild(meta);
+  }
+
+  // Update apple-mobile-web-app-status-bar-style for iOS status bar
+  let appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (!appleStatusBar) {
+    appleStatusBar = document.createElement('meta');
+    appleStatusBar.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+    document.head.appendChild(appleStatusBar);
+  }
+  appleStatusBar.setAttribute('content', isDark ? 'black-translucent' : 'default');
 };
 
 export const useThemeStore = create<ThemeState>((set, get) => ({

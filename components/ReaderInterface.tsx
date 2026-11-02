@@ -9,6 +9,7 @@ import { generateUUID } from '../utils/uuid';
 import { getHighlightsByBook, saveHighlight, deleteHighlight, getBookmarksByBook, saveBookmark, deleteBookmark } from '../utils/db';
 import { HIGHLIGHT_COLORS } from '../constants';
 import { useAuthStore } from '../stores/useAuthStore';
+import { useThemeStore } from '../stores/useThemeStore';
 
 interface ReaderInterfaceProps {
   book: Book | null;
@@ -70,6 +71,26 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
   useEffect(() => {
     sessionTimeRef.current = sessionTime;
   }, [sessionTime]);
+
+  // Sync status bar theme-color with reader theme
+  useEffect(() => {
+    if (!isVisible) return;
+    const isReaderDark = theme === 'dark';
+    const readerThemeColor = isReaderDark ? '#111111' : theme === 'sepia' ? '#FBF0D9' : theme === 'clean' ? '#FFFFFF' : '#F8F5F1';
+
+    const metaThemes = document.querySelectorAll('meta[name="theme-color"]');
+    metaThemes.forEach(m => m.setAttribute('content', readerThemeColor));
+
+    const appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (appleMeta) appleMeta.setAttribute('content', isReaderDark ? 'black-translucent' : 'default');
+
+    return () => {
+      const globalIsDark = useThemeStore.getState().isDark;
+      const globalColor = globalIsDark ? '#000000' : '#F8F5F1';
+      metaThemes.forEach(m => m.setAttribute('content', globalColor));
+      if (appleMeta) appleMeta.setAttribute('content', globalIsDark ? 'black-translucent' : 'default');
+    };
+  }, [isVisible, theme]);
 
   // Reading Timer
   useEffect(() => {
@@ -1172,7 +1193,10 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
           <motion.div
             initial={{ y: -80, opacity: 0 }}
             animate={{ y: showControls ? 0 : -80, opacity: showControls ? 1 : 0 }}
-            className={`fixed top-0 left-0 right-0 z-50 px-4 md:px-8 py-4 flex items-center justify-between transition-all duration-300 ${theme === 'dark' ? 'bg-[#111111]/90' : 'bg-white/95'
+            style={{
+              paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))'
+            }}
+            className={`fixed top-0 left-0 right-0 z-50 px-4 md:px-8 pb-4 flex items-center justify-between transition-all duration-300 ${theme === 'dark' ? 'bg-[#111111]/90' : 'bg-white/95'
               } backdrop-blur-md border-b ${activeTheme.border}`}
           >
             {/* Left: Back */}

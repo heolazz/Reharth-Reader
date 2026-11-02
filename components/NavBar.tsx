@@ -160,7 +160,13 @@ export const NavBar: React.FC<NavBarProps> = ({ currentPage, onNavigate, searchQ
             </div>
 
             {/* === MOBILE TOP BAR === */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white/85 dark:bg-black/90 backdrop-blur-xl border-b border-[#3E2723]/5 dark:border-white/10 px-4 h-12 flex items-center justify-between transition-all">
+            <div
+                className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white/85 dark:bg-black/90 backdrop-blur-xl border-b border-[#3E2723]/5 dark:border-white/10 px-4 flex items-center justify-between transition-all"
+                style={{
+                    paddingTop: 'env(safe-area-inset-top, 0px)',
+                    height: 'calc(3rem + env(safe-area-inset-top, 0px))'
+                }}
+            >
                 <div className="flex items-center gap-2">
                     <div className="text-black dark:text-amber-500">
                         <Sprout size={18} strokeWidth={1.5} />
