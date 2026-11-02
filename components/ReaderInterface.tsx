@@ -76,7 +76,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
   useEffect(() => {
     if (!isVisible) return;
     const isReaderDark = theme === 'dark';
-    const readerThemeColor = isReaderDark ? '#111111' : theme === 'sepia' ? '#FBF0D9' : theme === 'clean' ? '#FFFFFF' : '#F8F5F1';
+    const readerThemeColor = isReaderDark ? '#000000' : theme === 'paper' ? '#F9F7F5' : '#FFFFFF';
 
     const metaThemes = document.querySelectorAll('meta[name="theme-color"]');
     metaThemes.forEach(m => m.setAttribute('content', readerThemeColor));
@@ -429,8 +429,8 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
 
         // Apply theme colors
         if (theme === 'dark') {
-          rendition.themes.override('color', '#F3F0EB');
-          rendition.themes.override('background', '#1a1614');
+          rendition.themes.override('color', '#e5e5e5');
+          rendition.themes.override('background', '#000000');
         } else if (theme === 'clean') {
           rendition.themes.override('color', '#000000');
           rendition.themes.override('background', '#FFFFFF');
@@ -956,8 +956,8 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
 
         // Apply theme colors via override (no register/select — prevents iframe desync)
         if (theme === 'dark') {
-          renditionRef.current.themes.override('color', '#F3F0EB');
-          renditionRef.current.themes.override('background', '#1a1614');
+          renditionRef.current.themes.override('color', '#e5e5e5');
+          renditionRef.current.themes.override('background', '#000000');
         } else if (theme === 'clean') {
           renditionRef.current.themes.override('color', '#000000');
           renditionRef.current.themes.override('background', '#FFFFFF');
@@ -1065,7 +1065,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
   const themeStyles = {
     paper: { bg: 'bg-[#F9F7F5]', text: 'text-[#3D3028]', accent: 'text-[#5d4037]', bar: 'bg-[#3D3028]', border: 'border-[#3D3028]/10' },
     clean: { bg: 'bg-[#FFFFFF]', text: 'text-[#1a1a1a]', accent: 'text-[#4a4a4a]', bar: 'bg-[#000]', border: 'border-black/5' },
-    dark: { bg: 'bg-[#111111]', text: 'text-[#e5e5e5]', accent: 'text-[#a3a3a3]', bar: 'bg-[#e5e5e5]', border: 'border-white/10' },
+    dark: { bg: 'bg-black', text: 'text-[#e5e5e5]', accent: 'text-[#a3a3a3]', bar: 'bg-white', border: 'border-white/10' },
   };
 
   const activeTheme = themeStyles[theme];
@@ -1086,7 +1086,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
     },
     dark: {
       container: 'bg-white/10',
-      active: 'bg-[#404040] text-white shadow-sm ring-1 ring-white/10 font-medium',
+      active: 'bg-white/20 text-white shadow-sm ring-1 ring-white/10 font-medium',
       inactive: 'text-white/60 hover:text-white hover:bg-white/5'
     }
   };
@@ -1196,7 +1196,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
             style={{
               paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))'
             }}
-            className={`fixed top-0 left-0 right-0 z-50 px-4 md:px-8 pb-4 flex items-center justify-between transition-all duration-300 ${theme === 'dark' ? 'bg-[#111111]/90' : 'bg-white/95'
+            className={`fixed top-0 left-0 right-0 z-50 px-4 md:px-8 pb-4 flex items-center justify-between transition-all duration-300 ${theme === 'dark' ? 'bg-black/90' : 'bg-white/95'
               } backdrop-blur-md border-b ${activeTheme.border}`}
           >
             {/* Left: Back */}
@@ -1308,7 +1308,7 @@ export const ReaderInterface: React.FC<ReaderInterfaceProps> = ({ book, isVisibl
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.9 }}
                 transition={{ type: "spring", bounce: 0.3 }}
-                className={`fixed z-[70] px-3 py-1.5 rounded-full shadow-lg flex items-center justify-center gap-1.5 backdrop-blur-md max-w-[90vw] border ${theme === 'dark' ? 'bg-[#1a1a1a]/95 border-white/10 text-white' : 'bg-white/95 border-black/5 text-gray-800'}`}
+                className={`fixed z-[70] px-3 py-1.5 rounded-full shadow-lg flex items-center justify-center gap-1.5 backdrop-blur-md max-w-[90vw] border ${theme === 'dark' ? 'bg-black/95 border-white/10 text-white' : 'bg-white/95 border-black/5 text-gray-800'}`}
                 style={{
                   left: selectionRect ? `${selectionRect.x}px` : '50%',
                   top: selectionRect ? `${selectionRect.y}px` : 'auto',

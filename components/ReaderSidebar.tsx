@@ -74,7 +74,7 @@ export const ReaderSidebar: React.FC<ReaderSidebarProps> = ({
                     <motion.div
                         initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className={`fixed top-0 bottom-0 left-0 w-80 z-[90] shadow-2xl flex flex-col ${theme === 'dark' ? 'bg-[#1a1a1a] text-[#e5e5e5]' : 'bg-white text-[#3D3028]'}`}
+                        className={`fixed top-0 bottom-0 left-0 w-80 z-[90] shadow-2xl flex flex-col ${theme === 'dark' ? 'bg-black border-r border-white/10 text-[#e5e5e5]' : 'bg-white text-[#3D3028]'}`}
                     >
                         {/* Header */}
                         <div className="p-6 pb-2">

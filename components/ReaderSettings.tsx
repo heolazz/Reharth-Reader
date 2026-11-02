@@ -56,7 +56,7 @@ export const ReaderSettings: React.FC<ReaderSettingsProps> = ({
                     exit={{ scale: 0.95, y: -10 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
                     onClick={(e) => e.stopPropagation()}
-                    className={`absolute top-16 right-6 w-80 rounded-2xl shadow-xl overflow-hidden z-[60] border ${theme === 'dark' ? 'bg-[#181818] border-white/10 text-[#d4d4d4]' : 'bg-white border-black/5 text-[#4a4a4a]'}`}
+                    className={`absolute top-16 right-6 w-80 rounded-2xl shadow-xl overflow-hidden z-[60] border ${theme === 'dark' ? 'bg-[#0a0a0a] border-white/10 text-[#d4d4d4]' : 'bg-white border-black/5 text-[#4a4a4a]'}`}
                 >
                     <div className="p-6 space-y-7">
 
@@ -67,13 +67,13 @@ export const ReaderSettings: React.FC<ReaderSettingsProps> = ({
                                 {[
                                     { t: 'paper', label: 'Paper', bg: '#F2EFED', border: '#e0dedc' },
                                     { t: 'clean', label: 'Clean', bg: '#FFFFFF', border: '#f0f0f0' },
-                                    { t: 'dark', label: 'Dark', bg: '#1A1A1A', border: '#333333' }
+                                    { t: 'dark', label: 'Dark', bg: '#000000', border: 'rgba(255,255,255,0.2)' }
                                 ].map((opt) => (
                                     <button
                                         key={opt.t}
                                         onClick={() => setTheme(opt.t as ReaderTheme)}
                                         className={`group flex-1 h-10 rounded-full border flex items-center justify-center transition-all duration-300 relative overflow-hidden active:scale-95 ${theme === opt.t ? 'ring-1 ring-offset-1 ring-current' : 'opacity-100 hover:scale-105'}`}
-                                        style={{ backgroundColor: opt.bg, borderColor: 'transparent' }}
+                                        style={{ backgroundColor: opt.bg, borderColor: opt.t === 'dark' ? 'rgba(255,255,255,0.2)' : 'transparent' }}
                                         title={opt.label}
                                     >
                                         <span className={`font-serif text-lg ${opt.t === 'dark' ? 'text-white/80' : 'text-black/70'}`}>Aa</span>
